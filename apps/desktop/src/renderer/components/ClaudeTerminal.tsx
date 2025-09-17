@@ -7,7 +7,7 @@ import { Unicode11Addon } from '@xterm/addon-unicode11';
 import { SearchAddon } from '@xterm/addon-search';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { Code2, Columns2, X, Search } from 'lucide-react';
+import { Code2, Columns2, Rows2, X, Search } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 import '@xterm/xterm/css/xterm.css';
 
@@ -17,7 +17,8 @@ interface ClaudeTerminalProps {
   theme?: 'light' | 'dark';
   isVisible?: boolean;
   terminalId?: string;
-  onSplit?: () => void;
+  onSplitVertical?: () => void;
+  onSplitHorizontal?: () => void;
   onClose?: () => void;
   canClose?: boolean;
   onProcessIdChange?: (processId: string) => void;
@@ -31,13 +32,12 @@ export function ClaudeTerminal({
   theme = 'dark', 
   isVisible = true, 
   terminalId,
-  onSplit,
+  onSplitVertical,
+  onSplitHorizontal,
   onClose,
   canClose = false,
   onProcessIdChange
 }: ClaudeTerminalProps) {
-  // Log when component renders to verify it only happens once per terminal
-  console.log(`[ClaudeTerminal] Rendering terminal for: ${worktreePath}`);
   const terminalRef = useRef<HTMLDivElement>(null);
   const [terminal, setTerminal] = useState<Terminal | null>(null);
   const processIdRef = useRef<string>('');
@@ -71,7 +71,6 @@ export function ClaudeTerminal({
   useEffect(() => {
     if (!terminalRef.current) return;
 
-    console.log(`[ClaudeTerminal] Initializing terminal for: ${worktreePath}`);
 
     // Create terminal instance with theme-aware colors
     const getTerminalTheme = (currentTheme: 'light' | 'dark') => {
@@ -537,7 +536,7 @@ export function ClaudeTerminal({
 
 
   return (
-    <div className="claude-terminal-root flex-1 flex flex-col h-full">
+    <div className="claude-terminal-root flex-1 flex flex-col h-full overflow-hidden">
       {/* Header */}
       <div className="terminal-header h-[57px] px-4 border-b flex items-center justify-between flex-shrink-0">
         <div className="min-w-0 flex-1">
@@ -553,22 +552,34 @@ export function ClaudeTerminal({
           >
             <Search className="h-4 w-4" />
           </Button>
-          {onSplit && (
+          {onSplitVertical && (
             <Button
               size="icon"
               variant="ghost"
-              onClick={onSplit}
+              onClick={onSplitVertical}
               title="Split Terminal Vertically"
             >
               <Columns2 className="h-4 w-4" />
             </Button>
           )}
-          {canClose && onClose && (
+          {onSplitHorizontal && (
             <Button
               size="icon"
               variant="ghost"
-              onClick={onClose}
-              title="Close Terminal"
+              onClick={onSplitHorizontal}
+              title="Split Terminal Horizontally"
+            >
+              <Rows2 className="h-4 w-4" />
+            </Button>
+          )}
+          {onClose && (
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={canClose ? onClose : undefined}
+              title={canClose ? "Close Terminal" : "Cannot close last terminal"}
+              disabled={!canClose}
+              className={!canClose ? "opacity-50 cursor-not-allowed" : ""}
             >
               <X className="h-4 w-4" />
             </Button>
