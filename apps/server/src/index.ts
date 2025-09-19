@@ -33,8 +33,8 @@ async function findAvailablePort(): Promise<number> {
     return parseInt(process.env.PORT);
   }
   
-  // Start with a random port in 3xxx range and try sequential ports
-  let port = Math.floor(Math.random() * 1000) + 3000;
+  // Start with default port 3002 and try sequential ports if needed
+  let port = 3002;
   
   for (let attempt = 0; attempt < 3; attempt++) {
     if (await isPortAvailable(port)) {

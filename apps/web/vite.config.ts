@@ -50,7 +50,7 @@ export default defineConfig({
     })
   ],
   server: {
-    port: Math.floor(Math.random() * 1000) + 3000,
+    port: 3000,
     host: '0.0.0.0', // Bind to all network interfaces for network access
     strictPort: false, // Allow Vite to find alternative ports
     // Note: Proxy configuration removed - apps will connect directly using environment variables
