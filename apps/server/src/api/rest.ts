@@ -26,6 +26,58 @@ export function setupRestRoutes(app: Express, services: Services) {
     });
   });
 
+  // Authentication endpoints
+  
+  // Get authentication configuration
+  app.get('/api/auth/config', (req, res) => {
+    const config = authService.getAuthConfig();
+    res.json(config);
+  });
+
+  // Login endpoint
+  app.post('/api/auth/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+    
+    const result = authService.login(username, password);
+    
+    if (result.success) {
+      res.json({ sessionToken: result.sessionToken });
+    } else {
+      res.status(401).json({ error: result.error });
+    }
+  });
+
+  // Logout endpoint
+  app.post('/api/auth/logout', (req, res) => {
+    // Get session token from Authorization header or query parameter
+    let sessionToken: string | undefined;
+    
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      sessionToken = authHeader.substring(7);
+    } else if (req.query.session_token) {
+      sessionToken = req.query.session_token as string;
+    } else if (req.body.sessionToken) {
+      sessionToken = req.body.sessionToken;
+    }
+
+    if (!sessionToken) {
+      return res.status(400).json({ error: 'Session token is required' });
+    }
+
+    const success = authService.logout(sessionToken);
+    
+    if (success) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Session not found' });
+    }
+  });
+
   // Generate QR code for device pairing
   app.get('/api/auth/qr', async (req, res) => {
     try {

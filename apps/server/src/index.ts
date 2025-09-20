@@ -120,6 +120,16 @@ async function startServer() {
     console.log('📁 Project Path:', PROJECT_PATH);
     console.log();
     
+    // Display authentication status
+    const authConfig = authService.getAuthConfig();
+    console.log('🔐 Authentication:');
+    console.log(`   Required:   ${authConfig.authRequired ? 'Yes' : 'No'}`);
+    console.log(`   Configured: ${authConfig.authConfigured ? 'Yes' : 'No'}`);
+    if (authConfig.authRequired && !authConfig.authConfigured) {
+      console.log('   ⚠️  Warning: AUTH_REQUIRED=true but USERNAME/PASSWORD not set');
+    }
+    console.log();
+    
     console.log('🌐 Web Application (UI):');
     console.log(`   Local:   ${webUrls.local}`);
     console.log(`   Network: ${webUrls.network}`);
