@@ -1,4 +1,5 @@
 import { getServerHttpUrl } from './portDiscovery';
+import { authenticatedFetch } from './authService';
 
 interface ProjectValidationResult {
   path: string;
@@ -26,11 +27,8 @@ export async function validateProjectPaths(projectPaths: string[]): Promise<Proj
   try {
     const httpUrl = await getServerHttpUrl();
     
-    const response = await fetch(`${httpUrl}/api/projects/validate`, {
+    const response = await authenticatedFetch(`${httpUrl}/api/projects/validate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ projectPaths }),
     });
 
@@ -58,7 +56,7 @@ export async function autoLoadProjects(): Promise<AutoLoadResponse> {
   try {
     const httpUrl = await getServerHttpUrl();
     
-    const response = await fetch(`${httpUrl}/api/projects/auto-load`);
+    const response = await authenticatedFetch(`${httpUrl}/api/projects/auto-load`);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);

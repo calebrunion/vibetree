@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useAuth, LoginPage } from '@vibetree/auth';
 import { WorktreePanel } from './components/WorktreePanel';
 import { TerminalManager } from './components/TerminalManager';
 import { GitDiffView } from './components/GitDiffView';
@@ -11,6 +12,7 @@ import { Sun, Moon, Plus, X, Terminal, GitBranch, CheckCircle } from 'lucide-rea
 import { autoLoadProjects } from './services/projectValidation';
 
 function App() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { projects, activeProjectId, addProject, addProjects, removeProject, setActiveProject, setSelectedTab, theme, setTheme, connected } = useAppStore();
   const { connect } = useWebSocket();
   const [showProjectSelector, setShowProjectSelector] = useState(false);
@@ -19,6 +21,11 @@ function App() {
   const [successMessage, setSuccessMessage] = useState('');
   
   // const activeProject = getActiveProject();
+
+  // Show login page if not authenticated and not loading
+  if (!authLoading && !isAuthenticated) {
+    return <LoginPage />;
+  }
 
   useEffect(() => {
     // Auto-connect on mount

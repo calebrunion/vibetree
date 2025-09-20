@@ -9,6 +9,7 @@ import {
   onGlobalAdapterDisconnected
 } from '../adapters/globalWebSocketAdapter';
 import { getServerWebSocketUrl } from '../services/portDiscovery';
+import { getAuthenticatedWebSocketUrl } from '../services/authService';
 
 export function useWebSocket() {
   const { 
@@ -31,7 +32,10 @@ export function useWebSocket() {
 
     try {
       // Get WebSocket URL using dynamic port discovery
-      const wsUrl = await getServerWebSocketUrl();
+      const baseWsUrl = await getServerWebSocketUrl();
+      
+      // Add authentication if available
+      const wsUrl = getAuthenticatedWebSocketUrl(baseWsUrl);
       
       console.log('🔌 Attempting WebSocket connection to:', wsUrl);
       

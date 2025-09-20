@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@git-diff-view/react": "^0.0.30",
+    "@vibetree/auth": "workspace:*",
     "@vibetree/core": "workspace:*",
     "@vibetree/ui": "workspace:*",
     "clsx": "^2.1.0",
