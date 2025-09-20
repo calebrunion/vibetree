@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { clsx } from 'clsx';
 import type { LoginPageProps } from '../types';
+
+// Utility function similar to desktop app
+const cn = (...inputs: any[]) => {
+  return clsx(inputs);
+};
+
+// Input component styles (copied from desktop app)
+const inputClass = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
 export function LoginPage({ onLoginSuccess, className = '' }: LoginPageProps) {
   const { login, isLoading, error, authConfig, clearError, retry } = useAuth();
@@ -129,7 +138,7 @@ export function LoginPage({ onLoginSuccess, className = '' }: LoginPageProps) {
 
   // Show login form
   return (
-    <div className={`min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 ${className}`}>
+    <div className={`h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 ${className}`}>
       <div className="max-w-md w-full space-y-8 p-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
@@ -156,9 +165,9 @@ export function LoginPage({ onLoginSuccess, className = '' }: LoginPageProps) {
             </div>
           )}
           
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="space-y-3 sm:space-y-4">
             <div>
-              <label htmlFor="username" className="sr-only">
+              <label htmlFor="username" className="block text-sm font-medium mb-1.5 sm:mb-2">
                 Username
               </label>
               <input
@@ -170,12 +179,12 @@ export function LoginPage({ onLoginSuccess, className = '' }: LoginPageProps) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isSubmitting}
-                className="relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm disabled:opacity-50"
-                placeholder="Username"
+                className={inputClass}
+                placeholder="Enter your username"
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
+              <label htmlFor="password" className="block text-sm font-medium mb-1.5 sm:mb-2">
                 Password
               </label>
               <input
@@ -187,8 +196,8 @@ export function LoginPage({ onLoginSuccess, className = '' }: LoginPageProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isSubmitting}
-                className="relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm disabled:opacity-50"
-                placeholder="Password"
+                className={inputClass}
+                placeholder="Enter your password"
               />
             </div>
           </div>
