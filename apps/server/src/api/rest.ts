@@ -89,14 +89,14 @@ export function setupRestRoutes(app: Express, services: Services) {
     }
   });
 
-  // List connected devices
-  app.get('/api/devices', (req, res) => {
+  // List connected devices (protected)
+  app.get('/api/devices', authService.requireAuth, (req, res) => {
     const devices = authService.getConnectedDevices();
     res.json(devices);
   });
 
-  // Disconnect a device
-  app.delete('/api/devices/:deviceId', (req, res) => {
+  // Disconnect a device (protected)
+  app.delete('/api/devices/:deviceId', authService.requireAuth, (req, res) => {
     const success = authService.disconnectDevice(req.params.deviceId);
     if (success) {
       res.json({ success: true });
@@ -105,8 +105,8 @@ export function setupRestRoutes(app: Express, services: Services) {
     }
   });
 
-  // List active shell sessions
-  app.get('/api/shells', (req, res) => {
+  // List active shell sessions (protected)
+  app.get('/api/shells', authService.requireAuth, (req, res) => {
     const sessions = shellManager.getAllSessions();
     res.json(sessions.map(s => ({
       id: s.id,
@@ -116,8 +116,8 @@ export function setupRestRoutes(app: Express, services: Services) {
     })));
   });
 
-  // Terminate a shell session
-  app.delete('/api/shells/:sessionId', (req, res) => {
+  // Terminate a shell session (protected)
+  app.delete('/api/shells/:sessionId', authService.requireAuth, (req, res) => {
     const success = shellManager.terminateSession(req.params.sessionId);
     if (success) {
       res.json({ success: true });
@@ -126,8 +126,8 @@ export function setupRestRoutes(app: Express, services: Services) {
     }
   });
 
-  // Git operations (for non-WebSocket clients)
-  app.post('/api/git/worktrees', async (req, res) => {
+  // Git operations (for non-WebSocket clients) - Protected
+  app.post('/api/git/worktrees', authService.requireAuth, async (req, res) => {
     try {
       const worktrees = await listWorktrees(req.body.projectPath);
       res.json(worktrees);
@@ -136,7 +136,7 @@ export function setupRestRoutes(app: Express, services: Services) {
     }
   });
 
-  app.post('/api/git/status', async (req, res) => {
+  app.post('/api/git/status', authService.requireAuth, async (req, res) => {
     try {
       const status = await getGitStatus(req.body.worktreePath);
       res.json(status);
@@ -145,7 +145,7 @@ export function setupRestRoutes(app: Express, services: Services) {
     }
   });
 
-  app.post('/api/git/diff', async (req, res) => {
+  app.post('/api/git/diff', authService.requireAuth, async (req, res) => {
     try {
       const diff = await getGitDiff(req.body.worktreePath, req.body.filePath);
       res.json({ diff });
@@ -154,7 +154,7 @@ export function setupRestRoutes(app: Express, services: Services) {
     }
   });
 
-  app.post('/api/git/worktree/add', async (req, res) => {
+  app.post('/api/git/worktree/add', authService.requireAuth, async (req, res) => {
     try {
       const result = await addWorktree(req.body.projectPath, req.body.branchName);
       res.json(result);
@@ -163,7 +163,7 @@ export function setupRestRoutes(app: Express, services: Services) {
     }
   });
 
-  app.delete('/api/git/worktree', async (req, res) => {
+  app.delete('/api/git/worktree', authService.requireAuth, async (req, res) => {
     try {
       const result = await removeWorktree(
         req.body.projectPath,
@@ -176,8 +176,8 @@ export function setupRestRoutes(app: Express, services: Services) {
     }
   });
 
-  // Validate multiple project paths
-  app.post('/api/projects/validate', async (req, res) => {
+  // Validate multiple project paths (protected)
+  app.post('/api/projects/validate', authService.requireAuth, async (req, res) => {
     try {
       const { projectPaths } = req.body;
       

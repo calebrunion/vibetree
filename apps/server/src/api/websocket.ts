@@ -35,8 +35,26 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
     const url = new URL(req.url!, `http://${req.headers.host}`);
     const token = url.searchParams.get('token');
     const jwt = url.searchParams.get('jwt');
+    const sessionToken = url.searchParams.get('session_token');
 
-    if (token) {
+    if (sessionToken) {
+      // Session token authentication (username/password auth)
+      if (authService.validateSessionToken(sessionToken)) {
+        authenticated = true;
+        deviceId = 'web-session';
+        ws.send(JSON.stringify({
+          type: 'auth:success',
+          payload: { deviceId }
+        }));
+      } else {
+        ws.send(JSON.stringify({
+          type: 'auth:error',
+          payload: { error: 'Invalid or expired session token' }
+        }));
+        ws.close();
+        return;
+      }
+    } else if (token) {
       // QR code token authentication
       if (authService.validateToken(token)) {
         authenticated = true;
@@ -71,29 +89,42 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
         return;
       }
     } else {
-      // No authentication provided
-      // In development, allow localhost by default and optionally allow LAN via env flag
-      const isLocalhost = req.headers.host?.includes('localhost') ||
-                          req.headers.host?.includes('127.0.0.1');
-      const allowLanDev = process.env.ALLOW_INSECURE_NETWORK === '1' ||
-                          process.env.ALLOW_INSECURE_LAN === '1' ||
-                          process.env.ALLOW_NETWORK_DEV === '1';
-
-      if (process.env.NODE_ENV !== 'production' && (isLocalhost || allowLanDev)) {
+      // No authentication provided - check if auth is required
+      const authRequired = process.env.AUTH_REQUIRED === 'true';
+      
+      if (!authRequired) {
+        // Authentication disabled - allow connection
         authenticated = true;
-        deviceId = isLocalhost ? 'localhost-dev' : 'lan-dev';
+        deviceId = 'no-auth';
         ws.send(JSON.stringify({
           type: 'auth:success',
           payload: { deviceId }
         }));
-        console.log(`🔓 Dev auth: allowing ${isLocalhost ? 'localhost' : 'LAN'} connection without token`);
+        console.log('🔓 Auth disabled: allowing connection without authentication');
       } else {
-        ws.send(JSON.stringify({
-          type: 'auth:error',
-          payload: { error: 'Authentication required' }
-        }));
-        ws.close();
-        return;
+        // Auth required but none provided - check for dev mode exceptions
+        const isLocalhost = req.headers.host?.includes('localhost') ||
+                            req.headers.host?.includes('127.0.0.1');
+        const allowLanDev = process.env.ALLOW_INSECURE_NETWORK === '1' ||
+                            process.env.ALLOW_INSECURE_LAN === '1' ||
+                            process.env.ALLOW_NETWORK_DEV === '1';
+
+        if (process.env.NODE_ENV !== 'production' && (isLocalhost || allowLanDev)) {
+          authenticated = true;
+          deviceId = isLocalhost ? 'localhost-dev' : 'lan-dev';
+          ws.send(JSON.stringify({
+            type: 'auth:success',
+            payload: { deviceId }
+          }));
+          console.log(`🔓 Dev auth: allowing ${isLocalhost ? 'localhost' : 'LAN'} connection without token`);
+        } else {
+          ws.send(JSON.stringify({
+            type: 'auth:error',
+            payload: { error: 'Authentication required' }
+          }));
+          ws.close();
+          return;
+        }
       }
     }
 
