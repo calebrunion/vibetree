@@ -4,7 +4,7 @@
   "description": "VibeTree Authentication - React components and hooks for authentication",
   "type": "module",
   "main": "dist/index.cjs",
-  "module": "dist/index.mjs", 
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -21,13 +21,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/node": "^20.11.5",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
-    "@types/node": "^20.11.5",
     "esbuild": "^0.25.9",
     "typescript": "^5.3.3"
   },
