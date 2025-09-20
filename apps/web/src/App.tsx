@@ -22,11 +22,6 @@ function App() {
   
   // const activeProject = getActiveProject();
 
-  // Show login page if not authenticated and not loading
-  if (!authLoading && !isAuthenticated) {
-    return <LoginPage />;
-  }
-
   useEffect(() => {
     // Auto-connect on mount
     connect();
@@ -122,6 +117,11 @@ function App() {
     e.stopPropagation();
     removeProject(projectId);
   };
+
+  // Show login page if not authenticated and not loading
+  if (!authLoading && !isAuthenticated) {
+    return <LoginPage />;
+  }
 
   // Show project selector if no projects exist or explicitly requested
   if (projects.length === 0 || showProjectSelector) {
