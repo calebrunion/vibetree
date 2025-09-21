@@ -22,7 +22,15 @@
     "test:run": "turbo run test:run",
     "clean": "turbo run clean",
     "package:desktop": "pnpm --filter @vibetree/desktop package",
-    "fix:electron": "./fix-electron.sh"
+    "fix:electron": "./fix-electron.sh",
+    "deploy": "./docker-deploy.sh",
+    "docker:build": "docker build -t vibetree-webapp .",
+    "docker:run": "docker run -p 3000:3000 -p 3002:3002 --name vibetree-container vibetree-webapp",
+    "docker:stop": "docker stop vibetree-container && docker rm vibetree-container",
+    "docker:dev": "docker run -p 3000:3000 -p 3002:3002 --rm --name vibetree-dev vibetree-webapp",
+    "docker:compose": "docker-compose up",
+    "docker:compose:build": "docker-compose up --build",
+    "docker:compose:down": "docker-compose down"
   },
   "keywords": [
     "electron",

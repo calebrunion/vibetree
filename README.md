@@ -32,11 +32,12 @@ VibeTree is a cross-platform application that enhances your development workflow
 ### Quick Start
 
 ```bash
-# Install dependencies
+# Development Mode
 pnpm install
+pnpm dev:all  # Run both web and server
 
-# Run both web and server (recommended)
-pnpm dev:all
+# Docker Deployment (Production)
+npm run deploy  # One-command deployment
 
 # Or run services separately:
 pnpm dev:server  # Socket server on random 3XXX port
@@ -59,6 +60,34 @@ Download the latest release for your platform from the [Releases page](https://g
 3. For mobile/network access:
    - Scan the QR code shown in terminal
    - Or navigate to the network URL (e.g., http://192.168.1.x:3000)
+
+### 🐳 Docker Deployment
+
+Deploy VibeTree on any VM or cloud instance with one command:
+
+```bash
+npm run deploy
+```
+
+This automatically builds and runs VibeTree in a Docker container. Perfect for deployment on EC2, Digital Ocean, or any Docker-enabled environment. See [DOCKER.md](DOCKER.md) for detailed instructions.
+
+**Access VibeTree:**
+- **Web Interface**: http://localhost:3000
+- **API Server**: http://localhost:3002
+- **Health Check**: http://localhost:3002/health
+
+#### Cloud Deployment
+
+Deploy on AWS EC2, Digital Ocean, or any cloud VM:
+
+```bash
+# On your cloud instance
+git clone <your-repo>
+cd vibe-tree
+npm run deploy
+```
+
+Configure security groups to allow ports 3000 and 3002, then access via `http://your-vm-ip:3000`.
 
 **Safari/iOS Requirements:**
 - Both services must be running (web on random 3XXX port, server on random 3XXX port)
@@ -102,6 +131,11 @@ DEFAULT_PROJECTS=/path1,/path2         # Auto-load projects (first becomes defau
 USERNAME=your_username                  # Set username for authentication
 PASSWORD=your_password                  # Set password for authentication
 AUTH_REQUIRED=true                     # Enable authentication
+
+# Docker-specific variables
+PROJECT_PATH=/workspace                 # Project directory inside container
+WEB_PORT=3000                          # Web frontend port
+NODE_ENV=production                    # Runtime environment
 ```
 
 ## Features
@@ -112,6 +146,7 @@ AUTH_REQUIRED=true                     # Enable authentication
 - **IDE Integration** - Open any worktree directly in VS Code or Cursor
 - **Multi-Project Support** - Work with multiple repositories in tabbed interface
 - **Cross-Platform Access** - Desktop app, web browser, and mobile support
+- **Docker Deployment** - One-command deployment for cloud VMs and production environments
 - **Dark/Light Mode** - Automatic OS theme detection with manual toggle
 - **macOS Native** - Proper traffic light window controls integration
 
