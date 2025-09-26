@@ -6,10 +6,9 @@ import './ide-detector';
 import './terminal-settings';
 import { registerIpcHandlers } from './ipc-handlers';
 import { createMenu } from './menu';
+import { quitManager } from './quit-manager';
 
 let mainWindow: BrowserWindow | null = null;
-
-
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -53,13 +52,15 @@ app.whenReady().then(() => {
   createWindow();
   createMenu(mainWindow);
   registerIpcHandlers(mainWindow);
+
+  // Initialize quit manager with cleanup callback
+  quitManager.initialize(mainWindow);
+  quitManager.options.onQuitConfirmed = () => {
+    shellProcessManager.cleanup();
+  };
 });
 
-// Clean up shell processes on quit
-app.on('before-quit', () => {
-  shellProcessManager.cleanup();
-});
-
+// Handle window-all-closed event
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
