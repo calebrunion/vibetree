@@ -5,6 +5,17 @@ import path from 'path';
 
 let statsDialogWindow: BrowserWindow | null = null;
 
+// Register IPC handlers once at module level
+ipcMain.handle('stats:get-data', async () => {
+  return shellProcessManager.getStats();
+});
+
+ipcMain.on('stats-dialog:close', () => {
+  if (statsDialogWindow && !statsDialogWindow.isDestroyed()) {
+    statsDialogWindow.close();
+  }
+});
+
 function showStatsDialog(parentWindow: BrowserWindow, stats: any) {
   // Close existing stats dialog if open
   if (statsDialogWindow && !statsDialogWindow.isDestroyed()) {
@@ -37,13 +48,6 @@ function showStatsDialog(parentWindow: BrowserWindow, stats: any) {
     if (statsDialogWindow) {
       statsDialogWindow.webContents.send('stats-data', stats);
       statsDialogWindow.show();
-    }
-  });
-
-  // Handle request-stats event
-  ipcMain.once('request-stats', (event) => {
-    if (statsDialogWindow && !statsDialogWindow.isDestroyed()) {
-      event.sender.send('stats-data', stats);
     }
   });
 

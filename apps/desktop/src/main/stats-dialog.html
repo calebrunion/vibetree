@@ -164,11 +164,11 @@
     const { ipcRenderer } = require('electron');
 
     function closeWindow() {
-      window.close();
+      // Send close request to main process
+      ipcRenderer.send('stats-dialog:close');
     }
 
-    // Receive stats data from main process
-    ipcRenderer.on('stats-data', (event, stats) => {
+    function updateStats(stats) {
       document.getElementById('activeCount').textContent = stats.activeProcessCount;
 
       const container = document.getElementById('sessionsContainer');
@@ -207,10 +207,22 @@
           container.appendChild(sessionDiv);
         });
       }
+    }
+
+    // Receive stats data from main process
+    ipcRenderer.on('stats-data', (event, stats) => {
+      updateStats(stats);
     });
 
-    // Request stats on load
-    ipcRenderer.send('request-stats');
+    // Request stats data on load using invoke for reliability
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const stats = await ipcRenderer.invoke('stats:get-data');
+        updateStats(stats);
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+      }
+    });
   </script>
 </body>
 </html>
