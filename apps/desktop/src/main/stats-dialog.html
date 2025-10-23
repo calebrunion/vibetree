@@ -211,24 +211,22 @@
       }
     }
 
-    // Listen for stats data from main process
-    if (window.statsDialog && window.statsDialog.onStatsData) {
-      window.statsDialog.onStatsData((stats) => {
-        updateStats(stats);
-      });
-    }
-
     // Request stats data on load
     window.addEventListener('DOMContentLoaded', async () => {
+      console.log('[HTML] DOMContentLoaded event fired');
+      console.log('[HTML] window.statsDialog:', window.statsDialog);
       try {
         if (window.statsDialog && window.statsDialog.getStats) {
+          console.log('[HTML] Calling getStats()');
           const stats = await window.statsDialog.getStats();
+          console.log('[HTML] Received stats:', stats);
           updateStats(stats);
         } else {
-          console.error('statsDialog API not available');
+          console.error('[HTML] statsDialog API not available');
+          console.error('[HTML] window.statsDialog:', window.statsDialog);
         }
       } catch (error) {
-        console.error('Failed to load stats:', error);
+        console.error('[HTML] Failed to load stats:', error);
       }
     });
   </script>

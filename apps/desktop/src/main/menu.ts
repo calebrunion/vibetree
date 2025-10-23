@@ -1,22 +1,26 @@
 import { Menu, BrowserWindow, MenuItemConstructorOptions, dialog, app, ipcMain } from 'electron';
 import { recentProjectsManager } from './recent-projects';
-import { shellProcessManager } from './shell-manager';
 import path from 'path';
 
 let statsDialogWindow: BrowserWindow | null = null;
 
-// Register IPC handlers once at module level
-ipcMain.handle('stats:get-data', async () => {
-  return shellProcessManager.getStats();
-});
+// IPC handler 'shell:get-stats' is already registered in shell-manager.ts
 
 ipcMain.on('stats-dialog:close', () => {
+  console.log('[MENU] Received stats-dialog:close event');
+  console.log('[MENU] statsDialogWindow exists:', !!statsDialogWindow);
+  console.log('[MENU] statsDialogWindow isDestroyed:', statsDialogWindow ? statsDialogWindow.isDestroyed() : 'N/A');
+
   if (statsDialogWindow && !statsDialogWindow.isDestroyed()) {
+    console.log('[MENU] Attempting to close statsDialogWindow');
     statsDialogWindow.close();
+    console.log('[MENU] Close called successfully');
+  } else {
+    console.log('[MENU] Cannot close - window is null or destroyed');
   }
 });
 
-function showStatsDialog(parentWindow: BrowserWindow, stats: any) {
+function showStatsDialog(parentWindow: BrowserWindow) {
   // Close existing stats dialog if open
   if (statsDialogWindow && !statsDialogWindow.isDestroyed()) {
     statsDialogWindow.close();
@@ -44,10 +48,9 @@ function showStatsDialog(parentWindow: BrowserWindow, stats: any) {
   // Load the stats dialog HTML
   statsDialogWindow.loadFile(path.join(__dirname, 'stats-dialog.html'));
 
-  // Send stats data once the window is ready
+  // Show window when ready - stats will be fetched via IPC
   statsDialogWindow.webContents.once('did-finish-load', () => {
     if (statsDialogWindow) {
-      statsDialogWindow.webContents.send('stats-data', stats);
       statsDialogWindow.show();
     }
   });
@@ -146,10 +149,9 @@ export function createMenu(mainWindow: BrowserWindow | null) {
           click: () => {
             if (mainWindow) {
               try {
-                const stats = shellProcessManager.getStats();
-                showStatsDialog(mainWindow, stats);
+                showStatsDialog(mainWindow);
               } catch (error) {
-                dialog.showErrorBox('Error', `Failed to fetch stats: ${error}`);
+                dialog.showErrorBox('Error', `Failed to show stats dialog: ${error}`);
               }
             }
           }
