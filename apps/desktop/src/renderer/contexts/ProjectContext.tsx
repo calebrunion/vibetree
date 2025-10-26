@@ -91,6 +91,29 @@ export function ProjectProvider({ children }: ProjectProviderProps) {
   }, [addProject]);
 
   const removeProject = (id: string) => {
+    // Find the project being removed
+    const project = projects.find(p => p.id === id);
+
+    if (project) {
+      // Terminate all PTY sessions for each worktree in this project
+      const worktreePaths = project.worktrees.map(w => w.path);
+
+      // Also include the main project path in case terminals were started there
+      const pathsToTerminate = [project.path, ...worktreePaths];
+
+      console.log(`Terminating PTY sessions for ${pathsToTerminate.length} paths:`, pathsToTerminate);
+
+      // Terminate sessions for each path
+      Promise.all(pathsToTerminate.map(path =>
+        window.electronAPI.shell.terminateForWorktree(path)
+      )).then((results) => {
+        const totalTerminated = results.reduce((sum, r) => sum + r.count, 0);
+        console.log(`Terminated ${totalTerminated} PTY session(s) total for project: ${project.name}`);
+      }).catch((error) => {
+        console.error('Error terminating PTY sessions:', error);
+      });
+    }
+
     setProjects(prev => prev.filter(p => p.id !== id));
     if (activeProjectId === id) {
       const remaining = projects.filter(p => p.id !== id);
