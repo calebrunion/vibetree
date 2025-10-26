@@ -25,6 +25,7 @@ interface WorktreePanelProps {
 export function WorktreePanel({ projectPath, selectedWorktree, onSelectWorktree, onWorktreesChange, initialWorktrees }: WorktreePanelProps) {
   const [worktrees, setWorktrees] = useState<Worktree[]>(initialWorktrees || []);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [showNewBranchDialog, setShowNewBranchDialog] = useState(false);
   const [newBranchName, setNewBranchName] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -41,7 +42,7 @@ export function WorktreePanel({ projectPath, selectedWorktree, onSelectWorktree,
   const { toast } = useToast();
 
   const loadWorktrees = useCallback(async () => {
-    setLoading(true);
+    setRefreshing(true);
     try {
       const trees = await window.electronAPI.git.listWorktrees(projectPath);
       setWorktrees(trees);
@@ -53,8 +54,92 @@ export function WorktreePanel({ projectPath, selectedWorktree, onSelectWorktree,
         variant: "destructive",
       });
     }
-    setLoading(false);
+    setRefreshing(false);
   }, [projectPath, toast, onWorktreesChange]);
+
+  const handleCreateStressTest = async () => {
+    setLoading(true);
+    try {
+      toast({
+        title: "Stress test started!",
+        description: "Creating worktrees and opening terminals until we hit errors...",
+      });
+
+      let index = 1;
+      let consecutiveFailures = 0;
+
+      // Keep creating worktrees and opening terminals until we hit errors
+      while (consecutiveFailures < 3) {
+        try {
+          // Create one worktree using the same method as the regular add button
+          const branchName = `stress-test-${String(index).padStart(4, '0')}`;
+          const wtResult = await window.electronAPI.git.addWorktree(projectPath, branchName);
+
+          consecutiveFailures = 0; // Reset on success
+
+          // Switch to this worktree to activate it and show the terminal
+          onSelectWorktree(wtResult.path);
+
+          // Open terminal for this worktree immediately
+          const shellResult = await window.electronAPI.shell.start(wtResult.path, 80, 30, true);
+
+          if (!shellResult.success) {
+            console.error(`Failed to open terminal for worktree ${index}:`, shellResult.error);
+            toast({
+              title: "PTY spawn error detected!",
+              description: `Hit spawn error after ${index} terminals. Test complete.`,
+              variant: "destructive",
+            });
+            setLoading(false);
+            await loadWorktrees();
+            return;
+          }
+
+          // Update toast and reload worktrees every 10 worktrees
+          if (index % 10 === 0) {
+            toast({
+              title: "Stress test in progress...",
+              description: `Created ${index} worktrees with terminals`,
+            });
+            // Reload worktree list to show progress
+            await loadWorktrees();
+          }
+
+          index++;
+
+          // Small delay to let UI breathe
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+        } catch (error) {
+          console.error(`Error creating worktree ${index}:`, error);
+          consecutiveFailures++;
+          if (consecutiveFailures >= 3) {
+            toast({
+              title: "Worktree creation stopped",
+              description: `Hit errors after creating ${index - 1} worktrees`,
+              variant: "destructive",
+            });
+            break;
+          }
+          index++;
+        }
+      }
+
+      toast({
+        title: "Stress test complete!",
+        description: `Created ${index - 1} worktrees with terminals`,
+      });
+
+      await loadWorktrees();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to run stress test",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     loadWorktrees();
@@ -204,13 +289,24 @@ export function WorktreePanel({ projectPath, selectedWorktree, onSelectWorktree,
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Worktrees</h3>
           <div className="flex gap-2">
+            {/* DEBUG only: Stress test button to create worktrees until hitting errors */}
+            {process.env.NODE_ENV === 'development' && (
+              <Button
+                variant="default"
+                onClick={handleCreateStressTest}
+                disabled={loading}
+                title="Create stress test repo and open all terminals until we hit errors"
+              >
+                [Explode]
+              </Button>
+            )}
             <Button
               size="icon"
               variant="ghost"
               onClick={loadWorktrees}
-              disabled={loading}
+              disabled={refreshing}
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
             <Button
               size="icon"

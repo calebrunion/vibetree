@@ -76,8 +76,8 @@ export class ShellSessionManager {
    * Start or get existing shell session
    */
   async startSession(
-    worktreePath: string, 
-    cols = 80, 
+    worktreePath: string,
+    cols = 80,
     rows = 30,
     spawnFunction?: (shell: string, args: string[], options: any) => IPty,
     forceNew: boolean = false,
@@ -85,7 +85,7 @@ export class ShellSessionManager {
     setLocaleVariables: boolean = true
   ): Promise<ShellStartResult> {
     const sessionId = this.generateSessionId(worktreePath, terminalId, forceNew);
-    
+
     // Return existing session if available (unless forceNew is true)
     if (!forceNew) {
       const existingSession = this.sessions.get(sessionId);
@@ -110,6 +110,7 @@ export class ShellSessionManager {
       // Launch as login shell to ensure proper PATH initialization
       // For zsh/bash, use -l flag. For other shells, keep empty args
       const shellArgs = shell.includes('zsh') || shell.includes('bash') ? ['-l'] : [];
+
       const ptyProcess = spawnFunction(shell, shellArgs, options);
 
       const session: ShellSession = {
@@ -133,18 +134,20 @@ export class ShellSessionManager {
       });
 
       this.sessions.set(sessionId, session);
-      
+
       console.log(`Started PTY session ${sessionId} in ${worktreePath}`);
-      
+
       return {
         success: true,
         processId: sessionId,
         isNew: true
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start shell';
+      console.error(`Failed to start PTY session: ${errorMessage}`);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to start shell'
+        error: errorMessage
       };
     }
   }
@@ -337,9 +340,10 @@ export class ShellSessionManager {
       session.exitListeners.clear();
 
       // Force kill immediately - SIGTERM doesn't reliably kill child processes
+      // killPtyForce waits for the exit event before resolving
       await killPtyForce(session.pty);
 
-      // Remove from sessions after force kill
+      // Remove from sessions after process has exited
       this.sessions.delete(sessionId);
       console.log(`Successfully terminated session ${sessionId} (PID: ${pid})`);
       return { success: true };

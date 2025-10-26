@@ -10,6 +10,9 @@ import {
 import { terminalSettingsManager } from './terminal-settings';
 import { recentProjectsManager } from './recent-projects';
 import fs from 'fs';
+import { execSync } from 'child_process';
+import * as os from 'os';
+import * as path from 'path';
 
 export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
   // Git worktree operations
@@ -139,5 +142,54 @@ export function registerIpcHandlers(mainWindow: BrowserWindow | null) {
   // Open external links
   ipcMain.handle('shell:open-external', async (_, url: string) => {
     await shell.openExternal(url);
+  });
+
+  // Debug: Create empty test repo for stress testing
+  ipcMain.handle('debug:create-stress-test-repo', async () => {
+    try {
+      const tmpDir = os.tmpdir();
+      const repoName = `pty-stress-test-${Date.now()}`;
+      const repoPath = path.join(tmpDir, repoName);
+
+      console.log(`Creating stress test repo at: ${repoPath}`);
+
+      // Create base repo only
+      execSync(`mkdir -p "${repoPath}"`, { stdio: 'inherit' });
+      execSync('git init', { cwd: repoPath, stdio: 'inherit' });
+      execSync('git config user.email "test@test.com"', { cwd: repoPath, stdio: 'inherit' });
+      execSync('git config user.name "Test User"', { cwd: repoPath, stdio: 'inherit' });
+      execSync('echo "# PTY Stress Test" > README.md', { cwd: repoPath, stdio: 'inherit' });
+      execSync('git add .', { cwd: repoPath, stdio: 'inherit' });
+      execSync('git commit -m "Initial commit"', { cwd: repoPath, stdio: 'inherit' });
+
+      console.log(`Stress test repo created at: ${repoPath}`);
+      return { success: true, path: repoPath };
+    } catch (error) {
+      console.error('Failed to create stress test repo:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  });
+
+  // Debug: Add single worktree to stress test repo
+  ipcMain.handle('debug:add-stress-test-worktree', async (_, repoPath: string, index: number) => {
+    try {
+      const tmpDir = os.tmpdir();
+      const repoName = path.basename(repoPath);
+      const branchName = `wt-${String(index).padStart(4, '0')}`;
+      const wtPath = path.join(tmpDir, `${repoName}-${branchName}`);
+
+      execSync(`git worktree add -b ${branchName} "${wtPath}"`, { cwd: repoPath, stdio: 'pipe' });
+
+      return { success: true, path: wtPath, branch: branchName };
+    } catch (error) {
+      console.error(`Failed to create worktree ${index}:`, error instanceof Error ? error.message : String(error));
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
   });
 }
