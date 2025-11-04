@@ -40,6 +40,259 @@
       flex-shrink: 0;
     }
 
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #e0e0e0;
+      flex-shrink: 0;
+    }
+
+    .tab-button {
+      padding: 10px 20px;
+      background: transparent;
+      color: #666;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 0;
+    }
+
+    .tab-button:hover {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .tab-button.active {
+      background: transparent;
+      color: #007aff;
+      border-bottom-color: #007aff;
+    }
+
+    .tab-content-wrapper {
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+      position: relative;
+    }
+
+    .tab-panel {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 8px;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .tab-panel::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .tab-panel::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .tab-panel::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    .tab-panel::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .warning-section {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .warning-section.hidden {
+      display: none;
+    }
+
+    .warning-header {
+      font-weight: 600;
+      color: #856404;
+      margin-bottom: 8px;
+    }
+
+    .warning-item {
+      color: #856404;
+      margin: 4px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .warning-item::before {
+      content: '⚠️';
+      position: absolute;
+      left: 0;
+    }
+
+    .diagnostics-section {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .diagnostics-header {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .diagnostics-content {
+      margin-top: 8px;
+    }
+
+    .diagnostics-item {
+      margin: 4px 0;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .diagnostics-label {
+      font-weight: 500;
+      color: #555;
+    }
+
+    .error-section {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .error-section.hidden {
+      display: none;
+    }
+
+    .error-header {
+      font-weight: 600;
+      color: #721c24;
+      margin-bottom: 8px;
+    }
+
+    .error-item {
+      margin: 8px 0;
+      padding: 8px;
+      background: #fff;
+      border-radius: 4px;
+      color: #721c24;
+      font-size: 12px;
+    }
+
+    .error-time {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .error-code {
+      font-weight: 600;
+      color: #c62828;
+    }
+
+    .error-path {
+      color: #666;
+      word-break: break-all;
+    }
+
+    .child-processes-header {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .child-processes-content {
+      margin-top: 8px;
+      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+      font-size: 11px;
+      overflow-x: auto;
+    }
+
+    .no-child-processes {
+      text-align: center;
+      color: #999;
+      padding: 20px;
+      font-style: italic;
+    }
+
+    .child-processes-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .child-processes-content::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .child-processes-content::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    .child-processes-content::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .process-tree-item {
+      margin: 2px 0;
+      padding: 4px;
+      white-space: nowrap;
+      min-width: max-content;
+    }
+
+    .process-tree-item:hover {
+      background: #e8e8e8;
+    }
+
+    .process-tree-prefix {
+      color: #999;
+      user-select: none;
+    }
+
+    .process-pid {
+      color: #0066cc;
+      font-weight: 500;
+    }
+
+    .process-state {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .process-state-zombie {
+      color: #c62828;
+      font-weight: 700;
+    }
+
+    .process-command {
+      color: #333;
+    }
+
+    .process-time {
+      color: #888;
+      font-size: 10px;
+    }
+
     .summary-label {
       font-weight: 600;
       color: #555;
@@ -56,35 +309,10 @@
       font-weight: 600;
       margin-bottom: 12px;
       color: #555;
-      flex-shrink: 0;
     }
 
     .sessions-container {
-      flex: 1;
-      overflow-y: auto;
       overflow-x: hidden;
-      padding-right: 8px;
-      margin-bottom: 16px;
-      min-height: 0;
-      max-height: 400px;
-    }
-
-    .sessions-container::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .sessions-container::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-
-    .sessions-container::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 4px;
-    }
-
-    .sessions-container::-webkit-scrollbar-thumb:hover {
-      background: #555;
     }
 
     .session-item {
@@ -127,6 +355,7 @@
       padding-top: 12px;
       border-top: 1px solid #e0e0e0;
       flex-shrink: 0;
+      background: #ffffff;
     }
 
     button {
@@ -158,10 +387,49 @@
     <span class="summary-value" id="activeCount">0</span>
   </div>
 
-  <div class="sessions-header" id="sessionsHeader">Active Sessions:</div>
+  <div class="tabs">
+    <button class="tab-button active" data-tab="system">System Diagnostics</button>
+    <button class="tab-button" data-tab="processes">Child Processes</button>
+    <button class="tab-button" data-tab="sessions">Active Sessions</button>
+  </div>
 
-  <div class="sessions-container" id="sessionsContainer">
-    <div class="no-sessions" id="noSessions">No active sessions.</div>
+  <div class="tab-content-wrapper">
+    <!-- System Diagnostics Tab -->
+    <div class="tab-panel active" id="tab-system">
+      <!-- Warnings Section -->
+      <div class="warning-section hidden" id="warningSection">
+        <div class="warning-header">⚠️ System Warnings</div>
+        <div id="warningsList"></div>
+      </div>
+
+      <!-- Recent Spawn Errors Section -->
+      <div class="error-section hidden" id="errorSection">
+        <div class="error-header">Recent Spawn Errors</div>
+        <div id="errorsList"></div>
+      </div>
+
+      <!-- System Diagnostics Section -->
+      <div class="diagnostics-section">
+        <div class="diagnostics-header">System Diagnostics</div>
+        <div class="diagnostics-content" id="diagnosticsContent"></div>
+      </div>
+    </div>
+
+    <!-- Child Processes Tab -->
+    <div class="tab-panel" id="tab-processes">
+      <div class="child-processes-header" id="childProcessesHeader">Child Processes</div>
+      <div class="child-processes-content" id="childProcessesContent">
+        <div class="no-child-processes">No child processes.</div>
+      </div>
+    </div>
+
+    <!-- Active Sessions Tab -->
+    <div class="tab-panel" id="tab-sessions">
+      <div class="sessions-header" id="sessionsHeader">Active Sessions</div>
+      <div class="sessions-container" id="sessionsContainer">
+        <div class="no-sessions" id="noSessions">No active sessions.</div>
+      </div>
+    </div>
   </div>
 
   <div class="button-container">
@@ -170,8 +438,188 @@
 
   <script>
 
+    /**
+     * Format memory size in KB to human-readable format
+     */
+    function formatMemory(kb) {
+      if (kb < 1024) {
+        return kb.toFixed(0) + ' KB';
+      } else if (kb < 1024 * 1024) {
+        return (kb / 1024).toFixed(1) + ' MB';
+      } else {
+        return (kb / (1024 * 1024)).toFixed(2) + ' GB';
+      }
+    }
+
+    /**
+     * Render process tree recursively
+     */
+    function renderProcessTree(processes, prefix = '', isLast = true) {
+      let html = '';
+
+      processes.forEach((proc, index) => {
+        const isLastChild = index === processes.length - 1;
+        const connector = isLastChild ? '└─' : '├─';
+        const childPrefix = isLastChild ? '  ' : '│ ';
+
+        // Highlight zombie processes
+        const stateClass = proc.state.startsWith('Z') ? 'process-state-zombie' : 'process-state';
+        const stateText = proc.state.startsWith('Z') ? `[${proc.state}] ${proc.stateDescription} ⚠️` : `[${proc.state}] ${proc.stateDescription}`;
+
+        // Format memory
+        const memoryText = formatMemory(proc.memoryRSS);
+
+        html += `
+          <div class="process-tree-item">
+            <span class="process-tree-prefix">${prefix}${connector} </span>
+            <span class="process-pid">PID:${proc.pid}</span>
+            <span class="${stateClass}"> ${stateText}</span>
+            <span class="process-time"> (CPU:${proc.cpuTime})</span>
+            <span class="process-time"> [MEM:${memoryText}]</span>
+            <span class="process-command"> ${proc.command}</span>
+          </div>
+        `;
+
+        // Recursively render children
+        if (proc.children && proc.children.length > 0) {
+          html += renderProcessTree(proc.children, prefix + childPrefix, false);
+        }
+      });
+
+      return html;
+    }
+
     function updateStats(stats) {
       document.getElementById('activeCount').textContent = stats.activeProcessCount;
+
+      // Update warnings section
+      const warningSection = document.getElementById('warningSection');
+      const warningsList = document.getElementById('warningsList');
+      if (stats.systemDiagnostics && stats.systemDiagnostics.warnings && stats.systemDiagnostics.warnings.length > 0) {
+        warningSection.classList.remove('hidden');
+        warningsList.innerHTML = stats.systemDiagnostics.warnings.map(w =>
+          `<div class="warning-item">${w}</div>`
+        ).join('');
+      } else {
+        warningSection.classList.add('hidden');
+      }
+
+      // Update spawn errors section
+      const errorSection = document.getElementById('errorSection');
+      const errorsList = document.getElementById('errorsList');
+      if (stats.spawnErrors && stats.spawnErrors.length > 0) {
+        errorSection.classList.remove('hidden');
+        errorsList.innerHTML = stats.spawnErrors.map(e => {
+          const time = new Date(e.timestamp).toLocaleString();
+          const errorCodeText = e.errorCode ? ` <span class="error-code">[${e.errorCode}]</span>` : '';
+          return `
+            <div class="error-item">
+              <div class="error-time">${time}</div>
+              <div>${e.error}${errorCodeText}</div>
+              <div class="error-path">${e.worktreePath}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        errorSection.classList.add('hidden');
+      }
+
+      // Update system diagnostics section
+      if (stats.systemDiagnostics) {
+        const diag = stats.systemDiagnostics;
+        const diagContent = document.getElementById('diagnosticsContent');
+
+        const fdDisplay = diag.openFileDescriptors !== null && diag.fileDescriptorLimit.soft !== null
+          ? `${diag.openFileDescriptors} / ${diag.fileDescriptorLimit.soft}`
+          : diag.openFileDescriptors !== null
+            ? `${diag.openFileDescriptors}`
+            : 'Unknown';
+
+        const processDisplay = diag.currentProcessCount !== null && diag.processLimit !== null
+          ? `${diag.currentProcessCount} / ${diag.processLimit}`
+          : diag.currentProcessCount !== null
+            ? `${diag.currentProcessCount}`
+            : 'Unknown';
+
+        const memUsage = ((1 - diag.freeMemory / diag.totalMemory) * 100).toFixed(1);
+
+        const processTreeMemDisplay = diag.processTreeMemory
+          ? `
+            <div class="diagnostics-item">
+              <span class="diagnostics-label">Process Tree Memory:</span>
+              <div style="margin-left: 16px;">
+                Current Process: ${formatMemory(diag.processTreeMemory.currentProcessRSS)}<br>
+                Total (with children): ${formatMemory(diag.processTreeMemory.totalTreeRSS)}
+              </div>
+            </div>
+          `
+          : '';
+
+        diagContent.innerHTML = `
+          <div class="diagnostics-item">
+            <span class="diagnostics-label">Platform:</span> ${diag.platform}
+          </div>
+          <div class="diagnostics-item">
+            <span class="diagnostics-label">File Descriptors:</span>
+            <div style="margin-left: 16px;">
+              ${fdDisplay}
+            </div>
+          </div>
+          <div class="diagnostics-item">
+            <span class="diagnostics-label">Processes:</span>
+            <div style="margin-left: 16px;">
+              ${processDisplay}
+            </div>
+          </div>
+          ${processTreeMemDisplay}
+          <div class="diagnostics-item">
+            <span class="diagnostics-label">System Memory:</span>
+            <div style="margin-left: 16px;">
+              Total: ${(diag.totalMemory / (1024 ** 3)).toFixed(2)} GB<br>
+              Free: ${(diag.freeMemory / (1024 ** 3)).toFixed(2)} GB<br>
+              Used: ${memUsage}%
+            </div>
+          </div>
+        `;
+      }
+
+      // Update child processes section
+      const childProcessesContent = document.getElementById('childProcessesContent');
+      const childProcessesHeader = document.getElementById('childProcessesHeader');
+
+      if (stats.systemDiagnostics && stats.systemDiagnostics.childProcesses && stats.systemDiagnostics.childProcesses.length > 0) {
+        // Count total processes
+        function countTotal(procs) {
+          let count = procs.length;
+          procs.forEach(p => {
+            if (p.children) count += countTotal(p.children);
+          });
+          return count;
+        }
+
+        const totalCount = countTotal(stats.systemDiagnostics.childProcesses);
+        const zombieCount = stats.systemDiagnostics.zombieProcessCount || 0;
+        const zombieText = zombieCount > 0 ? ` (${zombieCount} zombie${zombieCount > 1 ? 's' : ''})` : '';
+
+        // Calculate total memory of children (excluding current process)
+        function calculateMemory(procs) {
+          let total = 0;
+          procs.forEach(p => {
+            total += p.memoryRSS;
+            if (p.children) total += calculateMemory(p.children);
+          });
+          return total;
+        }
+
+        const childrenMemory = calculateMemory(stats.systemDiagnostics.childProcesses);
+        const memoryText = childrenMemory > 0 ? ` - ${formatMemory(childrenMemory)}` : '';
+
+        childProcessesHeader.textContent = `Child Processes (${totalCount}${zombieText}${memoryText})`;
+        childProcessesContent.innerHTML = renderProcessTree(stats.systemDiagnostics.childProcesses);
+      } else {
+        childProcessesHeader.textContent = 'Child Processes';
+        childProcessesContent.innerHTML = '<div class="no-child-processes">No child processes.</div>';
+      }
 
       const container = document.getElementById('sessionsContainer');
       const noSessions = document.getElementById('noSessions');
@@ -221,6 +669,24 @@
       } catch (error) {
         console.error('Failed to load stats:', error);
       }
+
+      // Setup tab switching
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabPanels = document.querySelectorAll('.tab-panel');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const targetTab = button.getAttribute('data-tab');
+
+          // Remove active class from all buttons and panels
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabPanels.forEach(panel => panel.classList.remove('active'));
+
+          // Add active class to clicked button and corresponding panel
+          button.classList.add('active');
+          document.getElementById(`tab-${targetTab}`).classList.add('active');
+        });
+      });
 
       // Setup close button handler
       const closeButton = document.getElementById('closeButton');
