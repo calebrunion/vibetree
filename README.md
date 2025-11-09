@@ -55,6 +55,10 @@ Download the latest release for your platform from the [Releases page](https://g
 
 **Build custom versions** (macOS): `./build-custom-mac-version.sh [VARIATION_NAME]` to create a custom build with the variation name included in both the app file name and displayed app name (e.g., `./build-custom-mac-version.sh Nov2` creates VibeTreeNov2.app which displays as "VibeTreeNov2" when opened)
 
+#### Testing with Auto-Open Project
+
+`bin/launch-with-project /path/to/project [--name "CustomName"]` - Launch app with auto-opened project. Optional `--name` sets window title for easy identification.
+
 ### Web/Mobile Access
 
 1. Start services: `pnpm dev:all`
