@@ -115,15 +115,18 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     refresh: loadGitStatus
   }), [loadGitStatus]);
 
-  const getStatusIcon = (status: string) => {
-    switch (status[0]) {
-      case 'M': return <span className="text-blue-500">M</span>;
-      case 'A': return <span className="text-green-500">A</span>;
-      case 'D': return <span className="text-red-500">D</span>;
-      case 'R': return <span className="text-yellow-500">R</span>;
-      case 'C': return <span className="text-cyan-500">C</span>;
-      case '?': return <span className="text-gray-500">?</span>;
-      default: return <span className="text-gray-400">{status[0] || ' '}</span>;
+  const getStatusIcon = (status: string, forStaged: boolean) => {
+    const char = forStaged ? status[0] : status[1];
+    const baseClass = "px-1.5 py-0.5 rounded text-xs font-medium inline-flex items-center justify-center min-w-[20px]";
+    switch (char) {
+      case 'M': return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>M</span>;
+      case 'A': return <span className={`${baseClass} text-green-500 bg-green-500/20`}>A</span>;
+      case 'D': return <span className={`${baseClass} text-red-500 bg-red-500/20`}>D</span>;
+      case 'R': return <span className={`${baseClass} text-yellow-500 bg-yellow-500/20`}>R</span>;
+      case 'C': return <span className={`${baseClass} text-cyan-500 bg-cyan-500/20`}>C</span>;
+      case '?': return <span className={`${baseClass} text-gray-500 bg-gray-500/20`}>?</span>;
+      case 'U': return <span className={`${baseClass} text-green-500 bg-green-500/20`}>U</span>;
+      default: return <span className={`${baseClass} text-gray-400`}>{char || ' '}</span>;
     }
   };
 
@@ -157,15 +160,13 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                 filteredFiles.map((file) => (
                   <div
                     key={file.path}
-                    className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
+                    className={`flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
                       selectedFile === file.path ? 'bg-muted' : ''
                     }`}
                     onClick={() => setSelectedFile(file.path)}
                   >
-                    <span className="font-mono text-xs w-4 text-center">
-                      {getStatusIcon(file.status)}
-                    </span>
-                    <span className="text-sm truncate flex-1" title={file.path}>
+                    {getStatusIcon(file.status, viewMode === 'staged')}
+                    <span className="text-sm truncate flex-1 text-left" title={file.path}>
                       {file.path}
                     </span>
                   </div>
