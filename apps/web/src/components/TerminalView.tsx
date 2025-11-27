@@ -524,6 +524,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
               config={{
                 theme: theme,
                 fontSize: 14,
+                fontFamily: '"JetBrains Mono", Menlo, Monaco, "Courier New", monospace',
                 cursorBlink: true
               }}
             />
