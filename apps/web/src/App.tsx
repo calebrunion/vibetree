@@ -1,6 +1,6 @@
 import { LoginPage, useAuth } from '@vibetree/auth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
-import { CheckCircle, GitBranch, Moon, Plus, Sun, Terminal, X } from 'lucide-react'
+import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, Sun, Terminal, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { GitDiffView } from './components/GitDiffView'
@@ -24,6 +24,8 @@ function App() {
     theme,
     setTheme,
     connected,
+    toggleTerminalSplit,
+    toggleTerminalFullscreen,
   } = useAppStore()
   const { connect } = useWebSocket()
   const [showProjectSelector, setShowProjectSelector] = useState(false)
@@ -253,7 +255,7 @@ function App() {
               {project.selectedWorktree ? (
                 <div className="flex-1 flex flex-col h-full">
                   {/* Tab Navigation */}
-                  <div className="h-10 border-b flex items-center px-2 bg-muted/30 flex-shrink-0">
+                  <div className="h-10 border-b flex items-center justify-between px-2 bg-muted/30 flex-shrink-0">
                     <div className="flex">
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
@@ -278,6 +280,28 @@ function App() {
                         Changes
                       </button>
                     </div>
+                    {project.selectedTab === 'terminal' && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => toggleTerminalSplit(project.id)}
+                          className="p-1.5 hover:bg-accent rounded transition-colors"
+                          title="Split Terminal"
+                        >
+                          <Columns2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => toggleTerminalFullscreen(project.id)}
+                          className="p-1.5 hover:bg-accent rounded transition-colors"
+                          title={project.isTerminalFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                        >
+                          {project.isTerminalFullscreen ? (
+                            <Minimize2 className="h-4 w-4" />
+                          ) : (
+                            <Maximize2 className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Tab Content */}

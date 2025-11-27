@@ -9,6 +9,8 @@ interface Project {
   worktrees: Worktree[];
   selectedWorktree: string | null;
   selectedTab: 'terminal' | 'changes';
+  isTerminalSplit: boolean;
+  isTerminalFullscreen: boolean;
 }
 
 interface AppState {
@@ -43,6 +45,9 @@ interface AppState {
   addTerminalSession: (worktreePath: string, sessionId: string) => void;
   removeTerminalSession: (worktreePath: string) => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  toggleTerminalSplit: (projectId: string) => void;
+  toggleTerminalFullscreen: (projectId: string) => void;
+  setTerminalSplit: (projectId: string, isSplit: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -80,7 +85,9 @@ export const useAppStore = create<AppState>()(
       name,
       worktrees: [],
       selectedWorktree: null,
-      selectedTab: 'terminal'
+      selectedTab: 'terminal',
+      isTerminalSplit: false,
+      isTerminalFullscreen: false
     };
 
     set((state) => ({
@@ -112,7 +119,9 @@ export const useAppStore = create<AppState>()(
         name,
         worktrees: [],
         selectedWorktree: null,
-        selectedTab: 'terminal'
+        selectedTab: 'terminal',
+        isTerminalSplit: false,
+        isTerminalFullscreen: false
       };
 
       newProjects.push(newProject);
@@ -191,6 +200,36 @@ export const useAppStore = create<AppState>()(
     }),
     
   setTheme: (theme) => set({ theme }),
+
+  toggleTerminalSplit: (projectId: string) => {
+    set((state) => ({
+      projects: state.projects.map(project =>
+        project.id === projectId
+          ? { ...project, isTerminalSplit: !project.isTerminalSplit }
+          : project
+      )
+    }));
+  },
+
+  toggleTerminalFullscreen: (projectId: string) => {
+    set((state) => ({
+      projects: state.projects.map(project =>
+        project.id === projectId
+          ? { ...project, isTerminalFullscreen: !project.isTerminalFullscreen }
+          : project
+      )
+    }));
+  },
+
+  setTerminalSplit: (projectId: string, isSplit: boolean) => {
+    set((state) => ({
+      projects: state.projects.map(project =>
+        project.id === projectId
+          ? { ...project, isTerminalSplit: isSplit }
+          : project
+      )
+    }));
+  },
 }),
     {
       name: 'vibetree-web-storage',

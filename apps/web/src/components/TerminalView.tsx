@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Terminal } from '@vibetree/ui';
 import { useAppStore } from '../store';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { ChevronLeft, Maximize2, Minimize2, Columns2, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { Terminal as XTerm } from '@xterm/xterm';
 
 // Cache for terminal states per session ID (like desktop app)
@@ -13,22 +13,22 @@ interface TerminalViewProps {
 }
 
 export function TerminalView({ worktreePath }: TerminalViewProps) {
-  const { 
+  const {
     getActiveProject,
-    setSelectedWorktree,
     terminalSessions,
     addTerminalSession,
     removeTerminalSession,
-    theme
+    theme,
+    setTerminalSplit
   } = useAppStore();
-  
+
   const activeProject = getActiveProject();
   const selectedWorktree = worktreePath;
+  const isFullscreen = activeProject?.isTerminalFullscreen ?? false;
+  const isSplit = activeProject?.isTerminalSplit ?? false;
   const { getAdapter } = useWebSocket();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [splitSessionId, setSplitSessionId] = useState<string | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isSplit, setIsSplit] = useState(false);
   const terminalRef = useRef<XTerm | null>(null);
   const splitTerminalRef = useRef<XTerm | null>(null);
   const cleanupRef = useRef<(() => void)[]>([]);
@@ -364,41 +364,19 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     splitTerminalRef.current = terminal;
   };
 
-  const handleBack = () => {
-    if (activeProject) {
-      setSelectedWorktree(activeProject.id, null);
-    }
-  };
+  // Handle split terminal when store state changes
+  useEffect(() => {
+    const startSplitTerminal = async () => {
+      if (!isSplit || splitSessionId) return;
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-  };
-
-  const toggleSplit = async () => {
-    if (isSplit) {
-      // Close split terminal
-      if (splitSessionId) {
-        // Clean up event listeners
-        splitCleanupRef.current.forEach(cleanup => cleanup());
-        splitCleanupRef.current = [];
-        
-        terminalStateCache.delete(splitSessionId);
-        removeTerminalSession(`${selectedWorktree}_split`);
-        setSplitSessionId(null);
-      }
-      setIsSplit(false);
-    } else {
-      // Open split terminal
-      setIsSplit(true);
       const adapter = getAdapter();
       if (!adapter || !selectedWorktree) return;
 
       try {
-        const result = await adapter.startShell(selectedWorktree, undefined, undefined, true); // forceNew = true for split
+        const result = await adapter.startShell(selectedWorktree, undefined, undefined, true);
         if (result.success && result.processId) {
           const actualSessionId = result.processId;
-          
-          // Set up event listeners for split terminal
+
           const unsubscribeOutput = adapter.onShellOutput(actualSessionId, (data) => {
             if (splitTerminalRef.current) {
               splitTerminalRef.current.write(data);
@@ -412,7 +390,9 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
             terminalStateCache.delete(actualSessionId);
             removeTerminalSession(`${selectedWorktree}_split`);
             setSplitSessionId(null);
-            setIsSplit(false);
+            if (activeProject) {
+              setTerminalSplit(activeProject.id, false);
+            }
           });
 
           splitCleanupRef.current = [unsubscribeOutput, unsubscribeExit];
@@ -421,97 +401,34 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
         }
       } catch (error) {
         console.error('Failed to start split shell session:', error);
-        setIsSplit(false);
+        if (activeProject) {
+          setTerminalSplit(activeProject.id, false);
+        }
       }
-    }
-  };
+    };
 
-  const closeSplitTerminal = () => {
-    if (splitSessionId) {
-      // Clean up event listeners
+    if (isSplit && !splitSessionId) {
+      startSplitTerminal();
+    } else if (!isSplit && splitSessionId) {
+      // Close split terminal
       splitCleanupRef.current.forEach(cleanup => cleanup());
       splitCleanupRef.current = [];
-      
       terminalStateCache.delete(splitSessionId);
       removeTerminalSession(`${selectedWorktree}_split`);
       setSplitSessionId(null);
     }
-    setIsSplit(false);
+  }, [isSplit, splitSessionId, selectedWorktree, activeProject, getAdapter, addTerminalSession, removeTerminalSession, setTerminalSplit]);
+
+  const closeSplitTerminal = () => {
+    if (activeProject) {
+      setTerminalSplit(activeProject.id, false);
+    }
   };
 
   if (!selectedWorktree) return null;
 
   return (
-    <div className={`flex flex-col w-full h-full ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
-      {/* Terminal Headers */}
-      <div className={`flex ${isSplit ? 'flex-row' : ''} bg-background`}>
-        <div className={`${isSplit ? 'w-1/2' : 'w-full'} h-14 px-4 border-b flex items-center justify-between flex-shrink-0`}>
-          <div className="flex items-center gap-2 min-w-0">
-            <button
-              onClick={handleBack}
-              className="md:hidden p-1 hover:bg-accent rounded flex-shrink-0"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <div className="min-w-0">
-              <h3 className="font-semibold truncate">Terminal</h3>
-              <p className="text-xs text-muted-foreground truncate">
-                {selectedWorktree?.split('/').slice(-2).join('/')}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleSplit}
-              className="p-1 hover:bg-accent rounded"
-              title="Split Terminal"
-            >
-              <Columns2 className="h-4 w-4" />
-            </button>
-            <button
-              onClick={toggleFullscreen}
-              className="p-1 hover:bg-accent rounded"
-              title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-            >
-              {isFullscreen ? (
-                <Minimize2 className="h-4 w-4" />
-              ) : (
-                <Maximize2 className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-        </div>
-        {/* Split terminal header */}
-        {isSplit && (
-          <div className="w-1/2 h-14 px-4 border-b border-l flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="min-w-0">
-                <h3 className="font-semibold truncate">Terminal (Split)</h3>
-                <p className="text-xs text-muted-foreground truncate">
-                  {selectedWorktree?.split('/').slice(-2).join('/')}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={toggleSplit}
-                className="p-1 hover:bg-accent rounded"
-                title="Split Terminal"
-              >
-                <Columns2 className="h-4 w-4" />
-              </button>
-              <button
-                onClick={closeSplitTerminal}
-                className="p-1 hover:bg-accent rounded"
-                title="Close Split Terminal"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
+    <div className={`flex flex-col w-full h-full ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''}`}>
       {/* Terminal Container */}
       <div className={`flex-1 flex ${isSplit ? 'flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
         <div className={`${isSplit ? 'w-1/2 border-r' : 'w-full'} h-full`}>
@@ -536,7 +453,14 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
           )}
         </div>
         {isSplit && (
-          <div className="w-1/2 h-full">
+          <div className="w-1/2 h-full relative">
+            <button
+              onClick={closeSplitTerminal}
+              className="absolute top-2 right-2 z-10 p-1 hover:bg-accent/80 rounded bg-background/50"
+              title="Close Split Terminal"
+            >
+              <X className="h-4 w-4" />
+            </button>
             {splitSessionId && (
               <Terminal
                 id={splitSessionId}
@@ -546,6 +470,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
                 config={{
                   theme: theme,
                   fontSize: 14,
+                  fontFamily: '"JetBrains Mono", Menlo, Monaco, "Courier New", monospace',
                   cursorBlink: true
                 }}
               />
