@@ -1,6 +1,6 @@
 import { LoginPage, useAuth } from '@vibetree/auth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
-import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Sun, Terminal, X } from 'lucide-react'
+import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Rows2, Sun, Terminal, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
@@ -303,7 +303,8 @@ function App() {
                           className="p-1.5 hover:bg-accent rounded transition-colors"
                           title="Split Terminal"
                         >
-                          <Columns2 className="h-4 w-4" />
+                          <Columns2 className="h-4 w-4 hidden md:block" />
+                          <Rows2 className="h-4 w-4 md:hidden" />
                         </button>
                         <button
                           onClick={() => toggleTerminalFullscreen(project.id)}

@@ -430,8 +430,8 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
   return (
     <div className={`flex flex-col w-full h-full ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''}`}>
       {/* Terminal Container */}
-      <div className={`flex-1 flex ${isSplit ? 'flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
-        <div className={`${isSplit ? 'w-1/2 border-r' : 'w-full'} h-full`}>
+      <div className={`flex-1 flex ${isSplit ? 'flex-col md:flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
+        <div className={`${isSplit ? 'h-1/2 md:h-full w-full md:w-1/2 border-b md:border-b-0 md:border-r' : 'w-full'} h-full`}>
           {sessionId && (
             <Terminal
               id={sessionId}
@@ -453,7 +453,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
           )}
         </div>
         {isSplit && (
-          <div className="w-1/2 h-full relative">
+          <div className="h-1/2 md:h-full w-full md:w-1/2 relative">
             <button
               onClick={closeSplitTerminal}
               className="absolute top-2 right-2 z-10 p-1 hover:bg-accent/80 rounded bg-background/50"
