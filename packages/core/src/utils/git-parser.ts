@@ -43,14 +43,17 @@ export function parseWorktrees(output: string): Worktree[] {
  * @returns Array of parsed git status objects
  */
 export function parseGitStatus(output: string): GitStatus[] {
-  const lines = output.trim().split('\n').filter(line => line.length > 0);
-  
+  // Don't use trim() on the whole output as it removes leading spaces from the first line
+  // which corrupts the status parsing (e.g., " M filename" becomes "M filename")
+  const lines = output.split('\n').filter(line => line.length > 0);
+
   return lines.map(line => {
-    // Git status format: XY filename
-    // X = status in index, Y = status in working tree
+    // Git status porcelain v1 format: XY filename
+    // X = status in index (staged), Y = status in working tree (unstaged)
+    // Position 0: X, Position 1: Y, Position 2: space separator, Position 3+: path
     const statusCode = line.substring(0, 2);
     const filePath = line.substring(3);
-    
+
     return {
       path: filePath,
       status: statusCode,
