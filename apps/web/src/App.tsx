@@ -4,6 +4,7 @@ import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, Sun
 import { useEffect, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { GitDiffView } from './components/GitDiffView'
+import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
 import { TerminalManager } from './components/TerminalManager'
 import { WorktreePanel } from './components/WorktreePanel'
@@ -21,6 +22,7 @@ function App() {
     removeProject,
     setActiveProject,
     setSelectedTab,
+    setSelectedWorktree,
     theme,
     setTheme,
     connected,
@@ -253,7 +255,14 @@ function App() {
 
               {/* Main Content Area with Tabs - Only shown when worktree is selected */}
               {project.selectedWorktree ? (
-                <div className="flex-1 flex flex-col h-full">
+                <div className="flex-1 flex flex-col h-full min-w-0">
+                  {/* Mobile Worktree Tabs */}
+                  <MobileWorktreeTabs
+                    worktrees={project.worktrees}
+                    selectedWorktree={project.selectedWorktree}
+                    onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
+                  />
+
                   {/* Tab Navigation */}
                   <div className="h-10 border-b flex items-center justify-between px-2 bg-muted/30 flex-shrink-0">
                     <div className="flex">

@@ -58,6 +58,7 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
               placeholder="~/project/path"
               className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               disabled={isLoading}
+              autoFocus
             />
             {error && (
               <p className="text-sm text-red-500">{error}</p>
