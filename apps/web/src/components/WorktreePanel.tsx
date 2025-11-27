@@ -232,9 +232,9 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
               
               <input
                 type="text"
-                placeholder="feature-name"
+                placeholder="branch-name"
                 value={newBranchName}
-                onChange={(e) => setNewBranchName(e.target.value)}
+                onChange={(e) => setNewBranchName(e.target.value.replace(/[^a-zA-Z0-9/\-\.]/g, ''))}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     handleCreateBranch();
@@ -246,6 +246,9 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                 }}
                 className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                 autoFocus
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
               
               <div className="flex justify-end gap-2 mt-6">
