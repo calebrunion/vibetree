@@ -1,8 +1,29 @@
 import { spawn } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import { Worktree, GitStatus, WorktreeAddResult, WorktreeRemoveResult, ProjectValidationResult } from '../types';
 import { parseWorktrees, parseGitStatus } from './git-parser';
+
+/**
+ * Expand path to absolute path
+ * - ~ expands to home directory
+ * - Relative paths (not starting with / or ~) are relative to home directory
+ * @param filePath - Path that may be relative or contain ~
+ * @returns Expanded absolute path
+ */
+export function expandPath(filePath: string): string {
+  if (filePath.startsWith('~/')) {
+    return path.join(os.homedir(), filePath.slice(2));
+  }
+  if (filePath === '~') {
+    return os.homedir();
+  }
+  if (!filePath.startsWith('/')) {
+    return path.join(os.homedir(), filePath);
+  }
+  return filePath;
+}
 
 /**
  * Execute a git command and return the output
@@ -46,7 +67,8 @@ export function executeGitCommand(args: string[], cwd: string): Promise<string> 
  * @returns Array of worktree information
  */
 export async function listWorktrees(projectPath: string): Promise<Worktree[]> {
-  const output = await executeGitCommand(['worktree', 'list', '--porcelain'], projectPath);
+  const expandedPath = expandPath(projectPath);
+  const output = await executeGitCommand(['worktree', 'list', '--porcelain'], expandedPath);
   return parseWorktrees(output);
 }
 
@@ -56,7 +78,8 @@ export async function listWorktrees(projectPath: string): Promise<Worktree[]> {
  * @returns Array of file status information
  */
 export async function getGitStatus(worktreePath: string): Promise<GitStatus[]> {
-  const output = await executeGitCommand(['status', '--porcelain=v1'], worktreePath);
+  const expandedPath = expandPath(worktreePath);
+  const output = await executeGitCommand(['status', '--porcelain=v1'], expandedPath);
   return parseGitStatus(output);
 }
 
@@ -67,11 +90,12 @@ export async function getGitStatus(worktreePath: string): Promise<GitStatus[]> {
  * @returns Diff output as string
  */
 export async function getGitDiff(worktreePath: string, filePath?: string): Promise<string> {
+  const expandedPath = expandPath(worktreePath);
   const args = ['diff'];
   if (filePath) {
     args.push(filePath);
   }
-  return executeGitCommand(args, worktreePath);
+  return executeGitCommand(args, expandedPath);
 }
 
 /**
@@ -81,11 +105,12 @@ export async function getGitDiff(worktreePath: string, filePath?: string): Promi
  * @returns Staged diff output as string
  */
 export async function getGitDiffStaged(worktreePath: string, filePath?: string): Promise<string> {
+  const expandedPath = expandPath(worktreePath);
   const args = ['diff', '--staged'];
   if (filePath) {
     args.push(filePath);
   }
-  return executeGitCommand(args, worktreePath);
+  return executeGitCommand(args, expandedPath);
 }
 
 /**
@@ -95,14 +120,15 @@ export async function getGitDiffStaged(worktreePath: string, filePath?: string):
  * @returns Result with new worktree path and branch name
  */
 export async function addWorktree(projectPath: string, branchName: string): Promise<WorktreeAddResult> {
-  const treesDir = path.join(projectPath, '.trees');
+  const expandedPath = expandPath(projectPath);
+  const treesDir = path.join(expandedPath, '.trees');
   const worktreePath = path.join(treesDir, branchName);
 
   if (!fs.existsSync(treesDir)) {
     fs.mkdirSync(treesDir, { recursive: true });
   }
 
-  await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath], projectPath);
+  await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath], expandedPath);
 
   return { path: worktreePath, branch: branchName };
 }
@@ -115,24 +141,26 @@ export async function addWorktree(projectPath: string, branchName: string): Prom
  * @returns Result indicating success and any warnings
  */
 export async function removeWorktree(
-  projectPath: string, 
-  worktreePath: string, 
+  projectPath: string,
+  worktreePath: string,
   branchName: string
 ): Promise<WorktreeRemoveResult> {
+  const expandedProjectPath = expandPath(projectPath);
+  const expandedWorktreePath = expandPath(worktreePath);
   try {
     // First remove the worktree
-    await executeGitCommand(['worktree', 'remove', worktreePath, '--force'], projectPath);
-    
+    await executeGitCommand(['worktree', 'remove', expandedWorktreePath, '--force'], expandedProjectPath);
+
     try {
       // Then try to delete the branch
-      await executeGitCommand(['branch', '-D', branchName], projectPath);
+      await executeGitCommand(['branch', '-D', branchName], expandedProjectPath);
       return { success: true };
     } catch (branchError) {
       // If branch deletion fails, still consider it success since worktree was removed
       console.warn('Failed to delete branch but worktree was removed:', branchError);
-      return { 
-        success: true, 
-        warning: `Worktree removed but failed to delete branch: ${branchError}` 
+      return {
+        success: true,
+        warning: `Worktree removed but failed to delete branch: ${branchError}`
       };
     }
   } catch (error) {
@@ -145,9 +173,10 @@ export async function removeWorktree(
  * @param path - Path to check
  * @returns True if path is a git repository
  */
-export async function isGitRepository(path: string): Promise<boolean> {
+export async function isGitRepository(repoPath: string): Promise<boolean> {
+  const expandedPath = expandPath(repoPath);
   try {
-    await executeGitCommand(['rev-parse', '--git-dir'], path);
+    await executeGitCommand(['rev-parse', '--git-dir'], expandedPath);
     return true;
   } catch {
     return false;
@@ -160,7 +189,8 @@ export async function isGitRepository(path: string): Promise<boolean> {
  * @returns Current branch name
  */
 export async function getCurrentBranch(worktreePath: string): Promise<string> {
-  const output = await executeGitCommand(['rev-parse', '--abbrev-ref', 'HEAD'], worktreePath);
+  const expandedPath = expandPath(worktreePath);
+  const output = await executeGitCommand(['rev-parse', '--abbrev-ref', 'HEAD'], expandedPath);
   return output.trim();
 }
 
@@ -171,7 +201,8 @@ export async function getCurrentBranch(worktreePath: string): Promise<string> {
  */
 export async function validateProjects(projectPaths: string[]): Promise<ProjectValidationResult[]> {
   const results = await Promise.allSettled(
-    projectPaths.map(async (projectPath) => {
+    projectPaths.map(async (inputPath) => {
+      const projectPath = expandPath(inputPath);
       try {
         // Check if directory exists by trying to access it
         const isGitRepo = await isGitRepository(projectPath);
@@ -185,7 +216,7 @@ export async function validateProjects(projectPaths: string[]): Promise<ProjectV
 
         // Get repository name from path
         const name = path.basename(projectPath);
-        
+
         return {
           path: projectPath,
           name,

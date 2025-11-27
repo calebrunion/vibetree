@@ -40,7 +40,7 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
           </div>
           <h2 className="text-2xl font-bold">Select a Project</h2>
           <p className="text-muted-foreground">
-            Enter the path to your git repository to start working with Claude in parallel worktrees
+            Enter the path to your git repository
           </p>
         </div>
 
@@ -54,8 +54,8 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
               id="projectPath"
               type="text"
               value={projectPath}
-              onChange={(e) => setProjectPath(e.target.value)}
-              placeholder="/path/to/your/project"
+              onChange={(e) => setProjectPath(e.target.value.replace(/\s/g, ''))}
+              placeholder="~/project/path"
               className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               disabled={isLoading}
             />
