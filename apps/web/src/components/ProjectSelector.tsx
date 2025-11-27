@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { FolderOpen, Plus } from 'lucide-react';
+import { FolderOpen, Plus, X } from 'lucide-react';
 
 interface ProjectSelectorProps {
   onSelectProject: (path: string) => void;
+  onClose?: () => void;
 }
 
-export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
+export function ProjectSelector({ onSelectProject, onClose }: ProjectSelectorProps) {
   const [projectPath, setProjectPath] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +34,16 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
-      <div className="w-full max-w-md space-y-6">
+      <div className="w-full max-w-md space-y-6 relative">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute -top-2 -right-2 p-2 hover:bg-accent rounded-md transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
         <div className="text-center space-y-2">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
             <FolderOpen className="h-8 w-8 text-muted-foreground" />

@@ -168,7 +168,10 @@ function App() {
         </header>
 
         {/* Project Selector */}
-        <ProjectSelector onSelectProject={handleSelectProject} />
+        <ProjectSelector
+          onSelectProject={handleSelectProject}
+          onClose={projects.length > 0 ? () => setShowProjectSelector(false) : undefined}
+        />
       </div>
     )
   }
