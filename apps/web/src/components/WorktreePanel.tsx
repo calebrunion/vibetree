@@ -20,20 +20,41 @@ interface WorktreePanelProps {
 }
 
 export function WorktreePanel({ projectId }: WorktreePanelProps) {
-  const { 
+  const {
     getProject,
     updateProjectWorktrees,
     setSelectedWorktree,
     connected
   } = useAppStore();
-  
+
   const { getAdapter } = useWebSocket();
   const [loading, setLoading] = useState(false);
   const [showNewBranchDialog, setShowNewBranchDialog] = useState(false);
   const [newBranchName, setNewBranchName] = useState('');
+  const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set());
   
   const project = getProject(projectId);
   const adapter = getAdapter(); // Get adapter once per render
+
+  const fetchWorktreeChanges = async (worktrees: { path: string }[]) => {
+    const currentAdapter = getAdapter();
+    if (!currentAdapter) return;
+
+    const changesSet = new Set<string>();
+    await Promise.all(
+      worktrees.map(async (wt) => {
+        try {
+          const status = await currentAdapter.getGitStatus(wt.path);
+          if (status.length > 0) {
+            changesSet.add(wt.path);
+          }
+        } catch {
+          // Ignore errors for individual worktrees
+        }
+      })
+    );
+    setWorktreesWithChanges(changesSet);
+  };
 
   const handleRefresh = async () => {
     const adapter = getAdapter();
@@ -43,6 +64,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
     try {
       const trees = await adapter.listWorktrees(project.path);
       updateProjectWorktrees(projectId, trees);
+      await fetchWorktreeChanges(trees);
     } catch (error) {
       console.error('Failed to refresh worktrees:', error);
     } finally {
@@ -51,10 +73,10 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
   };
 
   const handleSelectWorktree = (path: string) => {
-    console.log('🎯 WorktreePanel: Selecting worktree:', { 
-      projectId, 
-      path, 
-      currentSelection: project?.selectedWorktree 
+    console.log('🎯 WorktreePanel: Selecting worktree:', {
+      projectId,
+      path,
+      currentSelection: project?.selectedWorktree
     });
     setSelectedWorktree(projectId, path);
   };
@@ -67,19 +89,19 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
     try {
       const result = await adapter.addWorktree(project.path, newBranchName);
       console.log('✅ Created worktree:', result);
-      
+
       setShowNewBranchDialog(false);
       setNewBranchName('');
-      
+
       // Refresh worktrees to show the new one
       const trees = await adapter.listWorktrees(project.path);
       updateProjectWorktrees(projectId, trees);
-      
+      await fetchWorktreeChanges(trees);
+
       // Select the newly created worktree
       setSelectedWorktree(projectId, result.path);
     } catch (error) {
       console.error('❌ Failed to create worktree:', error);
-      // TODO: Add toast notification for error
     } finally {
       setLoading(false);
     }
@@ -87,36 +109,37 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
 
   // Auto-load worktrees when component mounts or project changes
   useEffect(() => {
-    console.log('🔄 WorktreePanel useEffect triggered:', { 
-      projectId, 
-      connected, 
+    console.log('🔄 WorktreePanel useEffect triggered:', {
+      projectId,
+      connected,
       loading,
       hasProject: !!project,
       hasAdapter: !!adapter,
       projectPath: project?.path,
       currentWorktrees: project?.worktrees?.length || 0
     });
-    
+
     if (!project || !connected || loading || !adapter) {
-      console.log('❌ Early return from useEffect:', { 
-        hasProject: !!project, 
-        connected, 
+      console.log('❌ Early return from useEffect:', {
+        hasProject: !!project,
+        connected,
         loading,
         hasAdapter: !!adapter
       });
       return;
     }
-    
+
     // Inline refresh logic with stable dependencies
     const loadWorktrees = async () => {
       console.log('🚀 Starting worktree load for:', project.path);
       setLoading(true);
-      
+
       try {
         const trees = await adapter.listWorktrees(project.path);
         console.log('✅ Worktrees loaded:', trees);
         updateProjectWorktrees(projectId, trees);
         console.log('✅ Project worktrees updated');
+        await fetchWorktreeChanges(trees);
       } catch (error) {
         console.error('❌ Failed to load worktrees:', error);
       } finally {
@@ -124,7 +147,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
         console.log('🏁 Loading finished');
       }
     };
-    
+
     loadWorktrees();
   }, [projectId, connected, adapter?.constructor?.name]); // Stable dependency on adapter presence
   
@@ -192,6 +215,8 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                 : `Detached (${worktree.head.substring(0, 8)})`;
               const worktreeName = worktree.path.split('/').pop() || branchName;
 
+              const hasChanges = worktreesWithChanges.has(worktree.path);
+
               return (
                 <button
                   key={worktree.path}
@@ -205,8 +230,11 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                   `}
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="truncate text-sm font-semibold">
-                      {worktreeName}
+                    <div className="flex items-center gap-1.5 truncate text-sm font-semibold">
+                      <span className="truncate">{worktreeName}</span>
+                      {hasChanges && (
+                        <span className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0" title="Has uncommitted changes" />
+                      )}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                       <GitBranch className="h-3 w-3 flex-shrink-0" />

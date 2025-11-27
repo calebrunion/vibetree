@@ -1,5 +1,7 @@
 import { GitBranch } from 'lucide-react';
 import type { Worktree } from '@vibetree/core';
+import { useState, useEffect } from 'react';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 interface MobileWorktreeTabsProps {
   worktrees: Worktree[];
@@ -12,6 +14,33 @@ export function MobileWorktreeTabs({
   selectedWorktree,
   onSelectWorktree
 }: MobileWorktreeTabsProps) {
+  const { getAdapter } = useWebSocket();
+  const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const fetchChanges = async () => {
+      const adapter = getAdapter();
+      if (!adapter || worktrees.length === 0) return;
+
+      const changesSet = new Set<string>();
+      await Promise.all(
+        worktrees.map(async (wt) => {
+          try {
+            const status = await adapter.getGitStatus(wt.path);
+            if (status.length > 0) {
+              changesSet.add(wt.path);
+            }
+          } catch {
+            // Ignore errors
+          }
+        })
+      );
+      setWorktreesWithChanges(changesSet);
+    };
+
+    fetchChanges();
+  }, [worktrees, getAdapter]);
+
   if (worktrees.length === 0) return null;
 
   const sortedWorktrees = [...worktrees].sort((a, b) => {
@@ -42,6 +71,8 @@ export function MobileWorktreeTabs({
           const worktreeName = worktree.path.split('/').pop() || branchName;
           const isSelected = selectedWorktree === worktree.path;
 
+          const hasChanges = worktreesWithChanges.has(worktree.path);
+
           return (
             <button
               key={worktree.path}
@@ -54,7 +85,12 @@ export function MobileWorktreeTabs({
                 }
               `}
             >
-              <span className="text-sm font-medium">{worktreeName}</span>
+              <span className="text-sm font-medium flex items-center gap-1.5">
+                {worktreeName}
+                {hasChanges && (
+                  <span className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0" />
+                )}
+              </span>
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <GitBranch className="h-3 w-3" />
                 {branchName}
