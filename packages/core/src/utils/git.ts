@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import * as path from 'path';
+import * as fs from 'fs';
 import { Worktree, GitStatus, WorktreeAddResult, WorktreeRemoveResult, ProjectValidationResult } from '../types';
 import { parseWorktrees, parseGitStatus } from './git-parser';
 
@@ -94,10 +95,15 @@ export async function getGitDiffStaged(worktreePath: string, filePath?: string):
  * @returns Result with new worktree path and branch name
  */
 export async function addWorktree(projectPath: string, branchName: string): Promise<WorktreeAddResult> {
-  const worktreePath = path.join(projectPath, '..', `${path.basename(projectPath)}-${branchName}`);
-  
+  const treesDir = path.join(projectPath, '.trees');
+  const worktreePath = path.join(treesDir, branchName);
+
+  if (!fs.existsSync(treesDir)) {
+    fs.mkdirSync(treesDir, { recursive: true });
+  }
+
   await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath], projectPath);
-  
+
   return { path: worktreePath, branch: branchName };
 }
 
