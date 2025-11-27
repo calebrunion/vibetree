@@ -210,10 +210,10 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                     }
                   `}
                 >
-                <div className="flex items-start gap-2">
-                  <GitBranch className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div className="flex items-center gap-2">
+                  <GitBranch className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="truncate" style={{ fontSize: '21px', fontWeight: 'bold' }}>
+                    <div className="truncate" style={{ fontSize: '14px', fontWeight: 'bold' }}>
                       {worktree.branch
                         ? worktree.branch.replace('refs/heads/', '')
                         : `Detached HEAD (${worktree.head.substring(0, 8)})`}
