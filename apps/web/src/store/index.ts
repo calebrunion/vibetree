@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { Worktree } from '@vibetree/core';
 
 interface Project {
@@ -44,7 +45,9 @@ interface AppState {
   setTheme: (theme: 'light' | 'dark') => void;
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
+export const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
   // Initial state
   connected: false,
   connecting: false,
@@ -188,4 +191,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     }),
     
   setTheme: (theme) => set({ theme }),
-}));
+}),
+    {
+      name: 'vibetree-web-storage',
+      partialize: (state) => ({
+        projects: state.projects,
+        activeProjectId: state.activeProjectId,
+        theme: state.theme,
+      }),
+    }
+  )
+);
