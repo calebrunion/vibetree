@@ -550,6 +550,12 @@ export const Terminal: React.FC<TerminalProps> = ({
           </button>
         </div>
       )}
+      <style>{`
+        .terminal-container .xterm-helper-textarea {
+          caret-color: transparent !important;
+          opacity: 0 !important;
+        }
+      `}</style>
       <div
         ref={terminalRef}
         className="terminal-container"

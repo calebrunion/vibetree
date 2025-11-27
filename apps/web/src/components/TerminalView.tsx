@@ -442,7 +442,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
                 theme: theme,
                 fontSize: 14,
                 fontFamily: '"JetBrains Mono", Menlo, Monaco, "Courier New", monospace',
-                cursorBlink: true
+                cursorBlink: false
               }}
             />
           )}
@@ -471,7 +471,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
                   theme: theme,
                   fontSize: 14,
                   fontFamily: '"JetBrains Mono", Menlo, Monaco, "Courier New", monospace',
-                  cursorBlink: true
+                  cursorBlink: false
                 }}
               />
             )}
