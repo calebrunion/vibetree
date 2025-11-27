@@ -39,3 +39,4 @@ After completing any coding task, you should always create a pull request with t
 - Including a summary of the changes and test plan in the PR description
 
 This ensures all code changes are properly reviewed and tracked through the PR process.
+- Only make updates to the web version of this app
