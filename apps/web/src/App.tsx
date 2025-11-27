@@ -1,6 +1,6 @@
 import { LoginPage, useAuth } from '@vibetree/auth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
-import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Rows2, Sun, Terminal, X } from 'lucide-react'
+import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, Rows2, Sun, Terminal, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
@@ -36,7 +36,6 @@ function App() {
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [gitViewMode, setGitViewMode] = useState<'unstaged' | 'staged'>('unstaged')
-  const [gitLoading, setGitLoading] = useState(false)
   const gitDiffRef = useRef<GitDiffViewRef>(null)
 
   // const activeProject = getActiveProject();
@@ -290,7 +289,13 @@ function App() {
                             ? 'bg-background text-foreground border-border shadow-sm'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                         }`}
-                        onClick={() => setSelectedTab(project.id, 'changes')}
+                        onClick={() => {
+                          if (project.selectedTab === 'changes') {
+                            gitDiffRef.current?.refresh()
+                          } else {
+                            setSelectedTab(project.id, 'changes')
+                          }
+                        }}
                       >
                         <GitBranch className="h-3.5 w-3.5" />
                         Changes
@@ -342,14 +347,6 @@ function App() {
                             Staged
                           </button>
                         </div>
-                        <button
-                          onClick={() => gitDiffRef.current?.refresh()}
-                          disabled={gitLoading}
-                          className="p-1.5 hover:bg-accent rounded transition-colors disabled:opacity-50"
-                          title="Refresh"
-                        >
-                          <RefreshCw className={`h-4 w-4 ${gitLoading ? 'animate-spin' : ''}`} />
-                        </button>
                       </div>
                     )}
                   </div>
@@ -371,7 +368,6 @@ function App() {
                         worktreePath={project.selectedWorktree}
                         theme={theme}
                         viewMode={gitViewMode}
-                        onLoadingChange={setGitLoading}
                       />
                     </div>
                   </div>
