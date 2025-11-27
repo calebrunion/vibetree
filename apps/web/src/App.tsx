@@ -8,7 +8,7 @@ import { ProjectSelector } from './components/ProjectSelector'
 import { TerminalManager } from './components/TerminalManager'
 import { WorktreePanel } from './components/WorktreePanel'
 import { useWebSocket } from './hooks/useWebSocket'
-import { autoLoadProjects } from './services/projectValidation'
+import { autoLoadProjects, validateProjectPaths } from './services/projectValidation'
 import { useAppStore } from './store'
 
 function App() {
@@ -121,9 +121,14 @@ function App() {
     localStorage.setItem('theme', newTheme)
   }
 
-  const handleSelectProject = (path: string) => {
-    addProject(path)
-    setShowProjectSelector(false)
+  const handleSelectProject = async (path: string) => {
+    const results = await validateProjectPaths([path])
+    if (results.length > 0 && results[0].valid) {
+      addProject(results[0].path)
+      setShowProjectSelector(false)
+    } else {
+      console.error('Invalid project path:', results[0]?.error)
+    }
   }
 
   const handleCloseProject = (e: React.MouseEvent, projectId: string) => {

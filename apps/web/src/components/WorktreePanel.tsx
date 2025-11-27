@@ -3,6 +3,18 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import { ChevronLeft, GitBranch, RefreshCw, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
+function shortenPath(path: string): string {
+  const homePattern = /^\/Users\/[^/]+\//;
+  const linuxHomePattern = /^\/home\/[^/]+\//;
+  if (homePattern.test(path)) {
+    return path.replace(homePattern, '~/');
+  }
+  if (linuxHomePattern.test(path)) {
+    return path.replace(linuxHomePattern, '~/');
+  }
+  return path;
+}
+
 interface WorktreePanelProps {
   projectId: string;
 }
@@ -160,7 +172,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
 
       {/* Project Path */}
       <div className="px-4 py-2 border-b bg-muted/50">
-        <p className="text-xs text-muted-foreground truncate">{project.path}</p>
+        <p className="text-xs text-muted-foreground truncate">{shortenPath(project.path)}</p>
       </div>
 
       {/* Worktree List */}
