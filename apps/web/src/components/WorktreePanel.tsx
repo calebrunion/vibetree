@@ -1,6 +1,6 @@
 import { useAppStore } from '../store';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { ChevronLeft, GitBranch, RefreshCw, Plus } from 'lucide-react';
+import { GitBranch, Plus, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 function shortenPath(path: string): string {
@@ -57,10 +57,6 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
       currentSelection: project?.selectedWorktree 
     });
     setSelectedWorktree(projectId, path);
-  };
-
-  const handleBack = () => {
-    setSelectedWorktree(projectId, null);
   };
 
   const handleCreateBranch = async () => {
@@ -138,41 +134,27 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
 
   return (
     <div className="flex flex-col h-full w-full">
-      {/* Panel Header */}
-      <div className="h-14 px-4 border-b flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          {/* Back button on mobile when terminal is selected */}
-          {project.selectedWorktree && (
-            <button
-              onClick={handleBack}
-              className="md:hidden p-1 hover:bg-accent rounded"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-          )}
-          <h2 className="font-semibold">Worktrees</h2>
-        </div>
-        <div className="flex gap-2">
+      {/* Project Path */}
+      <div className="px-4 py-2 border-b bg-muted/50 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground truncate">{shortenPath(project.path)}</p>
+        <div className="flex gap-1 flex-shrink-0 ml-2">
           <button
             onClick={handleRefresh}
             disabled={!connected || loading}
             className="p-1 hover:bg-accent rounded disabled:opacity-50"
+            title="Refresh worktrees"
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button
             onClick={() => setShowNewBranchDialog(true)}
             disabled={!connected}
             className="p-1 hover:bg-accent rounded disabled:opacity-50"
+            title="Create new worktree"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
           </button>
         </div>
-      </div>
-
-      {/* Project Path */}
-      <div className="px-4 py-2 border-b bg-muted/50">
-        <p className="text-xs text-muted-foreground truncate">{shortenPath(project.path)}</p>
       </div>
 
       {/* Worktree List */}
