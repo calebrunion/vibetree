@@ -207,7 +207,7 @@ function App() {
               <TabsTrigger
                 key={project.id}
                 value={project.id}
-                className="relative pr-8 h-full lg:min-w-[150px] border border-border rounded-md data-[state=active]:bg-accent"
+                className="relative pr-8 h-full min-w-[100px] lg:min-w-[150px] border border-border rounded-md data-[state=active]:bg-accent"
               >
                 {project.name}
                 <span
