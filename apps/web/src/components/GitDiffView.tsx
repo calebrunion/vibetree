@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
-import { RefreshCw, FileText } from 'lucide-react';
+import { useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
+import { FileText, RefreshCw } from 'lucide-react';
 import { DiffView, DiffModeEnum } from '@git-diff-view/react';
 import '@git-diff-view/react/styles/diff-view.css';
 // import { useAppStore } from '../store';
@@ -16,13 +16,21 @@ interface GitFile {
 interface GitDiffViewProps {
   worktreePath: string;
   theme?: 'light' | 'dark';
+  viewMode: 'unstaged' | 'staged';
+  onLoadingChange?: (loading: boolean) => void;
 }
 
-export function GitDiffView({ worktreePath, theme = 'light' }: GitDiffViewProps) {
+export interface GitDiffViewRef {
+  refresh: () => void;
+}
+
+export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function GitDiffView(
+  { worktreePath, theme = 'light', viewMode, onLoadingChange },
+  ref
+) {
   const [files, setFiles] = useState<GitFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [diffText, setDiffText] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'unstaged' | 'staged'>('unstaged');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,6 +111,14 @@ export function GitDiffView({ worktreePath, theme = 'light' }: GitDiffViewProps)
     }
   }, [selectedFile, viewMode, files, loadDiff]);
 
+  useEffect(() => {
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
+
+  useImperativeHandle(ref, () => ({
+    refresh: loadGitStatus
+  }), [loadGitStatus]);
+
   const getStatusIcon = (status: string) => {
     switch (status[0]) {
       case 'M': return <span className="text-blue-500">M</span>;
@@ -123,47 +139,6 @@ export function GitDiffView({ worktreePath, theme = 'light' }: GitDiffViewProps)
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      {/* Header */}
-      <div className="h-14 px-4 border-b flex items-center justify-between flex-shrink-0">
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold">Git Changes</h3>
-          <p className="text-xs text-muted-foreground truncate">
-            {worktreePath.split('/').slice(-2).join('/')}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex border rounded-md">
-            <button
-              className={`px-3 py-1 text-sm rounded-l-md transition-colors ${
-                viewMode === 'unstaged' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-background hover:bg-muted'
-              }`}
-              onClick={() => setViewMode('unstaged')}
-            >
-              Unstaged
-            </button>
-            <button
-              className={`px-3 py-1 text-sm rounded-r-md border-l transition-colors ${
-                viewMode === 'staged' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-background hover:bg-muted'
-              }`}
-              onClick={() => setViewMode('staged')}
-            >
-              Staged
-            </button>
-          </div>
-          <button
-            onClick={loadGitStatus}
-            disabled={loading}
-            className="p-2 hover:bg-accent rounded transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-        </div>
-      </div>
-
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* File List */}
         <div className="w-80 border-r flex flex-col min-w-0">
@@ -260,4 +235,4 @@ export function GitDiffView({ worktreePath, theme = 'light' }: GitDiffViewProps)
       </div>
     </div>
   );
-}
+});

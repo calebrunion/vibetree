@@ -1,10 +1,10 @@
 import { LoginPage, useAuth } from '@vibetree/auth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
-import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, Sun, Terminal, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Sun, Terminal, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
-import { GitDiffView } from './components/GitDiffView'
+import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
 import { TerminalManager } from './components/TerminalManager'
@@ -35,6 +35,9 @@ function App() {
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [gitViewMode, setGitViewMode] = useState<'unstaged' | 'staged'>('unstaged')
+  const [gitLoading, setGitLoading] = useState(false)
+  const gitDiffRef = useRef<GitDiffViewRef>(null)
 
   // const activeProject = getActiveProject();
 
@@ -293,7 +296,7 @@ function App() {
                         Changes
                       </button>
                     </div>
-                    {project.selectedTab === 'terminal' && (
+                    {project.selectedTab === 'terminal' ? (
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => toggleTerminalSplit(project.id)}
@@ -314,6 +317,39 @@ function App() {
                           )}
                         </button>
                       </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="flex border rounded-md">
+                          <button
+                            className={`px-2 py-1 text-xs rounded-l-md transition-colors ${
+                              gitViewMode === 'unstaged'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-background hover:bg-muted'
+                            }`}
+                            onClick={() => setGitViewMode('unstaged')}
+                          >
+                            Unstaged
+                          </button>
+                          <button
+                            className={`px-2 py-1 text-xs rounded-r-md border-l transition-colors ${
+                              gitViewMode === 'staged'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-background hover:bg-muted'
+                            }`}
+                            onClick={() => setGitViewMode('staged')}
+                          >
+                            Staged
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => gitDiffRef.current?.refresh()}
+                          disabled={gitLoading}
+                          className="p-1.5 hover:bg-accent rounded transition-colors disabled:opacity-50"
+                          title="Refresh"
+                        >
+                          <RefreshCw className={`h-4 w-4 ${gitLoading ? 'animate-spin' : ''}`} />
+                        </button>
+                      </div>
                     )}
                   </div>
 
@@ -329,7 +365,13 @@ function App() {
 
                     {/* Keep GitDiffView mounted but hidden to preserve state */}
                     <div className={`absolute inset-0 ${project.selectedTab === 'changes' ? 'block' : 'hidden'}`}>
-                      <GitDiffView worktreePath={project.selectedWorktree} theme={theme} />
+                      <GitDiffView
+                        ref={gitDiffRef}
+                        worktreePath={project.selectedWorktree}
+                        theme={theme}
+                        viewMode={gitViewMode}
+                        onLoadingChange={setGitLoading}
+                      />
                     </div>
                   </div>
                 </div>
