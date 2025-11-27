@@ -187,34 +187,33 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
               // Sort alphabetically for the rest
               return branchA.localeCompare(branchB);
             }).map((worktree) => {
-              console.log('🌳 Rendering worktree:', { 
-                branch: worktree.branch, 
-                path: worktree.path,
-                isSelected: project.selectedWorktree === worktree.path
-              });
+              const branchName = worktree.branch
+                ? worktree.branch.replace('refs/heads/', '')
+                : `Detached (${worktree.head.substring(0, 8)})`;
+              const worktreeName = worktree.path.split('/').pop() || branchName;
+
               return (
                 <button
                   key={worktree.path}
                   onClick={() => handleSelectWorktree(worktree.path)}
                   className={`
                     w-full text-left p-3 rounded-md mb-1 transition-colors
-                    ${project.selectedWorktree === worktree.path 
-                      ? 'bg-accent' 
+                    ${project.selectedWorktree === worktree.path
+                      ? 'bg-accent'
                       : 'hover:bg-accent/50'
                     }
                   `}
                 >
-                <div className="flex items-center gap-2">
-                  <GitBranch className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="truncate" style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                      {worktree.branch
-                        ? worktree.branch.replace('refs/heads/', '')
-                        : `Detached HEAD (${worktree.head.substring(0, 8)})`}
+                    <div className="truncate text-sm font-semibold">
+                      {worktreeName}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                      <GitBranch className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">{branchName}</span>
                     </div>
                   </div>
-                </div>
-              </button>
+                </button>
               );
             })}
           </div>
