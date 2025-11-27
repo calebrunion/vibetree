@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { FileText, RefreshCw } from 'lucide-react';
+import { ChevronLeft, FileText, RefreshCw } from 'lucide-react';
 import { DiffView, DiffModeEnum } from '@git-diff-view/react';
 import '@git-diff-view/react/styles/diff-view.css';
 // import { useAppStore } from '../store';
@@ -43,9 +43,9 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     try {
       setLoading(true);
       setError(null);
-      
+
       const status: GitStatus[] = await adapter.getGitStatus(worktreePath);
-      
+
       // Convert GitStatus to GitFile format
       const gitFiles: GitFile[] = status.map(file => ({
         path: file.path,
@@ -53,19 +53,15 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
         staged: file.status[0] !== ' ' && file.status[0] !== '?',
         modified: file.status[1] !== ' ' && file.status[1] !== '?'
       }));
-      
+
       setFiles(gitFiles);
-      
-      if (gitFiles.length > 0 && !selectedFile) {
-        setSelectedFile(gitFiles[0].path);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load git status');
       setFiles([]);
     } finally {
       setLoading(false);
     }
-  }, [worktreePath, selectedFile, getAdapter]);
+  }, [worktreePath, getAdapter]);
 
   const loadDiff = useCallback(async (filePath: string, staged: boolean = false) => {
     const adapter = getAdapter();
@@ -140,8 +136,11 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   return (
     <div className="flex-1 flex flex-col h-full">
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* File List */}
-        <div className="w-80 border-r flex flex-col min-w-0">
+        {/* File List - Full width on mobile, fixed width on desktop */}
+        <div className={`
+          ${selectedFile ? 'hidden md:flex' : 'flex'}
+          w-full md:w-80 border-r flex-col min-w-0
+        `}>
           <div className="p-3 border-b bg-muted/50">
             <h4 className="text-sm font-medium">
               {viewMode === 'staged' ? 'Staged Changes' : 'Unstaged Changes'} ({filteredFiles.length})
@@ -176,14 +175,30 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
           </div>
         </div>
 
-        {/* Diff View */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Diff View - Hidden on mobile when no file selected */}
+        <div className={`
+          ${selectedFile ? 'flex' : 'hidden md:flex'}
+          flex-1 flex-col min-w-0 overflow-hidden
+        `}>
+          {/* Mobile back button and file name */}
+          {selectedFile && (
+            <div className="md:hidden p-2 border-b bg-muted/30 flex items-center gap-2">
+              <button
+                onClick={() => setSelectedFile(null)}
+                className="p-1 hover:bg-accent rounded"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <span className="text-sm font-medium truncate">{selectedFile}</span>
+            </div>
+          )}
+
           {error ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
                 <p className="text-sm text-destructive mb-2">Error loading diff</p>
                 <p className="text-xs text-muted-foreground">{error}</p>
-                <button 
+                <button
                   onClick={loadGitStatus}
                   className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
                 >
@@ -208,20 +223,20 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
             </div>
           ) : (
             <div className="flex-1 overflow-auto w-full">
-              <div className="p-4 w-full overflow-hidden">
+              <div className="p-2 md:p-4 w-full overflow-hidden">
                 <DiffView
                   data={{
-                    oldFile: { 
-                      fileName: selectedFile || '', 
-                      content: null 
+                    oldFile: {
+                      fileName: selectedFile || '',
+                      content: null
                     },
-                    newFile: { 
-                      fileName: selectedFile || '', 
-                      content: null 
+                    newFile: {
+                      fileName: selectedFile || '',
+                      content: null
                     },
                     hunks: [diffText]
                   }}
-                  diffViewMode={DiffModeEnum.Split}
+                  diffViewMode={DiffModeEnum.Unified}
                   diffViewTheme={theme}
                   diffViewHighlight={true}
                   diffViewWrap={true}
