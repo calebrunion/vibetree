@@ -39,6 +39,7 @@ export function MobileWorktreeTabs({
           const branchName = worktree.branch
             ? worktree.branch.replace('refs/heads/', '')
             : `${worktree.head.substring(0, 8)}`;
+          const worktreeName = worktree.path.split('/').pop() || branchName;
           const isSelected = selectedWorktree === worktree.path;
 
           return (
@@ -46,15 +47,18 @@ export function MobileWorktreeTabs({
               key={worktree.path}
               onClick={() => onSelectWorktree(worktree.path)}
               className={`
-                flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm whitespace-nowrap transition-colors
+                flex flex-col items-start px-3 py-1.5 rounded-md whitespace-nowrap transition-colors border
                 ${isSelected
-                  ? 'bg-background text-foreground border shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  ? 'bg-background text-foreground border-border shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                 }
               `}
             >
-              <GitBranch className="h-3.5 w-3.5" />
-              {branchName}
+              <span className="text-sm font-medium">{worktreeName}</span>
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <GitBranch className="h-3 w-3" />
+                {branchName}
+              </span>
             </button>
           );
         })}
