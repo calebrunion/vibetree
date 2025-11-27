@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
 import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, Sun, Terminal, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
+import { FloatingAddWorktree } from './components/FloatingAddWorktree'
 import { GitDiffView } from './components/GitDiffView'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
@@ -345,6 +346,8 @@ function App() {
           </TabsContent>
         ))}
       </Tabs>
+
+      <FloatingAddWorktree />
     </div>
   )
 }
