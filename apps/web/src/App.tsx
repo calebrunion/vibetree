@@ -149,7 +149,7 @@ function App() {
   // Show project selector if no projects exist or explicitly requested
   if (projects.length === 0 || showProjectSelector) {
     return (
-      <div className="h-screen flex flex-col bg-background">
+      <div className="h-full flex flex-col bg-background">
         {/* Header */}
         <header className="h-14 border-b flex items-center justify-between px-4 flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background">
       {/* Success Notification Banner */}
       {showSuccessNotification && (
         <div className="bg-green-50 dark:bg-green-900/20 border-b border-green-200 dark:border-green-800 px-4 py-2">
