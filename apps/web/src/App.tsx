@@ -1,31 +1,42 @@
-import { useEffect, useState } from 'react';
-import { useAuth, LoginPage } from '@vibetree/auth';
-import { WorktreePanel } from './components/WorktreePanel';
-import { TerminalManager } from './components/TerminalManager';
-import { GitDiffView } from './components/GitDiffView';
-import { ConnectionStatus } from './components/ConnectionStatus';
-import { ProjectSelector } from './components/ProjectSelector';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@vibetree/ui';
-import { useAppStore } from './store';
-import { useWebSocket } from './hooks/useWebSocket';
-import { Sun, Moon, Plus, X, Terminal, GitBranch, CheckCircle } from 'lucide-react';
-import { autoLoadProjects } from './services/projectValidation';
+import { LoginPage, useAuth } from '@vibetree/auth'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
+import { CheckCircle, GitBranch, Moon, Plus, Sun, Terminal, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ConnectionStatus } from './components/ConnectionStatus'
+import { GitDiffView } from './components/GitDiffView'
+import { ProjectSelector } from './components/ProjectSelector'
+import { TerminalManager } from './components/TerminalManager'
+import { WorktreePanel } from './components/WorktreePanel'
+import { useWebSocket } from './hooks/useWebSocket'
+import { autoLoadProjects } from './services/projectValidation'
+import { useAppStore } from './store'
 
 function App() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { projects, activeProjectId, addProject, addProjects, removeProject, setActiveProject, setSelectedTab, theme, setTheme, connected } = useAppStore();
-  const { connect } = useWebSocket();
-  const [showProjectSelector, setShowProjectSelector] = useState(false);
-  const [autoLoadAttempted, setAutoLoadAttempted] = useState(false);
-  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const {
+    projects,
+    activeProjectId,
+    addProject,
+    addProjects,
+    removeProject,
+    setActiveProject,
+    setSelectedTab,
+    theme,
+    setTheme,
+    connected,
+  } = useAppStore()
+  const { connect } = useWebSocket()
+  const [showProjectSelector, setShowProjectSelector] = useState(false)
+  const [autoLoadAttempted, setAutoLoadAttempted] = useState(false)
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+
   // const activeProject = getActiveProject();
 
   useEffect(() => {
     // Auto-connect on mount
-    connect();
-  }, []);
+    connect()
+  }, [])
 
   // Auto-load projects when connection is established
   useEffect(() => {
@@ -33,94 +44,96 @@ function App() {
       const loadProjects = async () => {
         try {
           // Get auto-load configuration from backend
-          const autoLoadResponse = await autoLoadProjects();
-          
+          const autoLoadResponse = await autoLoadProjects()
+
           if (autoLoadResponse.validationResults.length > 0) {
             const validPaths = autoLoadResponse.validationResults
-              .filter(result => result.valid)
-              .map(result => result.path);
-            
+              .filter((result) => result.valid)
+              .map((result) => result.path)
+
             if (validPaths.length > 0) {
               // Add valid projects
-              const addedIds = addProjects(validPaths);
-              
+              const addedIds = addProjects(validPaths)
+
               // Set default project if specified by backend
               if (autoLoadResponse.defaultProjectPath) {
-                const defaultIndex = validPaths.indexOf(autoLoadResponse.defaultProjectPath);
+                const defaultIndex = validPaths.indexOf(autoLoadResponse.defaultProjectPath)
                 if (defaultIndex >= 0) {
-                  const defaultId = addedIds[defaultIndex];
-                  setActiveProject(defaultId);
+                  const defaultId = addedIds[defaultIndex]
+                  setActiveProject(defaultId)
                 }
               }
-              
-              console.log(`Auto-loaded ${validPaths.length} projects`);
-              
+
+              console.log(`Auto-loaded ${validPaths.length} projects`)
+
               // Show success notification
-              setSuccessMessage(`Successfully auto-loaded ${validPaths.length} project${validPaths.length === 1 ? '' : 's'}`);
-              setShowSuccessNotification(true);
-              
+              setSuccessMessage(
+                `Successfully auto-loaded ${validPaths.length} project${validPaths.length === 1 ? '' : 's'}`
+              )
+              setShowSuccessNotification(true)
+
               // Auto-hide notification after 3 seconds
               setTimeout(() => {
-                setShowSuccessNotification(false);
-              }, 3000);
+                setShowSuccessNotification(false)
+              }, 3000)
             }
-            
+
             // Log validation errors for invalid paths
-            const invalidResults = autoLoadResponse.validationResults.filter(result => !result.valid);
+            const invalidResults = autoLoadResponse.validationResults.filter((result) => !result.valid)
             if (invalidResults.length > 0) {
-              console.warn('Some projects failed validation:', invalidResults);
+              console.warn('Some projects failed validation:', invalidResults)
             }
           }
         } catch (error) {
-          console.error('Auto-load failed:', error);
+          console.error('Auto-load failed:', error)
         }
-        
-        setAutoLoadAttempted(true);
-      };
-      
-      loadProjects();
+
+        setAutoLoadAttempted(true)
+      }
+
+      loadProjects()
     }
-  }, [connected, autoLoadAttempted, projects.length, addProjects, setActiveProject]);
+  }, [connected, autoLoadAttempted, projects.length, addProjects, setActiveProject])
 
   useEffect(() => {
     // Initialize theme from localStorage or system preference
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null
     if (savedTheme) {
-      setTheme(savedTheme);
+      setTheme(savedTheme)
     } else {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      setTheme(systemTheme);
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      setTheme(systemTheme)
     }
-  }, [setTheme]);
+  }, [setTheme])
 
   useEffect(() => {
     // Apply theme class to document
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark')
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('dark')
     }
-  }, [theme]);
+  }, [theme])
 
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(newTheme)
+    localStorage.setItem('theme', newTheme)
+  }
 
   const handleSelectProject = (path: string) => {
-    addProject(path);
-    setShowProjectSelector(false);
-  };
+    addProject(path)
+    setShowProjectSelector(false)
+  }
 
   const handleCloseProject = (e: React.MouseEvent, projectId: string) => {
-    e.stopPropagation();
-    removeProject(projectId);
-  };
+    e.stopPropagation()
+    removeProject(projectId)
+  }
 
   // Show login page if not authenticated and not loading
   if (!authLoading && !isAuthenticated) {
-    return <LoginPage />;
+    return <LoginPage />
   }
 
   // Show project selector if no projects exist or explicitly requested
@@ -139,11 +152,7 @@ function App() {
               className="p-2 hover:bg-accent rounded-md transition-colors"
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <ConnectionStatus />
           </div>
@@ -152,7 +161,7 @@ function App() {
         {/* Project Selector */}
         <ProjectSelector onSelectProject={handleSelectProject} />
       </div>
-    );
+    )
   }
 
   return (
@@ -163,7 +172,7 @@ function App() {
           <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
             <CheckCircle className="h-4 w-4" />
             <span className="text-sm font-medium">{successMessage}</span>
-            <button 
+            <button
               onClick={() => setShowSuccessNotification(false)}
               className="ml-auto hover:bg-green-100 dark:hover:bg-green-800/30 rounded p-1"
             >
@@ -185,29 +194,21 @@ function App() {
             className="p-2 hover:bg-accent rounded-md transition-colors"
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
           <ConnectionStatus />
         </div>
       </header>
 
       {/* Project Tabs and Content */}
-      <Tabs 
-        value={activeProjectId || ''} 
-        onValueChange={setActiveProject}
-        className="flex-1 flex flex-col"
-      >
+      <Tabs value={activeProjectId || ''} onValueChange={setActiveProject} className="flex-1 flex flex-col">
         <div className="border-b flex items-center gap-2 bg-muted/50 h-10">
           <TabsList className="h-full bg-transparent p-0 rounded-none gap-1">
             {projects.map((project) => (
               <TabsTrigger
                 key={project.id}
                 value={project.id}
-                className="relative pr-8 h-full min-w-[100px] lg:min-w-[150px] border border-border rounded-md data-[state=active]:bg-accent"
+                className="relative pr-8 h-full min-w-[100px] lg:min-w-[150px] border border-border rounded-md"
               >
                 {project.name}
                 <span
@@ -215,6 +216,8 @@ function App() {
                   onClick={(e) => handleCloseProject(e, project.id)}
                 >
                   <X className="h-3 w-3" />
+                  {/* Need this to generate the following text-black class */}
+                  <br className="hidden !text-black" />
                 </span>
               </TabsTrigger>
             ))}
@@ -229,17 +232,15 @@ function App() {
         </div>
 
         {projects.map((project) => (
-          <TabsContent 
-            key={project.id} 
-            value={project.id}
-            className="flex-1 m-0 h-0"
-          >
+          <TabsContent key={project.id} value={project.id} className="flex-1 m-0 h-0">
             <div className="flex h-full overflow-hidden">
               {/* Worktree Panel - Always visible on desktop, conditional on mobile */}
-              <div className={`
+              <div
+                className={`
                 ${project.selectedWorktree ? 'hidden md:flex' : 'flex'} 
                 w-full md:w-80 border-r flex-shrink-0
-              `}>
+              `}
+              >
                 <WorktreePanel projectId={project.id} />
               </div>
 
@@ -278,12 +279,12 @@ function App() {
                   <div className="flex-1 overflow-hidden relative">
                     {/* Terminal Tab - Managed terminals with lifecycle control */}
                     <div className={`absolute inset-0 ${project.selectedTab === 'terminal' ? 'block' : 'hidden'}`}>
-                      <TerminalManager 
+                      <TerminalManager
                         worktrees={project.worktrees || []}
                         selectedWorktree={project.selectedWorktree}
                       />
                     </div>
-                    
+
                     {/* Keep GitDiffView mounted but hidden to preserve state */}
                     <div className={`absolute inset-0 ${project.selectedTab === 'changes' ? 'block' : 'hidden'}`}>
                       <GitDiffView worktreePath={project.selectedWorktree} theme={theme} />
@@ -304,7 +305,7 @@ function App() {
         ))}
       </Tabs>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
