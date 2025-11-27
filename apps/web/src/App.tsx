@@ -202,12 +202,12 @@ function App() {
         className="flex-1 flex flex-col"
       >
         <div className="border-b flex items-center gap-2 bg-muted/50 h-10">
-          <TabsList className="h-full bg-transparent p-0 rounded-none">
+          <TabsList className="h-full bg-transparent p-0 rounded-none gap-1">
             {projects.map((project) => (
               <TabsTrigger
                 key={project.id}
                 value={project.id}
-                className="relative pr-8 h-full data-[state=active]:bg-background data-[state=active]:rounded-t-md data-[state=active]:border-t data-[state=active]:border-x data-[state=active]:border-b-0"
+                className="relative pr-8 h-full lg:min-w-[150px] border border-border rounded-md data-[state=active]:bg-accent"
               >
                 {project.name}
                 <span
