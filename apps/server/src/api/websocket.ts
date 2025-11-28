@@ -13,7 +13,9 @@ import {
   getFilesChangedAgainstBase,
   addWorktree,
   removeWorktree,
-  getStartupCommands
+  getStartupCommands,
+  readProjectSettings,
+  writeProjectSettings
 } from '@vibetree/core';
 
 interface Services {
@@ -465,6 +467,45 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
               ws.send(JSON.stringify({
                 type: 'git:worktree:remove:response',
                 payload: result,
+                id: message.id
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                payload: { error: (error as Error).message },
+                id: message.id
+              }));
+            }
+            break;
+          }
+
+          case 'settings:read': {
+            try {
+              const settings = readProjectSettings(message.payload.projectPath);
+              ws.send(JSON.stringify({
+                type: 'settings:read:response',
+                payload: { settings: settings || {} },
+                id: message.id
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                payload: { error: (error as Error).message },
+                id: message.id
+              }));
+            }
+            break;
+          }
+
+          case 'settings:write': {
+            try {
+              const success = writeProjectSettings(
+                message.payload.projectPath,
+                message.payload.settings
+              );
+              ws.send(JSON.stringify({
+                type: 'settings:write:response',
+                payload: { success },
                 id: message.id
               }));
             } catch (error) {

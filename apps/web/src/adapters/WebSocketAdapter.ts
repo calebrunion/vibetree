@@ -9,7 +9,8 @@ import type {
   ShellResizeResult,
   WorktreeAddResult,
   WorktreeRemoveResult,
-  IDE
+  IDE,
+  ProjectSettings
 } from '@vibetree/core';
 
 export class WebSocketAdapter extends BaseAdapter {
@@ -209,6 +210,16 @@ export class WebSocketAdapter extends BaseAdapter {
 
   async removeWorktree(projectPath: string, worktreePath: string, branchName: string): Promise<WorktreeRemoveResult> {
     return this.sendMessage('git:worktree:remove', { projectPath, worktreePath, branchName });
+  }
+
+  async readProjectSettings(projectPath: string): Promise<ProjectSettings> {
+    const result = await this.sendMessage<{ settings: ProjectSettings }>('settings:read', { projectPath });
+    return result.settings;
+  }
+
+  async writeProjectSettings(projectPath: string, settings: ProjectSettings): Promise<boolean> {
+    const result = await this.sendMessage<{ success: boolean }>('settings:write', { projectPath, settings });
+    return result.success;
   }
 
   async detectIDEs(): Promise<IDE[]> {

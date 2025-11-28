@@ -1,19 +1,8 @@
 import { useAppStore } from '../store';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { GitBranch, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { GitBranch, Plus, RefreshCw, Trash2, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
-
-function shortenPath(path: string): string {
-  const homePattern = /^\/Users\/[^/]+\//;
-  const linuxHomePattern = /^\/home\/[^/]+\//;
-  if (homePattern.test(path)) {
-    return path.replace(homePattern, '~/');
-  }
-  if (linuxHomePattern.test(path)) {
-    return path.replace(linuxHomePattern, '~/');
-  }
-  return path;
-}
+import StartupScriptModal from './StartupScriptModal';
 
 function isProtectedBranch(branch: string): boolean {
   const branchName = branch.replace('refs/heads/', '');
@@ -39,6 +28,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
   const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set());
   const [deleteConfirmWorktree, setDeleteConfirmWorktree] = useState<{ path: string; branch: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   
   const project = getProject(projectId);
   const adapter = getAdapter(); // Get adapter once per render
@@ -305,6 +295,14 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
       {/* Floating Action Buttons */}
       <div className="absolute bottom-4 right-4 hidden md:flex gap-2">
         <button
+          onClick={() => setShowSettingsModal(true)}
+          disabled={!connected}
+          className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent disabled:opacity-50 transition-colors"
+          title="Project settings"
+        >
+          <Settings className="h-4 w-4" />
+        </button>
+        <button
           onClick={handleRefresh}
           disabled={!connected || loading}
           className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent disabled:opacity-50 transition-colors"
@@ -409,6 +407,14 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettingsModal && project && (
+        <StartupScriptModal
+          projectPath={project.path}
+          onClose={() => setShowSettingsModal(false)}
+        />
       )}
     </div>
   );

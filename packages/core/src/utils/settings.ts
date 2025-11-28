@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ProjectSettings } from '../types';
 
-const SETTINGS_DIR = '.vibetree';
+const SETTINGS_DIR = '.trees';
 const SETTINGS_FILE = 'settings.json';
 
 export function getProjectSettingsPath(projectPath: string): string {
