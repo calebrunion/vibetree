@@ -71,6 +71,14 @@ body,
   position: fixed;
   inset: 0;
   background-color: #000;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  display: none;
 }
 
 body {
