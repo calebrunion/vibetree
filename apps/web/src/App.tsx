@@ -367,17 +367,6 @@ function App() {
                     <div className="flex">
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 border ${
-                          project.selectedTab === 'terminal'
-                            ? 'bg-background text-foreground border-border shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
-                        }`}
-                        onClick={() => setSelectedTab(project.id, 'terminal')}
-                      >
-                        <Terminal className="h-3.5 w-3.5" />
-                        Terminal
-                      </button>
-                      <button
-                        className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
                           project.selectedTab === 'claude'
                             ? 'bg-background text-foreground border-border shadow-sm'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
@@ -411,6 +400,17 @@ function App() {
                             {changedFilesCount}
                           </span>
                         )}
+                      </button>
+                      <button
+                        className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
+                          project.selectedTab === 'terminal'
+                            ? 'bg-background text-foreground border-border shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
+                        }`}
+                        onClick={() => setSelectedTab(project.id, 'terminal')}
+                      >
+                        <Terminal className="h-3.5 w-3.5" />
+                        Terminal
                       </button>
                     </div>
                     {project.selectedTab === 'terminal' ? (

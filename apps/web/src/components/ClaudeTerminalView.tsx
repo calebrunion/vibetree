@@ -9,7 +9,7 @@ interface ClaudeTerminalViewProps {
 }
 
 export function ClaudeTerminalView({ worktreePath }: ClaudeTerminalViewProps) {
-  const { theme } = useAppStore();
+  const { theme, addClaudeTerminalSession, removeClaudeTerminalSession } = useAppStore();
   const { getAdapter } = useWebSocket();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const terminalRef = useRef<XTerm | null>(null);
@@ -40,11 +40,13 @@ export function ClaudeTerminalView({ worktreePath }: ClaudeTerminalViewProps) {
               terminalRef.current.write(`\r\n[Process exited with code ${code}]\r\n`);
             }
             setSessionId(null);
+            removeClaudeTerminalSession(worktreePath);
             hasStartedClaudeRef.current = false;
           });
 
           cleanupRef.current = [unsubscribeOutput, unsubscribeExit];
           setSessionId(actualSessionId);
+          addClaudeTerminalSession(worktreePath, actualSessionId);
 
           // Wait a bit for the shell to be ready, then run claude command
           if (!hasStartedClaudeRef.current) {
@@ -87,12 +89,19 @@ export function ClaudeTerminalView({ worktreePath }: ClaudeTerminalViewProps) {
 
   return (
     <div className="w-full h-full">
-      <Terminal
-        theme={theme}
-        onReady={handleTerminalReady}
-        onData={handleTerminalData}
-        onResize={handleTerminalResize}
-      />
+      {sessionId ? (
+        <Terminal
+          id={sessionId}
+          config={{ theme }}
+          onReady={handleTerminalReady}
+          onData={handleTerminalData}
+          onResize={handleTerminalResize}
+        />
+      ) : (
+        <div className="flex items-center justify-center h-full text-muted-foreground">
+          <p>Starting Claude session...</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -59,7 +59,7 @@ const KEYS = {
 }
 
 export default function MobileTerminalToolbar() {
-  const { getActiveProject, terminalSessions } = useAppStore()
+  const { getActiveProject, terminalSessions, claudeTerminalSessions } = useAppStore()
   const { getAdapter } = useWebSocket()
 
   const [isListening, setIsListening] = useState(false)
@@ -70,7 +70,8 @@ export default function MobileTerminalToolbar() {
     const activeProject = getActiveProject()
     if (!activeProject?.selectedWorktree) return
 
-    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
+    const sessions = activeProject.selectedTab === 'claude' ? claudeTerminalSessions : terminalSessions
+    const sessionId = sessions.get(activeProject.selectedWorktree)
     if (!sessionId) return
 
     const adapter = getAdapter()
@@ -81,13 +82,14 @@ export default function MobileTerminalToolbar() {
     } catch (error) {
       console.error('Failed to send key:', error)
     }
-  }, [getActiveProject, terminalSessions, getAdapter])
+  }, [getActiveProject, terminalSessions, claudeTerminalSessions, getAdapter])
 
   const sendTextToTerminal = useCallback(async (text: string) => {
     const activeProject = getActiveProject()
     if (!activeProject?.selectedWorktree) return
 
-    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
+    const sessions = activeProject.selectedTab === 'claude' ? claudeTerminalSessions : terminalSessions
+    const sessionId = sessions.get(activeProject.selectedWorktree)
     if (!sessionId) return
 
     const adapter = getAdapter()
@@ -98,7 +100,7 @@ export default function MobileTerminalToolbar() {
     } catch (error) {
       console.error('Failed to send text:', error)
     }
-  }, [getActiveProject, terminalSessions, getAdapter])
+  }, [getActiveProject, terminalSessions, claudeTerminalSessions, getAdapter])
 
   const sendTextRef = useRef(sendTextToTerminal)
 

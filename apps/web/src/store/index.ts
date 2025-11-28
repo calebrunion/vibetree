@@ -25,6 +25,7 @@ interface AppState {
   
   // Terminal state
   terminalSessions: Map<string, string>; // worktreePath -> sessionId
+  claudeTerminalSessions: Map<string, string>; // worktreePath -> sessionId
   
   // Theme state
   theme: 'light' | 'dark';
@@ -42,11 +43,13 @@ interface AppState {
   setActiveProject: (id: string) => void;
   updateProjectWorktrees: (id: string, worktrees: Worktree[]) => void;
   setSelectedWorktree: (projectId: string, worktreePath: string | null) => void;
-  setSelectedTab: (projectId: string, tab: 'terminal' | 'changes') => void;
+  setSelectedTab: (projectId: string, tab: 'terminal' | 'changes' | 'claude') => void;
   getProject: (id: string) => Project | undefined;
   getActiveProject: () => Project | undefined;
   addTerminalSession: (worktreePath: string, sessionId: string) => void;
   removeTerminalSession: (worktreePath: string) => void;
+  addClaudeTerminalSession: (worktreePath: string, sessionId: string) => void;
+  removeClaudeTerminalSession: (worktreePath: string) => void;
   setTheme: (theme: 'light' | 'dark') => void;
   setShowAddWorktreeDialog: (show: boolean) => void;
   toggleTerminalSplit: (projectId: string) => void;
@@ -64,6 +67,7 @@ export const useAppStore = create<AppState>()(
   projects: [],
   activeProjectId: null,
   terminalSessions: new Map(),
+  claudeTerminalSessions: new Map(),
   theme: 'light',
   showAddWorktreeDialog: false,
 
@@ -90,7 +94,7 @@ export const useAppStore = create<AppState>()(
       name,
       worktrees: [],
       selectedWorktree: null,
-      selectedTab: 'terminal',
+      selectedTab: 'claude',
       isTerminalSplit: false,
       isTerminalFullscreen: false
     };
@@ -124,7 +128,7 @@ export const useAppStore = create<AppState>()(
         name,
         worktrees: [],
         selectedWorktree: null,
-        selectedTab: 'terminal',
+        selectedTab: 'claude',
         isTerminalSplit: false,
         isTerminalFullscreen: false
       };
@@ -171,10 +175,10 @@ export const useAppStore = create<AppState>()(
     }));
   },
 
-  setSelectedTab: (projectId: string, tab: 'terminal' | 'changes') => {
+  setSelectedTab: (projectId: string, tab: 'terminal' | 'changes' | 'claude') => {
     set((state) => ({
       projects: state.projects.map(project =>
-        project.id === projectId 
+        project.id === projectId
           ? { ...project, selectedTab: tab }
           : project
       )
@@ -203,7 +207,21 @@ export const useAppStore = create<AppState>()(
       sessions.delete(worktreePath);
       return { terminalSessions: sessions };
     }),
-    
+
+  addClaudeTerminalSession: (worktreePath, sessionId) =>
+    set((state) => {
+      const sessions = new Map(state.claudeTerminalSessions);
+      sessions.set(worktreePath, sessionId);
+      return { claudeTerminalSessions: sessions };
+    }),
+
+  removeClaudeTerminalSession: (worktreePath) =>
+    set((state) => {
+      const sessions = new Map(state.claudeTerminalSessions);
+      sessions.delete(worktreePath);
+      return { claudeTerminalSessions: sessions };
+    }),
+
   setTheme: (theme) => set({ theme }),
   setShowAddWorktreeDialog: (show) => set({ showAddWorktreeDialog: show }),
 
