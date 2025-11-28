@@ -391,8 +391,8 @@ importers:
         specifier: workspace:^
         version: link:../core
       '@xterm/addon-fit':
-        specifier: ^0.10.0
-        version: 0.10.0(@xterm/xterm@5.6.0-beta.118)
+        specifier: ^0.11.0-beta.118
+        version: 0.11.0-beta.118(@xterm/xterm@5.6.0-beta.118)
       '@xterm/addon-search':
         specifier: ^0.16.0-beta.118
         version: 0.16.0-beta.118(@xterm/xterm@5.6.0-beta.118)
@@ -3974,14 +3974,6 @@ packages:
     dependencies:
       '@xterm/xterm': 5.6.0-beta.118
       js-base64: 3.7.8
-    dev: false
-
-  /@xterm/addon-fit@0.10.0(@xterm/xterm@5.6.0-beta.118):
-    resolution: {integrity: sha512-UFYkDm4HUahf2lnEyHvio51TNGiLK66mqP2JoATy7hRZeXaGMRDr00JiSF7m63vR5WKATF605yEggJKsw0JpMQ==}
-    peerDependencies:
-      '@xterm/xterm': ^5.0.0
-    dependencies:
-      '@xterm/xterm': 5.6.0-beta.118
     dev: false
 
   /@xterm/addon-fit@0.11.0-beta.118(@xterm/xterm@5.6.0-beta.118):

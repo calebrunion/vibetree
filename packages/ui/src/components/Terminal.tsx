@@ -256,15 +256,15 @@ export const Terminal: React.FC<TerminalProps> = ({
       if (terminalRef.current && terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
         // First, fit the terminal to the container
         fitAddon.fit();
-        
+
         // Get the new dimensions after fitting
         const newCols = term.cols;
         const newRows = term.rows;
-        
+
         // Explicitly resize the terminal to notify PTY of size change
         // This is crucial for applications like vim to handle resize properly
         term.resize(newCols, newRows);
-        
+
         // Notify parent component of the resize
         if (onResize) {
           onResize(newCols, newRows);

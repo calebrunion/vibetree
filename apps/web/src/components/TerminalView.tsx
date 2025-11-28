@@ -440,7 +440,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
         </button>
       )}
       {/* Terminal Container */}
-      <div className={`flex-1 flex ${isSplit ? 'flex-col md:flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
+      <div className={`flex-1 flex min-h-0 ${isSplit ? 'flex-col md:flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
         <div className={`${isSplit ? 'h-1/2 md:h-full w-full md:w-1/2 border-b md:border-b-0 md:border-r' : 'w-full'} h-full`}>
           {sessionId && (
             <Terminal
@@ -450,7 +450,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
               onReady={handleTerminalReady}
               config={{
                 theme: theme,
-                fontSize: 14,
+                fontSize: 12,
                 fontFamily: '"JetBrains Mono", Menlo, Monaco, "Courier New", monospace',
                 cursorBlink: false
               }}
@@ -479,7 +479,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
                 onReady={handleSplitTerminalReady}
                 config={{
                   theme: theme,
-                  fontSize: 14,
+                  fontSize: 12,
                   fontFamily: '"JetBrains Mono", Menlo, Monaco, "Courier New", monospace',
                   cursorBlink: false
                 }}
