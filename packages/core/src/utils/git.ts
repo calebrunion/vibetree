@@ -134,35 +134,23 @@ export async function addWorktree(projectPath: string, branchName: string): Prom
 }
 
 /**
- * Remove a git worktree and optionally its branch
+ * Remove a git worktree (branch is preserved)
  * @param projectPath - Path to the main git repository
  * @param worktreePath - Path to the worktree to remove
- * @param branchName - Name of the branch to delete
+ * @param _branchName - Unused, kept for API compatibility
  * @returns Result indicating success and any warnings
  */
 export async function removeWorktree(
   projectPath: string,
   worktreePath: string,
-  branchName: string
+  _branchName: string
 ): Promise<WorktreeRemoveResult> {
   const expandedProjectPath = expandPath(projectPath);
   const expandedWorktreePath = expandPath(worktreePath);
   try {
-    // First remove the worktree
+    // Remove the worktree directory only, preserve the branch
     await executeGitCommand(['worktree', 'remove', expandedWorktreePath, '--force'], expandedProjectPath);
-
-    try {
-      // Then try to delete the branch
-      await executeGitCommand(['branch', '-D', branchName], expandedProjectPath);
-      return { success: true };
-    } catch (branchError) {
-      // If branch deletion fails, still consider it success since worktree was removed
-      console.warn('Failed to delete branch but worktree was removed:', branchError);
-      return {
-        success: true,
-        warning: `Worktree removed but failed to delete branch: ${branchError}`
-      };
-    }
+    return { success: true };
   } catch (error) {
     throw new Error(`Failed to remove worktree: ${error}`);
   }

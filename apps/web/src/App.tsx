@@ -1,6 +1,6 @@
 import { LoginPage, useAuth } from '@vibetree/auth'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
-import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Rows2, Sun, Terminal, X } from 'lucide-react'
+import { ConfirmDialog, Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
+import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Rows2, Sun, Terminal, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
@@ -24,18 +24,22 @@ function App() {
     setActiveProject,
     setSelectedTab,
     setSelectedWorktree,
+    updateProjectWorktrees,
     theme,
     setTheme,
     connected,
     toggleTerminalSplit,
     toggleTerminalFullscreen,
   } = useAppStore()
-  const { connect } = useWebSocket()
+  const { connect, getAdapter } = useWebSocket()
   const [showProjectSelector, setShowProjectSelector] = useState(false)
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [changedFilesCount, setChangedFilesCount] = useState(0)
+  const [projectToRemove, setProjectToRemove] = useState<string | null>(null)
+  const [worktreeToDelete, setWorktreeToDelete] = useState<{ projectId: string; path: string; branch: string } | null>(null)
+  const [deletingWorktree, setDeletingWorktree] = useState(false)
   const gitDiffRef = useRef<GitDiffViewRef>(null)
 
   // const activeProject = getActiveProject();
@@ -140,7 +144,68 @@ function App() {
 
   const handleCloseProject = (e: React.MouseEvent, projectId: string) => {
     e.stopPropagation()
-    removeProject(projectId)
+    setProjectToRemove(projectId)
+  }
+
+  const handleConfirmRemoveProject = () => {
+    if (projectToRemove) {
+      removeProject(projectToRemove)
+      setProjectToRemove(null)
+    }
+  }
+
+  const projectToRemoveData = projectToRemove ? projects.find(p => p.id === projectToRemove) : null
+
+  const isProtectedBranch = (branch: string) => {
+    const branchName = branch.replace('refs/heads/', '')
+    return branchName === 'main' || branchName === 'master'
+  }
+
+  const handleDeleteWorktree = (projectId: string, worktreePath: string, branch: string) => {
+    if (isProtectedBranch(branch)) return
+    setWorktreeToDelete({ projectId, path: worktreePath, branch })
+  }
+
+  const handleConfirmDeleteWorktree = async () => {
+    if (!worktreeToDelete) return
+
+    const adapter = getAdapter()
+    const project = projects.find(p => p.id === worktreeToDelete.projectId)
+    if (!adapter || !connected || !project) {
+      setWorktreeToDelete(null)
+      return
+    }
+
+    setDeletingWorktree(true)
+    try {
+      await adapter.removeWorktree(
+        project.path,
+        worktreeToDelete.path,
+        worktreeToDelete.branch.replace('refs/heads/', '')
+      )
+
+      if (project.selectedWorktree === worktreeToDelete.path) {
+        const remainingWorktree = project.worktrees.find(wt => wt.path !== worktreeToDelete.path)
+        if (remainingWorktree) {
+          setSelectedWorktree(worktreeToDelete.projectId, remainingWorktree.path)
+        } else {
+          setSelectedWorktree(worktreeToDelete.projectId, null)
+        }
+      }
+
+      const trees = await adapter.listWorktrees(project.path)
+      updateProjectWorktrees(worktreeToDelete.projectId, trees)
+    } catch (error) {
+      console.error('Failed to delete worktree:', error)
+    } finally {
+      setDeletingWorktree(false)
+      setWorktreeToDelete(null)
+    }
+  }
+
+  const getSelectedWorktreeInfo = (project: typeof projects[0]) => {
+    if (!project.selectedWorktree) return null
+    return project.worktrees.find(wt => wt.path === project.selectedWorktree)
   }
 
   // Show login page if not authenticated and not loading
@@ -327,6 +392,23 @@ function App() {
                             <Maximize2 className="h-4 w-4" />
                           )}
                         </button>
+                        {(() => {
+                          const worktreeInfo = getSelectedWorktreeInfo(project)
+                          const canDelete = worktreeInfo?.branch &&
+                            !isProtectedBranch(worktreeInfo.branch) &&
+                            project.worktrees.length > 1 &&
+                            worktreeInfo.path !== project.path
+                          if (!canDelete) return null
+                          return (
+                            <button
+                              onClick={() => handleDeleteWorktree(project.id, worktreeInfo.path, worktreeInfo.branch!)}
+                              className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                              title="Delete worktree"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            </button>
+                          )
+                        })()}
                       </div>
                     ) : (
                       <div className="flex items-center gap-1">
@@ -337,6 +419,23 @@ function App() {
                         >
                           <RefreshCw className="h-4 w-4" />
                         </button>
+                        {(() => {
+                          const worktreeInfo = getSelectedWorktreeInfo(project)
+                          const canDelete = worktreeInfo?.branch &&
+                            !isProtectedBranch(worktreeInfo.branch) &&
+                            project.worktrees.length > 1 &&
+                            worktreeInfo.path !== project.path
+                          if (!canDelete) return null
+                          return (
+                            <button
+                              onClick={() => handleDeleteWorktree(project.id, worktreeInfo.path, worktreeInfo.branch!)}
+                              className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                              title="Delete worktree"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                            </button>
+                          )
+                        })()}
                       </div>
                     )}
                   </div>
@@ -377,6 +476,28 @@ function App() {
       </Tabs>
 
       <FloatingAddWorktree />
+
+      <ConfirmDialog
+        open={!!projectToRemove}
+        title="Remove Project"
+        description={`Are you sure you want to remove "${projectToRemoveData?.name}"? This will close all terminals and tabs associated with this project.`}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        variant="destructive"
+        onConfirm={handleConfirmRemoveProject}
+        onCancel={() => setProjectToRemove(null)}
+      />
+
+      <ConfirmDialog
+        open={!!worktreeToDelete}
+        title="Delete Worktree"
+        description={`Are you sure you want to delete the worktree "${worktreeToDelete?.branch.replace('refs/heads/', '')}"? The worktree directory will be removed but the branch will be preserved.`}
+        confirmLabel={deletingWorktree ? 'Deleting...' : 'Delete'}
+        cancelLabel="Cancel"
+        variant="destructive"
+        onConfirm={handleConfirmDeleteWorktree}
+        onCancel={() => setWorktreeToDelete(null)}
+      />
     </div>
   )
 }

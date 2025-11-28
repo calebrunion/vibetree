@@ -6,6 +6,10 @@ export type { TerminalProps, TerminalConfig } from './components/Terminal';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/Tabs';
 export type { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } from './components/Tabs';
 
+// Export confirm dialog component
+export { ConfirmDialog } from './components/ConfirmDialog';
+export type { ConfirmDialogProps } from './components/ConfirmDialog';
+
 // Future exports for other shared components
 // export { WorktreeList } from './components/WorktreeList';
 // export { GitDiffViewer } from './components/GitDiffViewer';
