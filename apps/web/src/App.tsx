@@ -3,7 +3,6 @@ import { ConfirmDialog, Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetr
 import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Rows2, Sun, Terminal, Trash2, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
-import { FloatingAddWorktree } from './components/FloatingAddWorktree'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
 import MobileTerminalToolbar from './components/MobileTerminalToolbar'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
@@ -512,8 +511,6 @@ function App() {
           </TabsContent>
         ))}
       </Tabs>
-
-      <FloatingAddWorktree />
 
       <ConfirmDialog
         open={!!projectToRemove}

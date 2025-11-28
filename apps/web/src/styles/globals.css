@@ -56,6 +56,12 @@
   border-color: hsl(var(--border)) !important;
 }
 
+/* Reduce git-diff-view font size */
+.diff-tailwindcss-wrapper,
+.diff-tailwindcss-wrapper * {
+  font-size: 10px !important;
+}
+
 * {
   box-sizing: border-box;
 }
