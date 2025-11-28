@@ -3,6 +3,7 @@ import type {
   Worktree,
   GitStatus,
   GitCommit,
+  CommitFile,
   ShellStartResult,
   ShellWriteResult,
   ShellResizeResult,
@@ -180,6 +181,16 @@ export class WebSocketAdapter extends BaseAdapter {
   async getGitLog(worktreePath: string, limit?: number): Promise<GitCommit[]> {
     const result = await this.sendMessage<{ commits: GitCommit[] }>('git:log', { worktreePath, limit });
     return result.commits;
+  }
+
+  async getCommitFiles(worktreePath: string, commitHash: string): Promise<CommitFile[]> {
+    const result = await this.sendMessage<{ files: CommitFile[] }>('git:commit:files', { worktreePath, commitHash });
+    return result.files;
+  }
+
+  async getCommitDiff(worktreePath: string, commitHash: string, filePath?: string): Promise<string> {
+    const result = await this.sendMessage<{ diff: string }>('git:commit:diff', { worktreePath, commitHash, filePath });
+    return result.diff;
   }
 
   async addWorktree(projectPath: string, branchName: string): Promise<WorktreeAddResult> {

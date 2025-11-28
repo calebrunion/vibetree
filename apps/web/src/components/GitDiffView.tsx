@@ -3,7 +3,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, RefreshCw 
 import { DiffView, DiffModeEnum } from '@git-diff-view/react';
 import '@git-diff-view/react/styles/diff-view.css';
 import { useWebSocket } from '../hooks/useWebSocket';
-import type { GitStatus, GitCommit as GitCommitType } from '@vibetree/core';
+import type { GitStatus, GitCommit as GitCommitType, CommitFile } from '@vibetree/core';
 
 class DiffErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode; fallback: ReactNode }) {
@@ -48,7 +48,9 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [files, setFiles] = useState<GitFile[]>([]);
   const [commits, setCommits] = useState<GitCommitType[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [selectedSection, setSelectedSection] = useState<'staged' | 'unstaged'>('unstaged');
+  const [selectedSection, setSelectedSection] = useState<'staged' | 'unstaged' | 'commit'>('unstaged');
+  const [selectedCommit, setSelectedCommit] = useState<GitCommitType | null>(null);
+  const [commitFiles, setCommitFiles] = useState<CommitFile[]>([]);
   const [diffText, setDiffText] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,6 +120,46 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     }
   }, [worktreePath, getAdapter]);
 
+  const loadCommitFiles = useCallback(async (commit: GitCommitType) => {
+    const adapter = getAdapter();
+    if (!adapter || !('getCommitFiles' in adapter)) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      setSelectedCommit(commit);
+      setSelectedFile(null);
+      setDiffText('');
+
+      const files = await (adapter as any).getCommitFiles(worktreePath, commit.hash);
+      setCommitFiles(files);
+      setSelectedSection('commit');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load commit files');
+      setCommitFiles([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [worktreePath, getAdapter]);
+
+  const loadCommitDiff = useCallback(async (commitHash: string, filePath?: string) => {
+    const adapter = getAdapter();
+    if (!adapter || !('getCommitDiff' in adapter)) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const diffTextResult = await (adapter as any).getCommitDiff(worktreePath, commitHash, filePath);
+      setDiffText(diffTextResult ? diffTextResult.trim() : '');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load commit diff');
+      setDiffText('');
+    } finally {
+      setLoading(false);
+    }
+  }, [worktreePath, getAdapter]);
+
   useEffect(() => {
     if (worktreePath) {
       loadGitStatus();
@@ -126,10 +168,12 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   }, [worktreePath, loadGitStatus, loadGitLog]);
 
   useEffect(() => {
-    if (selectedFile) {
+    if (selectedFile && selectedSection !== 'commit') {
       loadDiff(selectedFile, selectedSection === 'staged');
+    } else if (selectedFile && selectedSection === 'commit' && selectedCommit) {
+      loadCommitDiff(selectedCommit.hash, selectedFile);
     }
-  }, [selectedFile, selectedSection, loadDiff]);
+  }, [selectedFile, selectedSection, selectedCommit, loadDiff, loadCommitDiff]);
 
   useEffect(() => {
     onLoadingChange?.(loading);
@@ -159,6 +203,22 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
       case 'U': return <span className={`${baseClass} text-green-500 bg-green-500/20`}>U</span>;
       default: return <span className={`${baseClass} text-gray-400`}>{char || ' '}</span>;
     }
+  };
+
+  const getCommitFileStatusIcon = (status: CommitFile['status']) => {
+    const baseClass = "px-1.5 py-0.5 rounded text-xs font-medium inline-flex items-center justify-center min-w-[20px]";
+    switch (status) {
+      case 'M': return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>M</span>;
+      case 'A': return <span className={`${baseClass} text-green-500 bg-green-500/20`}>A</span>;
+      case 'D': return <span className={`${baseClass} text-red-500 bg-red-500/20`}>D</span>;
+      case 'R': return <span className={`${baseClass} text-yellow-500 bg-yellow-500/20`}>R</span>;
+      case 'C': return <span className={`${baseClass} text-cyan-500 bg-cyan-500/20`}>C</span>;
+      default: return <span className={`${baseClass} text-gray-400`}>{status}</span>;
+    }
+  };
+
+  const handleCommitFileClick = (file: CommitFile) => {
+    setSelectedFile(file.path);
   };
 
   const stagedFiles = files.filter(file => file.staged);
@@ -268,25 +328,47 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                   ) : (
                     <div className="space-y-1">
                       {commits.map((commit) => (
-                        <div
-                          key={commit.hash}
-                          className="p-2 rounded hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex items-start gap-2">
-                            <GitCommit className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm truncate" title={commit.subject}>
-                                {commit.subject}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                <span className="font-mono">{commit.shortHash}</span>
-                                <span className="mx-1">·</span>
-                                <span>{commit.author}</span>
-                                <span className="mx-1">·</span>
-                                <span>{commit.relativeDate}</span>
-                              </p>
+                        <div key={commit.hash}>
+                          <div
+                            className={`p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
+                              selectedCommit?.hash === commit.hash ? 'bg-muted' : ''
+                            }`}
+                            onClick={() => loadCommitFiles(commit)}
+                          >
+                            <div className="flex items-start gap-2">
+                              <GitCommit className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm truncate" title={commit.subject}>
+                                  {commit.subject}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  <span className="font-mono">{commit.shortHash}</span>
+                                  <span className="mx-1">·</span>
+                                  <span>{commit.author}</span>
+                                  <span className="mx-1">·</span>
+                                  <span>{commit.relativeDate}</span>
+                                </p>
+                              </div>
                             </div>
                           </div>
+                          {selectedCommit?.hash === commit.hash && commitFiles.length > 0 && (
+                            <div className="ml-6 mt-1 space-y-1">
+                              {commitFiles.map((file) => (
+                                <div
+                                  key={file.path}
+                                  className={`flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
+                                    selectedFile === file.path && selectedSection === 'commit' ? 'bg-muted' : ''
+                                  }`}
+                                  onClick={() => handleCommitFileClick(file)}
+                                >
+                                  {getCommitFileStatusIcon(file.status)}
+                                  <span className="text-xs truncate flex-1" title={file.path}>
+                                    {file.path}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -303,16 +385,27 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
           flex-1 flex-col min-w-0 overflow-hidden
         `}>
           {/* Mobile back button and file name */}
-          {selectedFile && (
+          {(selectedFile || (selectedSection === 'commit' && selectedCommit)) && (
             <div className="md:hidden p-2 border-b bg-muted/30 flex items-center gap-2">
               <button
-                onClick={() => setSelectedFile(null)}
+                onClick={() => {
+                  setSelectedFile(null);
+                  if (selectedSection === 'commit') {
+                    setSelectedCommit(null);
+                    setCommitFiles([]);
+                    setSelectedSection('unstaged');
+                  }
+                }}
                 className="p-1 hover:bg-accent rounded"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <span className="text-sm font-medium truncate">{selectedFile}</span>
-              <span className="ml-auto text-xs text-muted-foreground capitalize">{selectedSection}</span>
+              <span className="text-sm font-medium truncate">
+                {selectedFile || selectedCommit?.shortHash}
+              </span>
+              <span className="ml-auto text-xs text-muted-foreground capitalize">
+                {selectedSection === 'commit' ? `commit ${selectedCommit?.shortHash}` : selectedSection}
+              </span>
             </div>
           )}
 

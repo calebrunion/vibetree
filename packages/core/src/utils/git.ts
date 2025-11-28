@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { Worktree, GitStatus, GitCommit, WorktreeAddResult, WorktreeRemoveResult, ProjectValidationResult } from '../types';
+import { Worktree, GitStatus, GitCommit, CommitFile, WorktreeAddResult, WorktreeRemoveResult, ProjectValidationResult } from '../types';
 import { parseWorktrees, parseGitStatus } from './git-parser';
 
 /**
@@ -119,20 +119,74 @@ export async function getGitDiffStaged(worktreePath: string, filePath?: string):
  * @param limit - Maximum number of commits to return (default 20)
  * @returns Array of commit information
  */
-export async function getGitLog(worktreePath: string, limit: number = 20): Promise<GitCommit[]> {
+export async function getGitLog(worktreePath: string, limit: number = 20, unpushedOnly: boolean = true): Promise<GitCommit[]> {
   const expandedPath = expandPath(worktreePath);
   const separator = '|||';
   const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar`;
-  const output = await executeGitCommand(
-    ['log', `--format=${format}`, `-n`, `${limit}`],
-    expandedPath
-  );
+
+  let revRange = '';
+  if (unpushedOnly) {
+    try {
+      const trackingBranch = await executeGitCommand(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], expandedPath);
+      if (trackingBranch.trim()) {
+        revRange = `${trackingBranch.trim()}..HEAD`;
+      }
+    } catch {
+      // No upstream tracking branch, show all commits
+    }
+  }
+
+  const args = ['log', `--format=${format}`, `-n`, `${limit}`];
+  if (revRange) {
+    args.push(revRange);
+  }
+
+  const output = await executeGitCommand(args, expandedPath);
 
   const lines = output.trim().split('\n').filter(line => line.length > 0);
   return lines.map(line => {
     const [hash, shortHash, subject, author, date, relativeDate] = line.split(separator);
     return { hash, shortHash, subject, author, date, relativeDate };
   });
+}
+
+/**
+ * Get files changed in a specific commit
+ * @param worktreePath - Path to the git worktree
+ * @param commitHash - The commit hash to get files for
+ * @returns Array of files changed in the commit
+ */
+export async function getCommitFiles(worktreePath: string, commitHash: string): Promise<CommitFile[]> {
+  const expandedPath = expandPath(worktreePath);
+  const output = await executeGitCommand(
+    ['show', '--name-status', '--format=', commitHash],
+    expandedPath
+  );
+
+  const lines = output.trim().split('\n').filter(line => line.length > 0);
+  return lines.map(line => {
+    const [status, ...pathParts] = line.split('\t');
+    return {
+      path: pathParts.join('\t'),
+      status: status[0] as CommitFile['status']
+    };
+  });
+}
+
+/**
+ * Get diff for a specific commit
+ * @param worktreePath - Path to the git worktree
+ * @param commitHash - The commit hash to get diff for
+ * @param filePath - Optional specific file to diff
+ * @returns Diff output as string
+ */
+export async function getCommitDiff(worktreePath: string, commitHash: string, filePath?: string): Promise<string> {
+  const expandedPath = expandPath(worktreePath);
+  const args = ['show', '--format=', commitHash];
+  if (filePath) {
+    args.push('--', filePath);
+  }
+  return executeGitCommand(args, expandedPath);
 }
 
 /**

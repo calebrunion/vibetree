@@ -20,6 +20,11 @@ export interface GitCommit {
   relativeDate: string;
 }
 
+export interface CommitFile {
+  path: string;
+  status: 'A' | 'M' | 'D' | 'R' | 'C' | 'T' | 'U' | 'X';
+}
+
 export interface ShellSession {
   processId: string;
   worktreePath: string;
