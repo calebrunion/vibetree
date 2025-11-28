@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, CornerDownLeft, Mic, MicOff } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Clipboard, CornerDownLeft, Mic, MicOff } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -159,90 +159,112 @@ export default function MobileTerminalToolbar() {
   }
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 flex items-center bg-background border-t z-40">
-      <div className="flex-1 overflow-x-auto scrollbar-hide">
-        <div className="flex items-center gap-4 pl-2 pr-4 py-2">
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <button
-              onClick={() => sendKey(KEYS.CTRL_C)}
-              className="px-2 py-2 text-xs font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400"
-            >
-              ^C
-            </button>
-            <button
-              onClick={() => sendKey(KEYS.ESC)}
-              className="px-3 py-2 text-xs font-medium bg-muted border rounded-md active:bg-accent"
-            >
-              ESC
-            </button>
-          </div>
+    <div className="md:hidden flex flex-col">
+      <div className="flex items-center bg-background border-t">
+        <div className="flex-1 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center justify-between px-4 py-2">
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() => sendKey(KEYS.ESC)}
+                className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent"
+              >
+                ESC
+              </button>
+            </div>
 
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <button
-              onClick={() => sendKey(KEYS.ARROW_LEFT)}
-              className="p-2 bg-muted border rounded-md active:bg-accent"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => sendKey(KEYS.ARROW_UP)}
-              className="p-2 bg-muted border rounded-md active:bg-accent"
-            >
-              <ArrowUp className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => sendKey(KEYS.ARROW_DOWN)}
-              className="p-2 bg-muted border rounded-md active:bg-accent"
-            >
-              <ArrowDown className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => sendKey(KEYS.ARROW_RIGHT)}
-              className="p-2 bg-muted border rounded-md active:bg-accent"
-            >
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() => sendKey(KEYS.SHIFT_TAB)}
+                className="px-3 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent"
+              >
+                ⇧TAB
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText()
+                    if (text) sendTextToTerminal(text)
+                  } catch (err) {
+                    console.error('Failed to read clipboard:', err)
+                  }
+                }}
+                className="p-2.5 bg-muted border rounded-md active:bg-accent"
+                title="Paste"
+              >
+                <Clipboard className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => sendKey(KEYS.TAB)}
+                className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent"
+              >
+                TAB
+              </button>
+            </div>
 
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <button
-              onClick={() => sendKey(KEYS.SHIFT_TAB)}
-              className="px-2 py-2 text-xs font-medium bg-muted border rounded-md active:bg-accent"
-            >
-              ⇧TAB
-            </button>
-            <button
-              onClick={() => sendKey(KEYS.TAB)}
-              className="px-3 py-2 text-xs font-medium bg-muted border rounded-md active:bg-accent"
-            >
-              TAB
-            </button>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() => sendKey(KEYS.CTRL_C)}
+                className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400"
+              >
+                ^C
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 pl-4 pr-2 py-2 bg-background flex-shrink-0">
-        {isVoiceSupported && (
+      <div className="flex items-center justify-between px-6 py-4">
+        {isVoiceSupported ? (
           <button
             onClick={toggleVoiceInput}
-            className={`p-2 border rounded-md active:bg-accent ${isListening ? "bg-red-100 dark:bg-red-900/30 border-red-500" : "bg-muted border-border"}`}
+            className={`h-14 w-14 rounded-full border-2 active:scale-95 transition-transform flex items-center justify-center ${isListening ? "bg-red-100 dark:bg-red-900/30 border-red-500" : "bg-muted border-border"}`}
             title={isListening ? "Stop voice input" : "Start voice input"}
             aria-label={isListening ? "Stop voice input" : "Start voice input"}
           >
             {isListening ? (
-              <Mic className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <Mic className="h-6 w-6 text-red-600 dark:text-red-400" />
             ) : (
-              <MicOff className="h-4 w-4" />
+              <MicOff className="h-6 w-6" />
             )}
           </button>
+        ) : (
+          <div className="h-14 w-14" />
         )}
+        <div className="flex flex-col items-center gap-1">
+          <button
+            onClick={() => sendKey(KEYS.ARROW_UP)}
+            className="h-11 w-11 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
+          >
+            <ArrowUp className="h-5 w-5" />
+          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => sendKey(KEYS.ARROW_LEFT)}
+              className="h-11 w-11 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => sendKey(KEYS.ARROW_DOWN)}
+              className="h-11 w-11 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
+            >
+              <ArrowDown className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => sendKey(KEYS.ARROW_RIGHT)}
+              className="h-11 w-11 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
+            >
+              <ArrowRight className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
         <button
           onClick={() => sendKey(KEYS.ENTER)}
-          className="p-2 bg-muted border rounded-md active:bg-accent"
+          className="h-14 w-14 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
           title="Send Enter"
           aria-label="Send Enter"
         >
-          <CornerDownLeft className="h-4 w-4" />
+          <CornerDownLeft className="h-6 w-6" />
         </button>
       </div>
     </div>

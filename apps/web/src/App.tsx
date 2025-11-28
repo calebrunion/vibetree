@@ -475,13 +475,17 @@ function App() {
                   {/* Tab Content */}
                   <div className="flex-1 overflow-hidden relative">
                     {/* Terminal Tab - Managed terminals with lifecycle control */}
-                    <div className={`absolute inset-0 flex flex-col pb-12 md:pb-0 ${project.selectedTab === 'terminal' ? 'flex' : 'hidden'}`}>
-                      <div className="flex-1 min-h-0">
+                    <div className={`absolute inset-0 flex flex-col overflow-hidden ${project.selectedTab === 'terminal' ? 'flex' : 'hidden'}`}>
+                      <div className="flex-1 min-h-0 overflow-hidden">
                         <TerminalManager
                           worktrees={project.worktrees || []}
                           selectedWorktree={project.selectedWorktree}
                         />
                       </div>
+                      <div className="flex-shrink-0">
+                        <MobileTerminalToolbar />
+                      </div>
+                      <div className="md:hidden h-24 bg-background flex-shrink-0" />
                     </div>
 
                     {/* Keep GitDiffView mounted but hidden to preserve state */}
@@ -510,7 +514,6 @@ function App() {
       </Tabs>
 
       <FloatingAddWorktree />
-      <MobileTerminalToolbar />
 
       <ConfirmDialog
         open={!!projectToRemove}
