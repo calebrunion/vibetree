@@ -1,9 +1,27 @@
-import { useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
+import { useEffect, useState, useCallback, useImperativeHandle, forwardRef, Component, ReactNode } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, FileText, RefreshCw } from 'lucide-react';
 import { DiffView, DiffModeEnum } from '@git-diff-view/react';
 import '@git-diff-view/react/styles/diff-view.css';
 import { useWebSocket } from '../hooks/useWebSocket';
 import type { GitStatus } from '@vibetree/core';
+
+class DiffErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
 
 interface GitFile {
   path: string;
@@ -262,25 +280,34 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
           ) : (
             <div className="flex-1 overflow-auto w-full">
               <div className="w-full overflow-hidden">
-                <DiffView
-                  data={{
-                    oldFile: {
-                      fileName: selectedFile || '',
-                      content: null
-                    },
-                    newFile: {
-                      fileName: selectedFile || '',
-                      content: null
-                    },
-                    hunks: [diffText]
-                  }}
-                  diffViewMode={DiffModeEnum.Unified}
-                  diffViewTheme={theme}
-                  diffViewHighlight={true}
-                  diffViewWrap={true}
-                  className="w-full"
-                  style={{ maxWidth: '100%', overflow: 'hidden' }}
-                />
+                <DiffErrorBoundary
+                  key={`${selectedFile}-${selectedSection}`}
+                  fallback={
+                    <pre className="p-4 text-sm font-mono whitespace-pre-wrap break-all">
+                      {diffText}
+                    </pre>
+                  }
+                >
+                  <DiffView
+                    data={{
+                      oldFile: {
+                        fileName: selectedFile || '',
+                        content: null
+                      },
+                      newFile: {
+                        fileName: selectedFile || '',
+                        content: null
+                      },
+                      hunks: [diffText]
+                    }}
+                    diffViewMode={DiffModeEnum.Unified}
+                    diffViewTheme={theme}
+                    diffViewHighlight={true}
+                    diffViewWrap={true}
+                    className="w-full"
+                    style={{ maxWidth: '100%', overflow: 'hidden' }}
+                  />
+                </DiffErrorBoundary>
               </div>
             </div>
           )}

@@ -93,7 +93,7 @@ export async function getGitDiff(worktreePath: string, filePath?: string): Promi
   const expandedPath = expandPath(worktreePath);
   const args = ['diff'];
   if (filePath) {
-    args.push(filePath);
+    args.push('--', filePath);
   }
   return executeGitCommand(args, expandedPath);
 }
@@ -108,7 +108,7 @@ export async function getGitDiffStaged(worktreePath: string, filePath?: string):
   const expandedPath = expandPath(worktreePath);
   const args = ['diff', '--staged'];
   if (filePath) {
-    args.push(filePath);
+    args.push('--', filePath);
   }
   return executeGitCommand(args, expandedPath);
 }
