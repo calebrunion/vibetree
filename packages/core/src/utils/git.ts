@@ -280,7 +280,19 @@ export async function addWorktree(projectPath: string, branchName: string): Prom
     fs.mkdirSync(treesDir, { recursive: true });
   }
 
-  await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath, 'origin/HEAD'], expandedPath);
+  let branchExists = false;
+  try {
+    await executeGitCommand(['rev-parse', '--verify', branchName], expandedPath);
+    branchExists = true;
+  } catch {
+    branchExists = false;
+  }
+
+  if (branchExists) {
+    await executeGitCommand(['worktree', 'add', worktreePath, branchName], expandedPath);
+  } else {
+    await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath, 'origin/HEAD'], expandedPath);
+  }
 
   return { path: worktreePath, branch: branchName };
 }
