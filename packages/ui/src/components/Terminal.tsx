@@ -137,6 +137,7 @@ export const Terminal: React.FC<TerminalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchVisible, setSearchVisible] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const wasVisibleRef = useRef<boolean>(false);
 
   /**
    * Initialize terminal instance and addons
@@ -283,6 +284,36 @@ export const Terminal: React.FC<TerminalProps> = ({
       resizeObserver.observe(terminalRef.current);
     }
 
+    // Use IntersectionObserver to detect visibility changes
+    // This is critical for handling terminals that are hidden via display:none
+    // When they become visible again, we need to re-fit them
+    let intersectionObserver: IntersectionObserver | null = null;
+    if (terminalRef.current && typeof IntersectionObserver !== 'undefined') {
+      intersectionObserver = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        const isVisible = entry.isIntersecting && entry.intersectionRatio > 0;
+
+        // Only trigger re-fit when transitioning from hidden to visible
+        if (isVisible && !wasVisibleRef.current) {
+          // Use requestAnimationFrame to ensure the DOM has settled
+          requestAnimationFrame(() => {
+            // Double-check dimensions are valid before fitting
+            if (terminalRef.current && terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
+              fitAddon.fit();
+              term.resize(term.cols, term.rows);
+              term.refresh(0, term.rows - 1);
+            }
+          });
+        }
+        wasVisibleRef.current = isVisible;
+      }, {
+        threshold: [0, 0.1]
+      });
+      intersectionObserver.observe(terminalRef.current);
+      // Initialize visibility state
+      wasVisibleRef.current = terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0;
+    }
+
     // Handle terminal input
     const dataDisposable = term.onData((data) => {
       if (onData) {
@@ -347,6 +378,9 @@ export const Terminal: React.FC<TerminalProps> = ({
       window.removeEventListener('resize', handleResize);
       if (resizeObserver) {
         resizeObserver.disconnect();
+      }
+      if (intersectionObserver) {
+        intersectionObserver.disconnect();
       }
       dataDisposable.dispose();
       keyDisposable.dispose();

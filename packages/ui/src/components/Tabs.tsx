@@ -77,18 +77,22 @@ interface TabsContentProps {
   value: string
   className?: string
   children: React.ReactNode
+  forceMount?: boolean
 }
 
-const TabsContent: React.FC<TabsContentProps> = ({ value, className = '', children }) => {
+const TabsContent: React.FC<TabsContentProps> = ({ value, className = '', children, forceMount = false }) => {
   const { value: activeValue } = useTabsContext()
+  const isActive = activeValue === value
 
-  if (activeValue !== value) {
+  if (!forceMount && !isActive) {
     return null
   }
 
   return (
     <div
       className={`ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${className}`}
+      style={forceMount && !isActive ? { display: 'none' } : undefined}
+      data-state={isActive ? 'active' : 'inactive'}
     >
       {children}
     </div>

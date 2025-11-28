@@ -381,7 +381,7 @@ function App() {
         </div>
 
         {projects.map((project) => (
-          <TabsContent key={project.id} value={project.id} className="flex-1 m-0 h-0">
+          <TabsContent key={project.id} value={project.id} className="flex-1 m-0 h-0" forceMount>
             <div className="flex h-full overflow-hidden">
               {/* Worktree Panel - Always visible on desktop, conditional on mobile */}
               <div

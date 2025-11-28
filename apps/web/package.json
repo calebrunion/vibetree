@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@git-diff-view/react": "^0.0.30",
@@ -22,6 +25,7 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
