@@ -48,7 +48,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [files, setFiles] = useState<GitFile[]>([]);
   const [commits, setCommits] = useState<GitCommitType[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [selectedSection, setSelectedSection] = useState<'staged' | 'unstaged' | 'commit' | 'all'>('unstaged');
+  const [selectedSection, setSelectedSection] = useState<'current' | 'commit' | 'all'>('current');
   const [selectedCommit, setSelectedCommit] = useState<GitCommitType | null>(null);
   const [commitFiles, setCommitFiles] = useState<CommitFile[]>([]);
   const [diffText, setDiffText] = useState<string>('');
@@ -56,8 +56,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [allChangesCollapsed, setAllChangesCollapsed] = useState(false);
-  const [stagedCollapsed, setStagedCollapsed] = useState(false);
-  const [unstagedCollapsed, setUnstagedCollapsed] = useState(false);
+  const [currentCollapsed, setCurrentCollapsed] = useState(false);
   const [historyCollapsed, setHistoryCollapsed] = useState(false);
 
   const { getAdapter } = useWebSocket();
@@ -209,12 +208,14 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   useEffect(() => {
     if (selectedFile && selectedSection === 'all') {
       loadDiffAgainstBase(selectedFile);
-    } else if (selectedFile && selectedSection !== 'commit') {
-      loadDiff(selectedFile, selectedSection === 'staged');
+    } else if (selectedFile && selectedSection === 'current') {
+      const file = files.find(f => f.path === selectedFile);
+      const isStaged = file?.staged && !file?.modified;
+      loadDiff(selectedFile, isStaged);
     } else if (selectedFile && selectedSection === 'commit' && selectedCommit) {
       loadCommitDiff(selectedCommit.hash, selectedFile);
     }
-  }, [selectedFile, selectedSection, selectedCommit, loadDiff, loadCommitDiff, loadDiffAgainstBase]);
+  }, [selectedFile, selectedSection, selectedCommit, files, loadDiff, loadCommitDiff, loadDiffAgainstBase]);
 
   useEffect(() => {
     onLoadingChange?.(loading);
@@ -238,21 +239,6 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     setSelectedCommit(null);
   };
 
-  const getStatusIcon = (status: string, forStaged: boolean) => {
-    const char = forStaged ? status[0] : status[1];
-    const baseClass = "px-1.5 py-0.5 rounded text-xs font-medium inline-flex items-center justify-center min-w-[20px]";
-    switch (char) {
-      case 'M': return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>M</span>;
-      case 'A': return <span className={`${baseClass} text-green-500 bg-green-500/20`}>A</span>;
-      case 'D': return <span className={`${baseClass} text-red-500 bg-red-500/20`}>D</span>;
-      case 'R': return <span className={`${baseClass} text-yellow-500 bg-yellow-500/20`}>R</span>;
-      case 'C': return <span className={`${baseClass} text-cyan-500 bg-cyan-500/20`}>C</span>;
-      case '?': return <span className={`${baseClass} text-gray-500 bg-gray-500/20`}>?</span>;
-      case 'U': return <span className={`${baseClass} text-green-500 bg-green-500/20`}>U</span>;
-      default: return <span className={`${baseClass} text-gray-400`}>{char || ' '}</span>;
-    }
-  };
-
   const getCommitFileStatusIcon = (status: CommitFile['status']) => {
     const baseClass = "px-1.5 py-0.5 rounded text-xs font-medium inline-flex items-center justify-center min-w-[20px]";
     switch (status) {
@@ -269,32 +255,28 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     setSelectedFile(file.path);
   };
 
-  const stagedFiles = files.filter(file => file.staged);
-  const unstagedFiles = files.filter(file => file.modified);
-
-  const handleFileClick = (file: GitFile, section: 'staged' | 'unstaged') => {
+  const handleCurrentFileClick = (file: GitFile) => {
     setSelectedFile(file.path);
-    setSelectedSection(section);
+    setSelectedSection('current');
+    setSelectedCommit(null);
   };
 
-  const renderFileList = (fileList: GitFile[], section: 'staged' | 'unstaged') => (
-    <div className="space-y-1">
-      {fileList.map((file) => (
-        <div
-          key={`${section}-${file.path}`}
-          className={`flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
-            selectedFile === file.path && selectedSection === section ? 'bg-muted' : ''
-          }`}
-          onClick={() => handleFileClick(file, section)}
-        >
-          {getStatusIcon(file.status, section === 'staged')}
-          <span className="text-sm truncate flex-1 text-left" title={file.path}>
-            {file.path}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
+  const getCurrentFileStatusIcon = (file: GitFile) => {
+    const baseClass = "px-1.5 py-0.5 rounded text-xs font-medium inline-flex items-center justify-center min-w-[20px]";
+    if (file.staged && file.modified) {
+      return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>SM</span>;
+    }
+    if (file.staged) {
+      return <span className={`${baseClass} text-green-500 bg-green-500/20`}>S</span>;
+    }
+    const char = file.status[1];
+    switch (char) {
+      case 'M': return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>M</span>;
+      case 'D': return <span className={`${baseClass} text-red-500 bg-red-500/20`}>D</span>;
+      case '?': return <span className={`${baseClass} text-gray-500 bg-gray-500/20`}>?</span>;
+      default: return <span className={`${baseClass} text-gray-400`}>{char || ' '}</span>;
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col h-full">
@@ -305,6 +287,44 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
           w-full md:w-80 border-r flex-col min-w-0
         `}>
           <div className="flex-1 overflow-auto">
+            {/* Current Section - only show if dirty working directory */}
+            {files.length > 0 && (
+              <div className="border-b">
+                <button
+                  onClick={() => setCurrentCollapsed(!currentCollapsed)}
+                  className="w-full p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
+                >
+                  {currentCollapsed ? (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span className="text-sm font-medium">Current</span>
+                  <span className="ml-auto text-xs text-muted-foreground">{files.length}</span>
+                </button>
+                {!currentCollapsed && (
+                  <div className="px-2 pb-2">
+                    <div className="space-y-1">
+                      {files.map((file) => (
+                        <div
+                          key={`current-${file.path}`}
+                          className={`flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
+                            selectedFile === file.path && selectedSection === 'current' ? 'bg-muted' : ''
+                          }`}
+                          onClick={() => handleCurrentFileClick(file)}
+                        >
+                          {getCurrentFileStatusIcon(file)}
+                          <span className="text-sm truncate flex-1 text-left" title={file.path}>
+                            {file.path}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* All Changes Section */}
             <div className="border-b">
               <button
@@ -340,56 +360,6 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                         </div>
                       ))}
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Staged Section */}
-            <div className="border-b">
-              <button
-                onClick={() => setStagedCollapsed(!stagedCollapsed)}
-                className="w-full p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
-              >
-                {stagedCollapsed ? (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="text-sm font-medium">Staged</span>
-                <span className="ml-auto text-xs text-muted-foreground">{stagedFiles.length}</span>
-              </button>
-              {!stagedCollapsed && (
-                <div className="px-2 pb-2">
-                  {stagedFiles.length === 0 ? (
-                    <p className="text-xs text-muted-foreground text-center py-2">No staged changes</p>
-                  ) : (
-                    renderFileList(stagedFiles, 'staged')
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Unstaged Section */}
-            <div className="border-b">
-              <button
-                onClick={() => setUnstagedCollapsed(!unstagedCollapsed)}
-                className="w-full p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
-              >
-                {unstagedCollapsed ? (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="text-sm font-medium">Unstaged</span>
-                <span className="ml-auto text-xs text-muted-foreground">{unstagedFiles.length}</span>
-              </button>
-              {!unstagedCollapsed && (
-                <div className="px-2 pb-2">
-                  {unstagedFiles.length === 0 ? (
-                    <p className="text-xs text-muted-foreground text-center py-2">No unstaged changes</p>
-                  ) : (
-                    renderFileList(unstagedFiles, 'unstaged')
                   )}
                 </div>
               )}
@@ -483,7 +453,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                     setSelectedCommit(null);
                     setCommitFiles([]);
                   }
-                  setSelectedSection('unstaged');
+                  setSelectedSection('current');
                 }}
                 className="p-1 hover:bg-accent rounded"
               >
@@ -492,8 +462,8 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
               <span className="text-sm font-medium truncate">
                 {selectedFile}
               </span>
-              <span className="ml-auto text-xs text-muted-foreground capitalize">
-                {selectedSection === 'all' ? 'vs origin/main' : selectedSection === 'commit' ? `commit ${selectedCommit?.shortHash}` : selectedSection}
+              <span className="ml-auto text-xs text-muted-foreground">
+                {selectedSection === 'all' ? 'vs origin/main' : selectedSection === 'commit' ? `commit ${selectedCommit?.shortHash}` : 'current'}
               </span>
             </div>
           )}
