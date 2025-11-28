@@ -85,7 +85,7 @@ export function MobileWorktreeTabs({
               className={`
                 flex flex-col items-start px-3 py-1.5 rounded-md whitespace-nowrap transition-colors border
                 ${isSelected
-                  ? 'bg-background text-foreground border-border shadow-sm'
+                  ? 'bg-accent text-accent-foreground border-border shadow-sm'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                 }
               `}
