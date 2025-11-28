@@ -126,20 +126,17 @@ export async function getGitDiffStaged(worktreePath: string, filePath?: string):
  * @param limit - Maximum number of commits to return (default 20)
  * @returns Array of commit information
  */
-export async function getGitLog(worktreePath: string, limit: number = 20, unpushedOnly: boolean = true): Promise<GitCommit[]> {
+export async function getGitLog(worktreePath: string, limit: number = 20, fromBranchBase: boolean = true): Promise<GitCommit[]> {
   const expandedPath = expandPath(worktreePath);
   const separator = '|||';
   const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar`;
 
   let revRange = '';
-  if (unpushedOnly) {
+  if (fromBranchBase) {
     try {
-      const trackingBranch = await executeGitCommand(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], expandedPath);
-      if (trackingBranch.trim()) {
-        revRange = `${trackingBranch.trim()}..HEAD`;
-      }
+      revRange = 'origin/HEAD..HEAD';
     } catch {
-      // No upstream tracking branch, show all commits
+      // Fallback to showing all commits
     }
   }
 
