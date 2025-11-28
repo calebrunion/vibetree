@@ -50,7 +50,7 @@ export function ClaudeTerminalView({ worktreePath }: ClaudeTerminalViewProps) {
           if (!hasStartedClaudeRef.current) {
             hasStartedClaudeRef.current = true;
             setTimeout(() => {
-              adapter.writeToShell(actualSessionId, 'claude --resume --permission-mode bypassPermissions\n');
+              adapter.writeToShell(actualSessionId, 'claude --continue --permission-mode bypassPermissions\n');
             }, 500);
           }
         }
