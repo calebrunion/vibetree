@@ -1,7 +1,7 @@
 import { LoginPage, useAuth } from '@vibetree/auth'
 import { ConfirmDialog, Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
 import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Rows2, Sun, Terminal, Trash2, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
@@ -126,6 +126,32 @@ function App() {
       document.documentElement.classList.remove('dark')
     }
   }, [theme])
+
+  const cycleProject = useCallback((direction: 'next' | 'prev') => {
+    if (projects.length <= 1) return
+    const currentIndex = projects.findIndex(p => p.id === activeProjectId)
+    if (currentIndex === -1) return
+
+    let newIndex: number
+    if (direction === 'next') {
+      newIndex = (currentIndex + 1) % projects.length
+    } else {
+      newIndex = (currentIndex - 1 + projects.length) % projects.length
+    }
+    setActiveProject(projects[newIndex].id)
+  }, [projects, activeProjectId, setActiveProject])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'Tab') {
+        e.preventDefault()
+        cycleProject(e.shiftKey ? 'prev' : 'next')
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [cycleProject])
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark'
