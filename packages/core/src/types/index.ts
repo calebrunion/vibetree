@@ -63,3 +63,7 @@ export interface ProjectValidationResult {
   valid: boolean;
   error?: string;
 }
+
+export interface ProjectSettings {
+  startupCommands?: string[];
+}

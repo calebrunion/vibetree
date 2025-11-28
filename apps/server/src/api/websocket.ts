@@ -7,7 +7,8 @@ import {
   getGitDiff,
   getGitDiffStaged,
   addWorktree,
-  removeWorktree
+  removeWorktree,
+  getStartupCommands
 } from '@vibetree/core';
 
 interface Services {
@@ -172,11 +173,11 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
               message.payload.rows,
               message.payload.forceNew
             );
-            
+
             if (result.success && result.processId) {
               activeShellSessions.add(result.processId);
               const connectionId = `ws-${Date.now()}`;
-              
+
               // Set up output forwarding using the new listener methods
               // This works for both new and existing sessions
               shellManager.addOutputListener(result.processId, connectionId, (data) => {
@@ -185,7 +186,7 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
                   payload: { sessionId: result.processId, data }
                 }));
               });
-              
+
               shellManager.addExitListener(result.processId, connectionId, (exitCode) => {
                 ws.send(JSON.stringify({
                   type: 'shell:exit',
@@ -193,8 +194,21 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
                 }));
                 activeShellSessions.delete(result.processId!);
               });
+
+              // Execute startup commands for new sessions only
+              if (result.isNew) {
+                const startupCommands = getStartupCommands(message.payload.worktreePath);
+                if (startupCommands.length > 0) {
+                  // Small delay to let the shell initialize
+                  setTimeout(async () => {
+                    for (const cmd of startupCommands) {
+                      await shellManager.writeToShell(result.processId!, cmd + '\n');
+                    }
+                  }, 100);
+                }
+              }
             }
-            
+
             ws.send(JSON.stringify({
               type: 'shell:start:response',
               payload: result,
