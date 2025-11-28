@@ -394,7 +394,7 @@ function App() {
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 border ${
                           project.selectedTab === 'terminal'
-                            ? 'bg-background text-foreground border-border shadow-sm'
+                            ? 'bg-accent text-accent-foreground border-border shadow-sm'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                         }`}
                         onClick={() => setSelectedTab(project.id, 'terminal')}
@@ -405,7 +405,7 @@ function App() {
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
                           project.selectedTab === 'changes'
-                            ? 'bg-background text-foreground border-border shadow-sm'
+                            ? 'bg-accent text-accent-foreground border-border shadow-sm'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                         }`}
                         onClick={() => {
