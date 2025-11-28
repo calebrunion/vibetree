@@ -182,7 +182,7 @@ export const Terminal: React.FC<TerminalProps> = ({
     // Mobile-specific terminal configuration
     const mobileTerminalConfig = {
       ...baseTerminalConfig,
-      fontSize: 12, // Smaller font on mobile for better readability
+      fontSize: 10, // Smaller font on mobile to fit within viewport
       scrollback: 1000, // Less scrollback on mobile for performance
       rendererType: 'dom' as const // Required for mobile compatibility
     };
