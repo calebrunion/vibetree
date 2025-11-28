@@ -64,7 +64,7 @@ export function MobileWorktreeTabs({
 
   return (
     <div
-      className="md:hidden bg-muted/30 overflow-x-auto flex-shrink-0 max-w-full"
+      className="md:hidden overflow-x-auto flex-shrink-0 max-w-full"
       style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
       <div className="inline-flex items-center gap-1 px-2 pt-4">

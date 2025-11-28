@@ -394,7 +394,7 @@ function App() {
                   />
 
                   {/* Tab Navigation */}
-                  <div className="flex items-center justify-between p-2 bg-muted/30 flex-shrink-0">
+                  <div className="flex items-center justify-between p-2 flex-shrink-0">
                     <div className="flex">
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 border ${
@@ -507,7 +507,7 @@ function App() {
                   </div>
 
                   {/* Tab Content */}
-                  <div className="flex-1 overflow-hidden relative">
+                  <div className="flex-1 overflow-hidden relative bg-black">
                     {/* Terminal Tab - Managed terminals with lifecycle control */}
                     <div
                       className={`absolute inset-0 flex flex-col overflow-hidden ${
