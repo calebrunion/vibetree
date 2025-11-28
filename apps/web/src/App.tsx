@@ -362,7 +362,7 @@ function App() {
                   />
 
                   {/* Tab Navigation */}
-                  <div className="h-10 border-b flex items-center justify-between px-2 bg-muted/30 flex-shrink-0">
+                  <div className="h-10 flex items-center justify-between px-2 bg-muted/30 flex-shrink-0">
                     <div className="flex">
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 border ${
@@ -405,7 +405,7 @@ function App() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => toggleTerminalSplit(project.id)}
-                          className="p-1.5 hover:bg-accent rounded transition-colors"
+                          className="p-1.5 hover:bg-accent rounded transition-colors border border-border"
                           title="Split Terminal"
                         >
                           <Columns2 className="h-4 w-4 hidden md:block" />
@@ -413,7 +413,7 @@ function App() {
                         </button>
                         <button
                           onClick={() => toggleTerminalFullscreen(project.id)}
-                          className="p-1.5 hover:bg-accent rounded transition-colors"
+                          className="p-1.5 hover:bg-accent rounded transition-colors border border-border"
                           title={project.isTerminalFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                         >
                           {project.isTerminalFullscreen ? (
@@ -444,7 +444,7 @@ function App() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => gitDiffRef.current?.refresh()}
-                          className="p-1.5 hover:bg-accent rounded transition-colors"
+                          className="p-1.5 hover:bg-accent rounded transition-colors border border-border"
                           title="Refresh"
                         >
                           <RefreshCw className="h-4 w-4" />
