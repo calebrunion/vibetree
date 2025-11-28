@@ -23,6 +23,7 @@ import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
 import { TerminalManager } from './components/TerminalManager'
 import { WorktreePanel } from './components/WorktreePanel'
+import { useWakeLock } from './hooks/useWakeLock'
 import { useWebSocket } from './hooks/useWebSocket'
 import { autoLoadProjects, validateProjectPaths } from './services/projectValidation'
 import { useAppStore } from './store'
@@ -47,6 +48,7 @@ function App() {
     setShowAddWorktreeDialog,
   } = useAppStore()
   const { connect, getAdapter } = useWebSocket()
+  const { request: requestWakeLock } = useWakeLock()
   const [showProjectSelector, setShowProjectSelector] = useState(false)
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
@@ -65,6 +67,15 @@ function App() {
     // Auto-connect on mount
     connect()
   }, [])
+
+  const activeProject = projects.find((p) => p.id === activeProjectId)
+  const hasActiveWorktree = activeProject?.selectedWorktree != null
+
+  useEffect(() => {
+    if (hasActiveWorktree) {
+      requestWakeLock()
+    }
+  }, [hasActiveWorktree, requestWakeLock])
 
   // Auto-load projects when connection is established
   useEffect(() => {
