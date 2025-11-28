@@ -282,8 +282,8 @@ function App() {
 
       {/* Project Tabs and Content */}
       <Tabs value={activeProjectId || ''} onValueChange={setActiveProject} className="flex-1 flex flex-col">
-        <div className="border-b flex items-center gap-2 bg-muted/50 h-10">
-          <TabsList className="h-full bg-transparent p-0 rounded-none gap-1">
+        <div className="border-b flex items-center gap-2 bg-muted/50 h-10 overflow-hidden">
+          <TabsList className="h-full bg-transparent p-0 rounded-none gap-1 flex-1 min-w-0 overflow-x-auto scrollbar-hide">
             {projects.map((project) => (
               <TabsTrigger
                 key={project.id}
@@ -304,7 +304,7 @@ function App() {
           </TabsList>
           <button
             onClick={() => setShowProjectSelector(true)}
-            className="h-8 w-8 p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center"
+            className="h-8 w-8 p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0"
             aria-label="Add project"
           >
             <Plus className="h-4 w-4" />
