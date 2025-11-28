@@ -8,7 +8,7 @@ interface Project {
   name: string;
   worktrees: Worktree[];
   selectedWorktree: string | null;
-  selectedTab: 'terminal' | 'changes';
+  selectedTab: 'terminal' | 'changes' | 'claude';
   isTerminalSplit: boolean;
   isTerminalFullscreen: boolean;
 }
