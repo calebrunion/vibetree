@@ -165,11 +165,19 @@ function App() {
         e.preventDefault()
         cycleProject(e.key === 'ArrowLeft' ? 'prev' : 'next')
       }
+
+      if (e.metaKey && !e.altKey && !e.shiftKey && !e.ctrlKey) {
+        const num = parseInt(e.key, 10)
+        if (num >= 1 && num <= 5 && projects[num - 1]) {
+          e.preventDefault()
+          setActiveProject(projects[num - 1].id)
+        }
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [cycleProject])
+  }, [cycleProject, projects, setActiveProject])
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark'
