@@ -1,6 +1,20 @@
 import { LoginPage, useAuth } from '@vibetree/auth'
 import { ConfirmDialog, Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
-import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Rows2, Sun, Terminal, Trash2, X } from 'lucide-react'
+import {
+  CheckCircle,
+  Columns2,
+  GitBranch,
+  Maximize2,
+  Minimize2,
+  Moon,
+  Plus,
+  RefreshCw,
+  Rows2,
+  Sun,
+  Terminal,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
@@ -38,7 +52,9 @@ function App() {
   const [successMessage, setSuccessMessage] = useState('')
   const [changedFilesCount, setChangedFilesCount] = useState(0)
   const [projectToRemove, setProjectToRemove] = useState<string | null>(null)
-  const [worktreeToDelete, setWorktreeToDelete] = useState<{ projectId: string; path: string; branch: string } | null>(null)
+  const [worktreeToDelete, setWorktreeToDelete] = useState<{ projectId: string; path: string; branch: string } | null>(
+    null
+  )
   const [deletingWorktree, setDeletingWorktree] = useState(false)
   const gitDiffRef = useRef<GitDiffViewRef>(null)
 
@@ -126,19 +142,22 @@ function App() {
     }
   }, [theme])
 
-  const cycleProject = useCallback((direction: 'next' | 'prev') => {
-    if (projects.length <= 1) return
-    const currentIndex = projects.findIndex(p => p.id === activeProjectId)
-    if (currentIndex === -1) return
+  const cycleProject = useCallback(
+    (direction: 'next' | 'prev') => {
+      if (projects.length <= 1) return
+      const currentIndex = projects.findIndex((p) => p.id === activeProjectId)
+      if (currentIndex === -1) return
 
-    let newIndex: number
-    if (direction === 'next') {
-      newIndex = (currentIndex + 1) % projects.length
-    } else {
-      newIndex = (currentIndex - 1 + projects.length) % projects.length
-    }
-    setActiveProject(projects[newIndex].id)
-  }, [projects, activeProjectId, setActiveProject])
+      let newIndex: number
+      if (direction === 'next') {
+        newIndex = (currentIndex + 1) % projects.length
+      } else {
+        newIndex = (currentIndex - 1 + projects.length) % projects.length
+      }
+      setActiveProject(projects[newIndex].id)
+    },
+    [projects, activeProjectId, setActiveProject]
+  )
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -180,7 +199,7 @@ function App() {
     }
   }
 
-  const projectToRemoveData = projectToRemove ? projects.find(p => p.id === projectToRemove) : null
+  const projectToRemoveData = projectToRemove ? projects.find((p) => p.id === projectToRemove) : null
 
   const isProtectedBranch = (branch: string) => {
     const branchName = branch.replace('refs/heads/', '')
@@ -196,7 +215,7 @@ function App() {
     if (!worktreeToDelete) return
 
     const adapter = getAdapter()
-    const project = projects.find(p => p.id === worktreeToDelete.projectId)
+    const project = projects.find((p) => p.id === worktreeToDelete.projectId)
     if (!adapter || !connected || !project) {
       setWorktreeToDelete(null)
       return
@@ -211,7 +230,7 @@ function App() {
       )
 
       if (project.selectedWorktree === worktreeToDelete.path) {
-        const remainingWorktree = project.worktrees.find(wt => wt.path !== worktreeToDelete.path)
+        const remainingWorktree = project.worktrees.find((wt) => wt.path !== worktreeToDelete.path)
         if (remainingWorktree) {
           setSelectedWorktree(worktreeToDelete.projectId, remainingWorktree.path)
         } else {
@@ -229,9 +248,9 @@ function App() {
     }
   }
 
-  const getSelectedWorktreeInfo = (project: typeof projects[0]) => {
+  const getSelectedWorktreeInfo = (project: (typeof projects)[0]) => {
     if (!project.selectedWorktree) return null
-    return project.worktrees.find(wt => wt.path === project.selectedWorktree)
+    return project.worktrees.find((wt) => wt.path === project.selectedWorktree)
   }
 
   // Show login page if not authenticated and not loading
@@ -362,7 +381,7 @@ function App() {
                   />
 
                   {/* Tab Navigation */}
-                  <div className="h-10 flex items-center justify-between px-2 bg-muted/30 flex-shrink-0">
+                  <div className="flex items-center justify-between p-2 bg-muted/30 flex-shrink-0">
                     <div className="flex">
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 border ${
@@ -391,11 +410,13 @@ function App() {
                         <GitBranch className="h-3.5 w-3.5" />
                         Changes
                         {changedFilesCount > 0 && (
-                          <span className={`ml-auto -mr-1.5 px-1.5 py-0.5 text-xs font-medium rounded min-w-[1.25rem] text-center ${
-                            project.selectedTab === 'changes'
-                              ? 'text-gray-700 bg-gray-400/40 dark:text-gray-300 dark:bg-gray-400/30'
-                              : 'text-gray-500 bg-gray-500/30'
-                          }`}>
+                          <span
+                            className={`ml-auto -mr-1.5 px-1.5 py-0.5 text-xs font-medium rounded min-w-[1.25rem] text-center ${
+                              project.selectedTab === 'changes'
+                                ? 'text-gray-700 bg-gray-400/40 dark:text-gray-300 dark:bg-gray-400/30'
+                                : 'text-gray-500 bg-gray-500/30'
+                            }`}
+                          >
                             {changedFilesCount}
                           </span>
                         )}
@@ -424,7 +445,8 @@ function App() {
                         </button>
                         {(() => {
                           const worktreeInfo = getSelectedWorktreeInfo(project)
-                          const canDelete = worktreeInfo?.branch &&
+                          const canDelete =
+                            worktreeInfo?.branch &&
                             !isProtectedBranch(worktreeInfo.branch) &&
                             project.worktrees.length > 1 &&
                             worktreeInfo.path !== project.path
@@ -451,7 +473,8 @@ function App() {
                         </button>
                         {(() => {
                           const worktreeInfo = getSelectedWorktreeInfo(project)
-                          const canDelete = worktreeInfo?.branch &&
+                          const canDelete =
+                            worktreeInfo?.branch &&
                             !isProtectedBranch(worktreeInfo.branch) &&
                             project.worktrees.length > 1 &&
                             worktreeInfo.path !== project.path
@@ -473,7 +496,11 @@ function App() {
                   {/* Tab Content */}
                   <div className="flex-1 overflow-hidden relative">
                     {/* Terminal Tab - Managed terminals with lifecycle control */}
-                    <div className={`absolute inset-0 flex flex-col overflow-hidden ${project.selectedTab === 'terminal' ? 'flex' : 'hidden'}`}>
+                    <div
+                      className={`absolute inset-0 flex flex-col overflow-hidden ${
+                        project.selectedTab === 'terminal' ? 'flex' : 'hidden'
+                      }`}
+                    >
                       <div className="flex-1 min-h-0 overflow-hidden">
                         <TerminalManager
                           worktrees={project.worktrees || []}
@@ -525,7 +552,10 @@ function App() {
       <ConfirmDialog
         open={!!worktreeToDelete}
         title="Delete Worktree"
-        description={`Are you sure you want to delete the worktree "${worktreeToDelete?.branch.replace('refs/heads/', '')}"? The worktree directory will be removed but the branch will be preserved.`}
+        description={`Are you sure you want to delete the worktree "${worktreeToDelete?.branch.replace(
+          'refs/heads/',
+          ''
+        )}"? The worktree directory will be removed but the branch will be preserved.`}
         confirmLabel={deletingWorktree ? 'Deleting...' : 'Delete'}
         cancelLabel="Cancel"
         variant="destructive"

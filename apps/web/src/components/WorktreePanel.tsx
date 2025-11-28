@@ -213,30 +213,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
   }
 
   return (
-    <div className="flex flex-col h-full w-full">
-      {/* Project Path */}
-      <div className="px-4 py-2 border-b bg-muted/50 flex items-center justify-between">
-        <p className="text-xs text-muted-foreground truncate">{shortenPath(project.path)}</p>
-        <div className="flex gap-1 flex-shrink-0 ml-2">
-          <button
-            onClick={handleRefresh}
-            disabled={!connected || loading}
-            className="p-1 hover:bg-accent rounded disabled:opacity-50"
-            title="Refresh worktrees"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-          <button
-            onClick={() => setShowNewBranchDialog(true)}
-            disabled={!connected}
-            className="p-1 hover:bg-accent rounded disabled:opacity-50"
-            title="Create new worktree"
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-
+    <div className="flex flex-col h-full w-full relative">
       {/* Worktree List */}
       <div className="flex-1 overflow-y-auto">
         {!connected ? (
@@ -323,6 +300,26 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
             })}
           </div>
         )}
+      </div>
+
+      {/* Floating Action Buttons */}
+      <div className="absolute bottom-4 right-4 hidden md:flex gap-2">
+        <button
+          onClick={handleRefresh}
+          disabled={!connected || loading}
+          className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent disabled:opacity-50 transition-colors"
+          title="Refresh worktrees"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+        </button>
+        <button
+          onClick={() => setShowNewBranchDialog(true)}
+          disabled={!connected}
+          className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent disabled:opacity-50 transition-colors"
+          title="Create new worktree"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Create New Branch Dialog */}
