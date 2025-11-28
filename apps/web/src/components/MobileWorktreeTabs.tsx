@@ -1,7 +1,8 @@
-import { GitBranch } from 'lucide-react';
+import { GitBranch, Plus } from 'lucide-react';
 import type { Worktree } from '@vibetree/core';
 import { useState, useEffect } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { useAppStore } from '../store';
 
 interface MobileWorktreeTabsProps {
   worktrees: Worktree[];
@@ -17,6 +18,7 @@ export function MobileWorktreeTabs({
   projectPath
 }: MobileWorktreeTabsProps) {
   const { getAdapter } = useWebSocket();
+  const setShowAddWorktreeDialog = useAppStore((state) => state.setShowAddWorktreeDialog);
   const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export function MobileWorktreeTabs({
       className="md:hidden border-b bg-muted/30 overflow-x-auto flex-shrink-0 max-w-full"
       style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
-      <div className="inline-flex gap-1 p-2">
+      <div className="inline-flex items-center gap-1 p-2">
         {sortedWorktrees.map((worktree) => {
           const branchName = worktree.branch
             ? worktree.branch.replace('refs/heads/', '')
@@ -101,6 +103,13 @@ export function MobileWorktreeTabs({
             </button>
           );
         })}
+        <button
+          onClick={() => setShowAddWorktreeDialog(true)}
+          className="flex items-center justify-center size-12 flex-shrink-0 rounded-md transition-colors border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          aria-label="Add worktree"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );

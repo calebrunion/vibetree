@@ -28,7 +28,10 @@ interface AppState {
   
   // Theme state
   theme: 'light' | 'dark';
-  
+
+  // UI state
+  showAddWorktreeDialog: boolean;
+
   // Actions
   setConnected: (connected: boolean) => void;
   setConnecting: (connecting: boolean) => void;
@@ -45,6 +48,7 @@ interface AppState {
   addTerminalSession: (worktreePath: string, sessionId: string) => void;
   removeTerminalSession: (worktreePath: string) => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  setShowAddWorktreeDialog: (show: boolean) => void;
   toggleTerminalSplit: (projectId: string) => void;
   toggleTerminalFullscreen: (projectId: string) => void;
   setTerminalSplit: (projectId: string, isSplit: boolean) => void;
@@ -61,7 +65,8 @@ export const useAppStore = create<AppState>()(
   activeProjectId: null,
   terminalSessions: new Map(),
   theme: 'light',
-  
+  showAddWorktreeDialog: false,
+
   // Actions
   setConnected: (connected) => set({ connected }),
   setConnecting: (connecting) => set({ connecting }),
@@ -200,6 +205,7 @@ export const useAppStore = create<AppState>()(
     }),
     
   setTheme: (theme) => set({ theme }),
+  setShowAddWorktreeDialog: (show) => set({ showAddWorktreeDialog: show }),
 
   toggleTerminalSplit: (projectId: string) => {
     set((state) => ({

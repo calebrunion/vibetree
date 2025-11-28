@@ -4,20 +4,20 @@ import { useAppStore } from '../store';
 import { useWebSocket } from '../hooks/useWebSocket';
 
 export function FloatingAddWorktree() {
-  const {
-    getActiveProject,
-    updateProjectWorktrees,
-    setSelectedWorktree,
-    connected
-  } = useAppStore();
+  const updateProjectWorktrees = useAppStore((state) => state.updateProjectWorktrees);
+  const setSelectedWorktree = useAppStore((state) => state.setSelectedWorktree);
+  const connected = useAppStore((state) => state.connected);
+  const showDialog = useAppStore((state) => state.showAddWorktreeDialog);
+  const setShowDialog = useAppStore((state) => state.setShowAddWorktreeDialog);
+  const activeProjectId = useAppStore((state) => state.activeProjectId);
+  const projects = useAppStore((state) => state.projects);
 
   const { getAdapter } = useWebSocket();
-  const [showDialog, setShowDialog] = useState(false);
   const [branchName, setBranchName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const activeProject = getActiveProject();
+  const activeProject = activeProjectId ? projects.find(p => p.id === activeProjectId) : undefined;
 
   const handleCreate = async () => {
     const adapter = getAdapter();
@@ -41,19 +41,21 @@ export function FloatingAddWorktree() {
     }
   };
 
-  if (!activeProject || !connected) return null;
+  const canShow = activeProject && connected;
 
   return (
     <>
-      <button
-        onClick={() => setShowDialog(true)}
-        className="md:hidden fixed bottom-4 left-4 p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent transition-colors flex items-center justify-center z-40"
-        aria-label="Add worktree"
-      >
-        <Plus className="h-4 w-4" />
-      </button>
+      {canShow && (
+        <button
+          onClick={() => setShowDialog(true)}
+          className="md:hidden fixed bottom-4 left-4 p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent transition-colors flex items-center justify-center z-40"
+          aria-label="Add worktree"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      )}
 
-      {showDialog && (
+      {showDialog && activeProject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-background border rounded-lg shadow-lg w-full max-w-md">
             <div className="p-6">
