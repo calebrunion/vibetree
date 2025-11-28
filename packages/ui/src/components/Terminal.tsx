@@ -625,6 +625,7 @@ export const Terminal: React.FC<TerminalProps> = ({
           height: '100%',
           minHeight: '100px',
           position: 'relative',
+          paddingLeft: '8px',
           ...(isDragOver ? {
             outline: '2px dashed #007acc',
             outlineOffset: '-2px',
