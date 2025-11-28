@@ -6,6 +6,7 @@ import {
   getGitStatus,
   getGitDiff,
   getGitDiffStaged,
+  getGitLog,
   addWorktree,
   removeWorktree,
   getStartupCommands
@@ -310,6 +311,27 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
               ws.send(JSON.stringify({
                 type: 'git:diff:staged:response',
                 payload: { diff },
+                id: message.id
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                payload: { error: (error as Error).message },
+                id: message.id
+              }));
+            }
+            break;
+          }
+
+          case 'git:log': {
+            try {
+              const commits = await getGitLog(
+                message.payload.worktreePath,
+                message.payload.limit
+              );
+              ws.send(JSON.stringify({
+                type: 'git:log:response',
+                payload: { commits },
                 id: message.id
               }));
             } catch (error) {

@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback, useImperativeHandle, forwardRef, Component, ReactNode } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, FileText, RefreshCw } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, RefreshCw } from 'lucide-react';
 import { DiffView, DiffModeEnum } from '@git-diff-view/react';
 import '@git-diff-view/react/styles/diff-view.css';
 import { useWebSocket } from '../hooks/useWebSocket';
-import type { GitStatus } from '@vibetree/core';
+import type { GitStatus, GitCommit as GitCommitType } from '@vibetree/core';
 
 class DiffErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode; fallback: ReactNode }) {
@@ -46,6 +46,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   ref
 ) {
   const [files, setFiles] = useState<GitFile[]>([]);
+  const [commits, setCommits] = useState<GitCommitType[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedSection, setSelectedSection] = useState<'staged' | 'unstaged'>('unstaged');
   const [diffText, setDiffText] = useState<string>('');
@@ -53,6 +54,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [error, setError] = useState<string | null>(null);
   const [stagedCollapsed, setStagedCollapsed] = useState(false);
   const [unstagedCollapsed, setUnstagedCollapsed] = useState(false);
+  const [historyCollapsed, setHistoryCollapsed] = useState(false);
 
   const { getAdapter } = useWebSocket();
 
@@ -82,6 +84,19 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     }
   }, [worktreePath, getAdapter]);
 
+  const loadGitLog = useCallback(async () => {
+    const adapter = getAdapter();
+    if (!adapter || !('getGitLog' in adapter)) return;
+
+    try {
+      const gitCommits = await (adapter as any).getGitLog(worktreePath, 20);
+      setCommits(gitCommits);
+    } catch (err) {
+      console.error('Failed to load git log:', err);
+      setCommits([]);
+    }
+  }, [worktreePath, getAdapter]);
+
   const loadDiff = useCallback(async (filePath: string, staged: boolean = false) => {
     const adapter = getAdapter();
     if (!adapter) return;
@@ -106,8 +121,9 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   useEffect(() => {
     if (worktreePath) {
       loadGitStatus();
+      loadGitLog();
     }
-  }, [worktreePath, loadGitStatus]);
+  }, [worktreePath, loadGitStatus, loadGitLog]);
 
   useEffect(() => {
     if (selectedFile) {
@@ -124,8 +140,11 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   }, [files.length, onFileCountChange]);
 
   useImperativeHandle(ref, () => ({
-    refresh: loadGitStatus
-  }), [loadGitStatus]);
+    refresh: () => {
+      loadGitStatus();
+      loadGitLog();
+    }
+  }), [loadGitStatus, loadGitLog]);
 
   const getStatusIcon = (status: string, forStaged: boolean) => {
     const char = forStaged ? status[0] : status[1];
@@ -204,7 +223,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
             </div>
 
             {/* Unstaged Section */}
-            <div>
+            <div className="border-b">
               <button
                 onClick={() => setUnstagedCollapsed(!unstagedCollapsed)}
                 className="w-full p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
@@ -223,6 +242,54 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                     <p className="text-xs text-muted-foreground text-center py-2">No unstaged changes</p>
                   ) : (
                     renderFileList(unstagedFiles, 'unstaged')
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* History Section */}
+            <div>
+              <button
+                onClick={() => setHistoryCollapsed(!historyCollapsed)}
+                className="w-full p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
+              >
+                {historyCollapsed ? (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium">History</span>
+                <span className="ml-auto text-xs text-muted-foreground">{commits.length}</span>
+              </button>
+              {!historyCollapsed && (
+                <div className="px-2 pb-2">
+                  {commits.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-2">No commits</p>
+                  ) : (
+                    <div className="space-y-1">
+                      {commits.map((commit) => (
+                        <div
+                          key={commit.hash}
+                          className="p-2 rounded hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-start gap-2">
+                            <GitCommit className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm truncate" title={commit.subject}>
+                                {commit.subject}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                <span className="font-mono">{commit.shortHash}</span>
+                                <span className="mx-1">·</span>
+                                <span>{commit.author}</span>
+                                <span className="mx-1">·</span>
+                                <span>{commit.relativeDate}</span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}

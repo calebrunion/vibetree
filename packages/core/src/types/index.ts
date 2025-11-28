@@ -11,6 +11,15 @@ export interface GitStatus {
   modified: boolean;
 }
 
+export interface GitCommit {
+  hash: string;
+  shortHash: string;
+  subject: string;
+  author: string;
+  date: string;
+  relativeDate: string;
+}
+
 export interface ShellSession {
   processId: string;
   worktreePath: string;

@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { Worktree, GitStatus, WorktreeAddResult, WorktreeRemoveResult, ProjectValidationResult } from '../types';
+import { Worktree, GitStatus, GitCommit, WorktreeAddResult, WorktreeRemoveResult, ProjectValidationResult } from '../types';
 import { parseWorktrees, parseGitStatus } from './git-parser';
 
 /**
@@ -111,6 +111,28 @@ export async function getGitDiffStaged(worktreePath: string, filePath?: string):
     args.push('--', filePath);
   }
   return executeGitCommand(args, expandedPath);
+}
+
+/**
+ * Get git commit log
+ * @param worktreePath - Path to the git worktree
+ * @param limit - Maximum number of commits to return (default 20)
+ * @returns Array of commit information
+ */
+export async function getGitLog(worktreePath: string, limit: number = 20): Promise<GitCommit[]> {
+  const expandedPath = expandPath(worktreePath);
+  const separator = '|||';
+  const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar`;
+  const output = await executeGitCommand(
+    ['log', `--format=${format}`, `-n`, `${limit}`],
+    expandedPath
+  );
+
+  const lines = output.trim().split('\n').filter(line => line.length > 0);
+  return lines.map(line => {
+    const [hash, shortHash, subject, author, date, relativeDate] = line.split(separator);
+    return { hash, shortHash, subject, author, date, relativeDate };
+  });
 }
 
 /**

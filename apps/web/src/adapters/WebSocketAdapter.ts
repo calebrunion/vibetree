@@ -2,6 +2,7 @@ import { BaseAdapter } from '@vibetree/core';
 import type {
   Worktree,
   GitStatus,
+  GitCommit,
   ShellStartResult,
   ShellWriteResult,
   ShellResizeResult,
@@ -174,6 +175,11 @@ export class WebSocketAdapter extends BaseAdapter {
   async getGitDiffStaged(worktreePath: string, filePath?: string): Promise<string> {
     const result = await this.sendMessage<{ diff: string }>('git:diff:staged', { worktreePath, filePath });
     return result.diff;
+  }
+
+  async getGitLog(worktreePath: string, limit?: number): Promise<GitCommit[]> {
+    const result = await this.sendMessage<{ commits: GitCommit[] }>('git:log', { worktreePath, limit });
+    return result.commits;
   }
 
   async addWorktree(projectPath: string, branchName: string): Promise<WorktreeAddResult> {
