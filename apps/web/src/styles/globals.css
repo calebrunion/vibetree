@@ -62,6 +62,13 @@
   font-size: 10px !important;
 }
 
+@media (min-width: 768px) {
+  .diff-tailwindcss-wrapper,
+  .diff-tailwindcss-wrapper * {
+    font-size: 13px !important;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
