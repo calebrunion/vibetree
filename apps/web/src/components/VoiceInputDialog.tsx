@@ -1,4 +1,4 @@
-import { Mic, MicOff, Send, X } from 'lucide-react'
+import { Mic, MicOff } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SpeechRecognitionEvent extends Event {
@@ -59,7 +59,7 @@ export default function VoiceInputDialog({
   const [isListening, setIsListening] = useState(false)
   const [isVoiceSupported, setIsVoiceSupported] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -102,8 +102,8 @@ export default function VoiceInputDialog({
   }, [])
 
   useEffect(() => {
-    if (isOpen && textareaRef.current) {
-      textareaRef.current.focus()
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus()
     }
     if (!isOpen) {
       setText('')
@@ -136,15 +136,10 @@ export default function VoiceInputDialog({
     }
   }, [text, onSend, onEnter, onClose])
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        handleSend()
-      }
-    },
-    [handleSend]
-  )
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault()
+    handleSend()
+  }, [handleSend])
 
   if (!isOpen) return null
 
@@ -152,47 +147,31 @@ export default function VoiceInputDialog({
     <div className="fixed inset-0 z-50 flex items-end justify-center md:hidden">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full bg-background border-t rounded-t-2xl p-4 animate-in slide-in-from-bottom duration-200">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-muted active:bg-accent z-10"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <textarea
-              ref={textareaRef}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type or use voice input..."
-              className="w-full min-h-[80px] max-h-[200px] p-3 pr-12 bg-muted border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-              rows={3}
-            />
-            {isVoiceSupported && (
-              <button
-                onClick={toggleVoiceInput}
-                className={`absolute right-2 bottom-2 p-2 rounded-full transition-colors ${
-                  isListening
-                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-                    : 'bg-background hover:bg-accent text-muted-foreground'
-                }`}
-                title={isListening ? 'Stop voice input' : 'Start voice input'}
-              >
-                {isListening ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-              </button>
-            )}
-          </div>
-          <button
-            onClick={handleSend}
-            disabled={!text.trim()}
-            className="self-end h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-transform"
-            title="Send"
-          >
-            <Send className="h-5 w-5" />
-          </button>
-        </div>
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          {isVoiceSupported && (
+            <button
+              type="button"
+              onClick={toggleVoiceInput}
+              className={`flex-shrink-0 p-3 rounded-full transition-colors ${
+                isListening
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                  : 'bg-muted hover:bg-accent text-muted-foreground'
+              }`}
+              title={isListening ? 'Stop voice input' : 'Start voice input'}
+            >
+              {isListening ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+            </button>
+          )}
+          <input
+            ref={inputRef}
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type or use voice input..."
+            className="flex-1 h-10 px-3 text-sm bg-muted border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
+            enterKeyHint="send"
+          />
+        </form>
 
         {isListening && (
           <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">

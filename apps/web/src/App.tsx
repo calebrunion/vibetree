@@ -1,8 +1,7 @@
 import { LoginPage, useAuth } from '@vibetree/auth'
 import { ConfirmDialog, Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
-import { Bot, CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Rows2, Sun, Terminal, Trash2, X } from 'lucide-react'
+import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, RefreshCw, Rows2, Sun, Terminal, Trash2, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ClaudeTerminalView } from './components/ClaudeTerminalView'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
 import MobileTerminalToolbar from './components/MobileTerminalToolbar'
@@ -367,14 +366,14 @@ function App() {
                     <div className="flex">
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 border ${
-                          project.selectedTab === 'claude'
+                          project.selectedTab === 'terminal'
                             ? 'bg-background text-foreground border-border shadow-sm'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                         }`}
-                        onClick={() => setSelectedTab(project.id, 'claude')}
+                        onClick={() => setSelectedTab(project.id, 'terminal')}
                       >
-                        <Bot className="h-3.5 w-3.5" />
-                        Claude
+                        <Terminal className="h-3.5 w-3.5" />
+                        Terminal
                       </button>
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
@@ -400,17 +399,6 @@ function App() {
                             {changedFilesCount}
                           </span>
                         )}
-                      </button>
-                      <button
-                        className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
-                          project.selectedTab === 'terminal'
-                            ? 'bg-background text-foreground border-border shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
-                        }`}
-                        onClick={() => setSelectedTab(project.id, 'terminal')}
-                      >
-                        <Terminal className="h-3.5 w-3.5" />
-                        Terminal
                       </button>
                     </div>
                     {project.selectedTab === 'terminal' ? (
@@ -491,19 +479,6 @@ function App() {
                           worktrees={project.worktrees || []}
                           selectedWorktree={project.selectedWorktree}
                         />
-                      </div>
-                      <div className="flex-shrink-0">
-                        <MobileTerminalToolbar />
-                      </div>
-                      <div className="md:hidden h-24 bg-background flex-shrink-0" />
-                    </div>
-
-                    {/* Claude Tab - Claude Code terminal */}
-                    <div className={`absolute inset-0 flex flex-col overflow-hidden ${project.selectedTab === 'claude' ? 'flex' : 'hidden'}`}>
-                      <div className="flex-1 min-h-0 overflow-hidden">
-                        {project.selectedWorktree && (
-                          <ClaudeTerminalView worktreePath={project.selectedWorktree} />
-                        )}
                       </div>
                       <div className="flex-shrink-0">
                         <MobileTerminalToolbar />

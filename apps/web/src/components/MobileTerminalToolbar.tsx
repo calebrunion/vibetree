@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Clipboard, CornerDownLeft, MessageSquare } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bot, Clipboard, CornerDownLeft, MessageSquare } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -17,7 +17,7 @@ const KEYS = {
 }
 
 export default function MobileTerminalToolbar() {
-  const { getActiveProject, terminalSessions, claudeTerminalSessions } = useAppStore()
+  const { getActiveProject, terminalSessions } = useAppStore()
   const { getAdapter } = useWebSocket()
   const [isVoiceDialogOpen, setIsVoiceDialogOpen] = useState(false)
 
@@ -25,8 +25,7 @@ export default function MobileTerminalToolbar() {
     const activeProject = getActiveProject()
     if (!activeProject?.selectedWorktree) return
 
-    const sessions = activeProject.selectedTab === 'claude' ? claudeTerminalSessions : terminalSessions
-    const sessionId = sessions.get(activeProject.selectedWorktree)
+    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
     if (!sessionId) return
 
     const adapter = getAdapter()
@@ -37,14 +36,13 @@ export default function MobileTerminalToolbar() {
     } catch (error) {
       console.error('Failed to send key:', error)
     }
-  }, [getActiveProject, terminalSessions, claudeTerminalSessions, getAdapter])
+  }, [getActiveProject, terminalSessions, getAdapter])
 
   const sendTextToTerminal = useCallback(async (text: string) => {
     const activeProject = getActiveProject()
     if (!activeProject?.selectedWorktree) return
 
-    const sessions = activeProject.selectedTab === 'claude' ? claudeTerminalSessions : terminalSessions
-    const sessionId = sessions.get(activeProject.selectedWorktree)
+    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
     if (!sessionId) return
 
     const adapter = getAdapter()
@@ -55,7 +53,26 @@ export default function MobileTerminalToolbar() {
     } catch (error) {
       console.error('Failed to send text:', error)
     }
-  }, [getActiveProject, terminalSessions, claudeTerminalSessions, getAdapter])
+  }, [getActiveProject, terminalSessions, getAdapter])
+
+  const launchClaude = useCallback(async () => {
+    const activeProject = getActiveProject()
+    if (!activeProject?.selectedWorktree) return
+
+    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
+    if (!sessionId) return
+
+    const adapter = getAdapter()
+    if (!adapter) return
+
+    try {
+      await adapter.writeToShell(sessionId, KEYS.CTRL_C)
+      await new Promise(resolve => setTimeout(resolve, 100))
+      await adapter.writeToShell(sessionId, 'claude -c --permission-mode bypassPermissions\n')
+    } catch (error) {
+      console.error('Failed to launch Claude:', error)
+    }
+  }, [getActiveProject, terminalSessions, getAdapter])
 
   const activeProject = getActiveProject()
 
@@ -78,6 +95,13 @@ export default function MobileTerminalToolbar() {
             </div>
 
             <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={launchClaude}
+                className="p-2.5 bg-muted border rounded-md active:bg-accent"
+                title="Launch Claude"
+              >
+                <Bot className="h-5 w-5" />
+              </button>
               <button
                 onClick={() => sendKey(KEYS.SHIFT_TAB)}
                 className="px-3 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent"
