@@ -483,7 +483,7 @@ function App() {
                       <div className="flex-shrink-0">
                         <MobileTerminalToolbar />
                       </div>
-                      <div className="md:hidden h-24 bg-background flex-shrink-0" />
+                      <div className="md:hidden h-6 bg-background flex-shrink-0" />
                     </div>
 
                     {/* Keep GitDiffView mounted but hidden to preserve state */}

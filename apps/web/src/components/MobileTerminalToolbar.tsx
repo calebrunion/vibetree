@@ -82,7 +82,7 @@ export default function MobileTerminalToolbar() {
 
   return (
     <div className="md:hidden flex flex-col">
-      <div className="flex items-center bg-background border-t">
+      <div className="flex items-center bg-background">
         <div className="flex-1 overflow-x-auto scrollbar-hide">
           <div className="flex items-center justify-between px-4 py-2">
             <div className="flex items-center gap-1 flex-shrink-0">
@@ -142,10 +142,10 @@ export default function MobileTerminalToolbar() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-6 py-4">
+      <div className="flex items-end justify-between px-6 pt-4 pb-0">
         <button
           onClick={() => setIsVoiceDialogOpen(true)}
-          className="h-14 w-14 rounded-full border-2 border-border bg-muted active:scale-95 transition-transform flex items-center justify-center"
+          className="h-14 w-20 rounded-md border-2 border-border bg-muted active:scale-95 transition-transform flex items-center justify-center"
           title="Open voice input"
           aria-label="Open voice input"
         >
@@ -154,26 +154,26 @@ export default function MobileTerminalToolbar() {
         <div className="flex flex-col items-center gap-1">
           <button
             onClick={() => sendKey(KEYS.ARROW_UP)}
-            className="h-11 w-11 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
+            className="h-11 w-11 rounded-md bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
           >
             <ArrowUp className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-1">
             <button
               onClick={() => sendKey(KEYS.ARROW_LEFT)}
-              className="h-11 w-11 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
+              className="h-11 w-11 rounded-md bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
             <button
               onClick={() => sendKey(KEYS.ARROW_DOWN)}
-              className="h-11 w-11 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
+              className="h-11 w-11 rounded-md bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
             >
               <ArrowDown className="h-5 w-5" />
             </button>
             <button
               onClick={() => sendKey(KEYS.ARROW_RIGHT)}
-              className="h-11 w-11 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
+              className="h-11 w-11 rounded-md bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
             >
               <ArrowRight className="h-5 w-5" />
             </button>
@@ -181,7 +181,7 @@ export default function MobileTerminalToolbar() {
         </div>
         <button
           onClick={() => sendKey(KEYS.ENTER)}
-          className="h-14 w-14 rounded-full bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
+          className="h-14 w-20 rounded-md bg-muted border-2 border-border active:scale-95 transition-transform flex items-center justify-center"
           title="Send Enter"
           aria-label="Send Enter"
         >
