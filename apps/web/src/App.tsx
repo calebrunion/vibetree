@@ -261,6 +261,11 @@ function App() {
     return project.worktrees.find((wt) => wt.path === project.selectedWorktree)
   }
 
+  const getCurrentTab = (project: (typeof projects)[0]): 'terminal' | 'changes' => {
+    if (!project.selectedWorktree) return 'terminal'
+    return project.selectedTabs?.[project.selectedWorktree] || 'terminal'
+  }
+
   // Show login page if not authenticated and not loading
   if (!authLoading && !isAuthenticated) {
     return <LoginPage />
@@ -393,24 +398,24 @@ function App() {
                     <div className="flex">
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 border ${
-                          project.selectedTab === 'terminal'
+                          getCurrentTab(project) === 'terminal'
                             ? 'bg-accent text-accent-foreground border-border shadow-sm'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                         }`}
-                        onClick={() => setSelectedTab(project.id, 'terminal')}
+                        onClick={() => setSelectedTab(project.id, project.selectedWorktree!, 'terminal')}
                       >
                         <Terminal className="h-3.5 w-3.5" />
                         Terminal
                       </button>
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
-                          project.selectedTab === 'changes'
+                          getCurrentTab(project) === 'changes'
                             ? 'bg-accent text-accent-foreground border-border shadow-sm'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                         }`}
                         onClick={() => {
-                          if (project.selectedTab !== 'changes') {
-                            setSelectedTab(project.id, 'changes')
+                          if (getCurrentTab(project) !== 'changes') {
+                            setSelectedTab(project.id, project.selectedWorktree!, 'changes')
                           }
                           gitDiffRef.current?.refresh()
                         }}
@@ -420,7 +425,7 @@ function App() {
                         {changedFilesCount > 0 && (
                           <span
                             className={`ml-auto -mr-1.5 px-1.5 py-0.5 text-xs font-medium rounded min-w-[1.25rem] text-center ${
-                              project.selectedTab === 'changes'
+                              getCurrentTab(project) === 'changes'
                                 ? 'text-gray-700 bg-gray-400/40 dark:text-gray-300 dark:bg-gray-400/30'
                                 : 'text-gray-500 bg-gray-500/30'
                             }`}
@@ -430,7 +435,7 @@ function App() {
                         )}
                       </button>
                     </div>
-                    {project.selectedTab === 'terminal' ? (
+                    {getCurrentTab(project) === 'terminal' ? (
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => toggleTerminalSplit(project.id)}
@@ -506,7 +511,7 @@ function App() {
                     {/* Terminal Tab - Managed terminals with lifecycle control */}
                     <div
                       className={`absolute inset-0 flex flex-col overflow-hidden ${
-                        project.selectedTab === 'terminal' ? 'flex' : 'hidden'
+                        getCurrentTab(project) === 'terminal' ? 'flex' : 'hidden'
                       }`}
                     >
                       <div className="flex-1 min-h-0 overflow-hidden">
@@ -522,7 +527,7 @@ function App() {
                     </div>
 
                     {/* Keep GitDiffView mounted but hidden to preserve state */}
-                    <div className={`absolute inset-0 ${project.selectedTab === 'changes' ? 'block' : 'hidden'}`}>
+                    <div className={`absolute inset-0 ${getCurrentTab(project) === 'changes' ? 'block' : 'hidden'}`}>
                       <GitDiffView
                         ref={gitDiffRef}
                         worktreePath={project.selectedWorktree}
