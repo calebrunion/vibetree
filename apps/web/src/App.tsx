@@ -161,9 +161,9 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'Tab') {
+      if (e.metaKey && e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         e.preventDefault()
-        cycleProject(e.shiftKey ? 'prev' : 'next')
+        cycleProject(e.key === 'ArrowLeft' ? 'prev' : 'next')
       }
     }
 
