@@ -145,7 +145,7 @@ export const Terminal: React.FC<TerminalProps> = ({
     if (!terminalRef.current) return;
 
     const {
-      fontSize = 14,
+      fontSize = 12,
       fontFamily = 'Menlo, Monaco, "Courier New", monospace',
       theme = 'dark',
       cursorBlink = true,
