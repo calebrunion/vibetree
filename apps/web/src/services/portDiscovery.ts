@@ -12,17 +12,21 @@ async function discoverServerPort(): Promise<number> {
     return cachedServerPort;
   }
 
+  // Use current hostname for discovery (supports network access)
+  const hostname = window.location.hostname;
+  const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+
   // Start with default port 3002 and check sequential ports
   let startPort = 3002;
-  
+
   for (let i = 0; i < 50; i++) { // Check 50 sequential ports max
     const port = startPort + i;
     try {
-      const response = await fetch(`http://localhost:${port}/health`, {
+      const response = await fetch(`${protocol}//${hostname}:${port}/health`, {
         method: 'GET',
         signal: AbortSignal.timeout(500) // 500ms timeout for faster discovery
       });
-      
+
       if (response.ok) {
         cachedServerPort = port;
         console.log(`✓ Discovered server port: ${port}`);
@@ -58,19 +62,11 @@ export async function getServerWebSocketUrl(): Promise<string> {
 
   // Discover the port dynamically
   const port = await discoverServerPort();
-  
-  // Determine protocol and host
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                     window.location.hostname === '127.0.0.1';
-  
-  let wsUrl: string;
-  if (isLocalhost) {
-    wsUrl = `ws://localhost:${port}`;
-  } else {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    wsUrl = `${protocol}//${window.location.hostname}:${port}`;
-  }
-  
+
+  // Use current hostname for WebSocket URL (supports network access)
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${protocol}//${window.location.hostname}:${port}`;
+
   console.log(`🔌 Constructed WebSocket URL: ${wsUrl}`);
   return wsUrl;
 }
@@ -89,19 +85,11 @@ export async function getServerHttpUrl(): Promise<string> {
 
   // Discover the port dynamically
   const port = await discoverServerPort();
-  
-  // Determine protocol and host
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                     window.location.hostname === '127.0.0.1';
-  
-  let httpUrl: string;
-  if (isLocalhost) {
-    httpUrl = `http://localhost:${port}`;
-  } else {
-    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-    httpUrl = `${protocol}//${window.location.hostname}:${port}`;
-  }
-  
+
+  // Use current hostname for HTTP URL (supports network access)
+  const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+  const httpUrl = `${protocol}//${window.location.hostname}:${port}`;
+
   console.log(`🌐 Constructed HTTP URL: ${httpUrl}`);
   return httpUrl;
 }
