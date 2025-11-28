@@ -4,7 +4,6 @@ import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, Ref
 import { useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
-import FloatingVoiceInput from './components/FloatingVoiceInput'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
 import MobileTerminalToolbar from './components/MobileTerminalToolbar'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
@@ -450,8 +449,7 @@ function App() {
                   {/* Tab Content */}
                   <div className="flex-1 overflow-hidden relative">
                     {/* Terminal Tab - Managed terminals with lifecycle control */}
-                    <div className={`absolute inset-0 flex flex-col ${project.selectedTab === 'terminal' ? 'flex' : 'hidden'}`}>
-                      <MobileTerminalToolbar />
+                    <div className={`absolute inset-0 flex flex-col pb-12 md:pb-0 ${project.selectedTab === 'terminal' ? 'flex' : 'hidden'}`}>
                       <div className="flex-1 min-h-0">
                         <TerminalManager
                           worktrees={project.worktrees || []}
@@ -486,7 +484,7 @@ function App() {
       </Tabs>
 
       <FloatingAddWorktree />
-      <FloatingVoiceInput />
+      <MobileTerminalToolbar />
 
       <ConfirmDialog
         open={!!projectToRemove}
