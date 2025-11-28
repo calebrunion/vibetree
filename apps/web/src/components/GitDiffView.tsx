@@ -261,7 +261,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
             </div>
           ) : (
             <div className="flex-1 overflow-auto w-full">
-              <div className="p-2 md:p-4 w-full overflow-hidden">
+              <div className="w-full overflow-hidden">
                 <DiffView
                   data={{
                     oldFile: {
