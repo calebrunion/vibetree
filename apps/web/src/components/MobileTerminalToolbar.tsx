@@ -1,50 +1,8 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Clipboard, CornerDownLeft, Mic, MicOff } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Clipboard, CornerDownLeft, MessageSquare } from 'lucide-react'
+import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
-
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList
-  resultIndex: number
-}
-
-interface SpeechRecognitionResultList {
-  length: number
-  item(index: number): SpeechRecognitionResult
-  [index: number]: SpeechRecognitionResult
-}
-
-interface SpeechRecognitionResult {
-  length: number
-  item(index: number): SpeechRecognitionAlternative
-  [index: number]: SpeechRecognitionAlternative
-  isFinal: boolean
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string
-  confidence: number
-}
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean
-  interimResults: boolean
-  lang: string
-  start(): void
-  stop(): void
-  abort(): void
-  onresult: ((event: SpeechRecognitionEvent) => void) | null
-  onerror: ((event: Event) => void) | null
-  onend: (() => void) | null
-  onstart: (() => void) | null
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition
-    webkitSpeechRecognition: new () => SpeechRecognition
-  }
-}
+import VoiceInputDialog from './VoiceInputDialog'
 
 const KEYS = {
   ESC: '\x1b',
@@ -61,10 +19,7 @@ const KEYS = {
 export default function MobileTerminalToolbar() {
   const { getActiveProject, terminalSessions, claudeTerminalSessions } = useAppStore()
   const { getAdapter } = useWebSocket()
-
-  const [isListening, setIsListening] = useState(false)
-  const [isVoiceSupported, setIsVoiceSupported] = useState(false)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const [isVoiceDialogOpen, setIsVoiceDialogOpen] = useState(false)
 
   const sendKey = useCallback(async (key: string) => {
     const activeProject = getActiveProject()
@@ -101,58 +56,6 @@ export default function MobileTerminalToolbar() {
       console.error('Failed to send text:', error)
     }
   }, [getActiveProject, terminalSessions, claudeTerminalSessions, getAdapter])
-
-  const sendTextRef = useRef(sendTextToTerminal)
-
-  useEffect(() => {
-    sendTextRef.current = sendTextToTerminal
-  }, [sendTextToTerminal])
-
-  useEffect(() => {
-    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition
-    setIsVoiceSupported(!!SpeechRecognitionAPI)
-
-    if (!SpeechRecognitionAPI) return
-
-    const recognition = new SpeechRecognitionAPI()
-    recognition.continuous = false
-    recognition.interimResults = false
-    recognition.lang = 'en-US'
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const result = event.results[event.resultIndex]
-      if (result.isFinal) {
-        const transcript = result[0].transcript
-        sendTextRef.current(transcript)
-      }
-    }
-
-    recognition.onerror = () => {
-      setIsListening(false)
-    }
-
-    recognition.onend = () => {
-      setIsListening(false)
-    }
-
-    recognitionRef.current = recognition
-
-    return () => {
-      recognition.abort()
-    }
-  }, [])
-
-  const toggleVoiceInput = useCallback(() => {
-    if (!recognitionRef.current) return
-
-    if (isListening) {
-      recognitionRef.current.stop()
-      setIsListening(false)
-    } else {
-      recognitionRef.current.start()
-      setIsListening(true)
-    }
-  }, [isListening])
 
   const activeProject = getActiveProject()
 
@@ -216,22 +119,14 @@ export default function MobileTerminalToolbar() {
       </div>
 
       <div className="flex items-center justify-between px-6 py-4">
-        {isVoiceSupported ? (
-          <button
-            onClick={toggleVoiceInput}
-            className={`h-14 w-14 rounded-full border-2 active:scale-95 transition-transform flex items-center justify-center ${isListening ? "bg-red-100 dark:bg-red-900/30 border-red-500" : "bg-muted border-border"}`}
-            title={isListening ? "Stop voice input" : "Start voice input"}
-            aria-label={isListening ? "Stop voice input" : "Start voice input"}
-          >
-            {isListening ? (
-              <Mic className="h-6 w-6 text-red-600 dark:text-red-400" />
-            ) : (
-              <MicOff className="h-6 w-6" />
-            )}
-          </button>
-        ) : (
-          <div className="h-14 w-14" />
-        )}
+        <button
+          onClick={() => setIsVoiceDialogOpen(true)}
+          className="h-14 w-14 rounded-full border-2 border-border bg-muted active:scale-95 transition-transform flex items-center justify-center"
+          title="Open voice input"
+          aria-label="Open voice input"
+        >
+          <MessageSquare className="h-6 w-6" />
+        </button>
         <div className="flex flex-col items-center gap-1">
           <button
             onClick={() => sendKey(KEYS.ARROW_UP)}
@@ -269,6 +164,13 @@ export default function MobileTerminalToolbar() {
           <CornerDownLeft className="h-6 w-6" />
         </button>
       </div>
+
+      <VoiceInputDialog
+        isOpen={isVoiceDialogOpen}
+        onClose={() => setIsVoiceDialogOpen(false)}
+        onSend={sendTextToTerminal}
+        onEnter={() => sendKey(KEYS.ENTER)}
+      />
     </div>
   )
 }
