@@ -47,7 +47,7 @@ export function FloatingAddWorktree() {
     <>
       <button
         onClick={() => setShowDialog(true)}
-        className="md:hidden fixed bottom-4 right-4 p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent transition-colors flex items-center justify-center z-40"
+        className="md:hidden fixed bottom-4 left-4 p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent transition-colors flex items-center justify-center z-40"
         aria-label="Add worktree"
       >
         <Plus className="h-4 w-4" />

@@ -4,6 +4,7 @@ import { CheckCircle, Columns2, GitBranch, Maximize2, Minimize2, Moon, Plus, Ref
 import { useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
+import FloatingVoiceInput from './components/FloatingVoiceInput'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
 import MobileTerminalToolbar from './components/MobileTerminalToolbar'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
@@ -485,6 +486,7 @@ function App() {
       </Tabs>
 
       <FloatingAddWorktree />
+      <FloatingVoiceInput />
 
       <ConfirmDialog
         open={!!projectToRemove}
