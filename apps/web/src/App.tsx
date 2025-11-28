@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
+import MobileTerminalToolbar from './components/MobileTerminalToolbar'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
 import { TerminalManager } from './components/TerminalManager'
@@ -448,11 +449,14 @@ function App() {
                   {/* Tab Content */}
                   <div className="flex-1 overflow-hidden relative">
                     {/* Terminal Tab - Managed terminals with lifecycle control */}
-                    <div className={`absolute inset-0 ${project.selectedTab === 'terminal' ? 'block' : 'hidden'}`}>
-                      <TerminalManager
-                        worktrees={project.worktrees || []}
-                        selectedWorktree={project.selectedWorktree}
-                      />
+                    <div className={`absolute inset-0 flex flex-col ${project.selectedTab === 'terminal' ? 'flex' : 'hidden'}`}>
+                      <MobileTerminalToolbar />
+                      <div className="flex-1 min-h-0">
+                        <TerminalManager
+                          worktrees={project.worktrees || []}
+                          selectedWorktree={project.selectedWorktree}
+                        />
+                      </div>
                     </div>
 
                     {/* Keep GitDiffView mounted but hidden to preserve state */}
