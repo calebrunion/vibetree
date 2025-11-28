@@ -283,7 +283,7 @@ export async function addWorktree(projectPath: string, branchName: string): Prom
     fs.mkdirSync(treesDir, { recursive: true });
   }
 
-  await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath], expandedPath);
+  await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath, 'origin/HEAD'], expandedPath);
 
   return { path: worktreePath, branch: branchName };
 }
