@@ -1,8 +1,9 @@
 import * as crypto from 'crypto';
-import { 
-  ShellStartResult, 
-  ShellWriteResult, 
-  ShellResizeResult 
+import * as fs from 'fs';
+import {
+  ShellStartResult,
+  ShellWriteResult,
+  ShellResizeResult
 } from '../types';
 import {
   getDefaultShell,
@@ -133,6 +134,16 @@ export class ShellSessionManager {
     terminalId?: string,
     setLocaleVariables: boolean = true
   ): Promise<ShellStartResult> {
+    if (!fs.existsSync(worktreePath)) {
+      const errorMessage = `Directory does not exist: ${worktreePath}`;
+      console.error(`Failed to start PTY session: ${errorMessage}`);
+      this.trackSpawnError(worktreePath, errorMessage, new Error(errorMessage));
+      return {
+        success: false,
+        error: errorMessage
+      };
+    }
+
     const sessionId = this.generateSessionId(worktreePath, terminalId, forceNew);
 
     // Return existing session if available (unless forceNew is true)
