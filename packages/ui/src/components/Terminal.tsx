@@ -245,6 +245,12 @@ export const Terminal: React.FC<TerminalProps> = ({
 
     setTerminal(term);
 
+    // Set inputmode to "url" on the textarea for better mobile keyboard
+    const textarea = terminalRef.current.querySelector('.xterm-helper-textarea') as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.setAttribute('inputmode', 'url');
+    }
+
     // Notify parent when terminal is ready
     if (onReady) {
       onReady(term);
