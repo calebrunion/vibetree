@@ -33,11 +33,18 @@ export function expandPath(filePath: string): string {
  */
 export function executeGitCommand(args: string[], cwd: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    // Try 'git' first, fallback to absolute path if not found
-    const gitCommand = process.env.PATH?.includes('/usr/bin') ? 'git' : '/usr/bin/git';
-    const child = spawn(gitCommand, args, { 
+    if (!fs.existsSync(cwd)) {
+      reject(new Error(`Directory does not exist: ${cwd}`));
+      return;
+    }
+
+    const defaultPath = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin';
+    const envPath = process.env.PATH || '';
+    const fullPath = envPath ? `${defaultPath}:${envPath}` : defaultPath;
+
+    const child = spawn('git', args, {
       cwd,
-      env: { ...process.env, PATH: process.env.PATH || '/usr/bin:/bin:/usr/local/bin' }
+      env: { ...process.env, PATH: fullPath }
     });
     
     let stdout = '';
