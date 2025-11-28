@@ -55,7 +55,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [allChangesFiles, setAllChangesFiles] = useState<CommitFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [allChangesCollapsed, setAllChangesCollapsed] = useState(false);
+  const [allChangesCollapsed, setAllChangesCollapsed] = useState(true);
   const [currentCollapsed, setCurrentCollapsed] = useState(false);
   const [historyCollapsed, setHistoryCollapsed] = useState(false);
 
