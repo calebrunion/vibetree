@@ -454,7 +454,7 @@ function App() {
                           return (
                             <button
                               onClick={() => handleDeleteWorktree(project.id, worktreeInfo.path, worktreeInfo.branch!)}
-                              className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                              className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors border border-border"
                               title="Delete worktree"
                             >
                               <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
@@ -482,7 +482,7 @@ function App() {
                           return (
                             <button
                               onClick={() => handleDeleteWorktree(project.id, worktreeInfo.path, worktreeInfo.branch!)}
-                              className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                              className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors border border-border"
                               title="Delete worktree"
                             >
                               <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
