@@ -106,7 +106,6 @@ export default function VoiceInputDialog({
       inputRef.current.focus()
     }
     if (!isOpen) {
-      setText('')
       if (recognitionRef.current && isListening) {
         recognitionRef.current.stop()
         setIsListening(false)
@@ -167,6 +166,11 @@ export default function VoiceInputDialog({
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onBlur={(e) => {
+              if (!e.relatedTarget || !e.currentTarget.form?.contains(e.relatedTarget)) {
+                onClose()
+              }
+            }}
             placeholder="Type or use voice input..."
             className="flex-1 h-10 px-3 text-sm bg-muted border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
             enterKeyHint="send"
