@@ -18,6 +18,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
     getProject,
     updateProjectWorktrees,
     setSelectedWorktree,
+    markWorktreeForStartup,
     connected
   } = useAppStore();
 
@@ -95,7 +96,8 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
       updateProjectWorktrees(projectId, trees);
       await fetchWorktreeChanges(trees);
 
-      // Select the newly created worktree
+      // Mark for startup commands and select the newly created worktree
+      markWorktreeForStartup(result.path);
       setSelectedWorktree(projectId, result.path);
     } catch (error) {
       console.error('❌ Failed to create worktree:', error);

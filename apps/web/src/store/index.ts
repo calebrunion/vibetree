@@ -26,6 +26,7 @@ interface AppState {
   // Terminal state
   terminalSessions: Map<string, string>; // worktreePath -> sessionId
   claudeTerminalSessions: Map<string, string>; // worktreePath -> sessionId
+  pendingStartupWorktrees: Set<string>; // worktrees that need startup commands run
   
   // Theme state
   theme: 'light' | 'dark';
@@ -50,6 +51,9 @@ interface AppState {
   removeTerminalSession: (worktreePath: string) => void;
   addClaudeTerminalSession: (worktreePath: string, sessionId: string) => void;
   removeClaudeTerminalSession: (worktreePath: string) => void;
+  markWorktreeForStartup: (worktreePath: string) => void;
+  clearWorktreeStartup: (worktreePath: string) => void;
+  shouldRunStartup: (worktreePath: string) => boolean;
   setTheme: (theme: 'light' | 'dark') => void;
   setShowAddWorktreeDialog: (show: boolean) => void;
   toggleTerminalSplit: (projectId: string) => void;
@@ -68,6 +72,7 @@ export const useAppStore = create<AppState>()(
   activeProjectId: null,
   terminalSessions: new Map(),
   claudeTerminalSessions: new Map(),
+  pendingStartupWorktrees: new Set(),
   theme: 'light',
   showAddWorktreeDialog: false,
 
@@ -221,6 +226,22 @@ export const useAppStore = create<AppState>()(
       sessions.delete(worktreePath);
       return { claudeTerminalSessions: sessions };
     }),
+
+  markWorktreeForStartup: (worktreePath) =>
+    set((state) => {
+      const pending = new Set(state.pendingStartupWorktrees);
+      pending.add(worktreePath);
+      return { pendingStartupWorktrees: pending };
+    }),
+
+  clearWorktreeStartup: (worktreePath) =>
+    set((state) => {
+      const pending = new Set(state.pendingStartupWorktrees);
+      pending.delete(worktreePath);
+      return { pendingStartupWorktrees: pending };
+    }),
+
+  shouldRunStartup: (worktreePath) => get().pendingStartupWorktrees.has(worktreePath),
 
   setTheme: (theme) => set({ theme }),
   setShowAddWorktreeDialog: (show) => set({ showAddWorktreeDialog: show }),

@@ -202,8 +202,8 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
                 activeShellSessions.delete(result.processId!);
               });
 
-              // Execute startup commands for new sessions only
-              if (result.isNew) {
+              // Execute startup commands only when explicitly requested (e.g., after new worktree creation)
+              if (message.payload.runStartupCommands) {
                 const startupCommands = getStartupCommands(message.payload.worktreePath);
                 if (startupCommands.length > 0) {
                   // Small delay to let the shell initialize

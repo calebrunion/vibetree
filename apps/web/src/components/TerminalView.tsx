@@ -18,6 +18,8 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     terminalSessions,
     addTerminalSession,
     removeTerminalSession,
+    shouldRunStartup,
+    clearWorktreeStartup,
     theme,
     setTerminalSplit,
     toggleTerminalFullscreen
@@ -98,8 +100,14 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     // Start new shell session - follow desktop app pattern
     const startSession = async () => {
       try {
+        // Check if this worktree needs startup commands (newly created from UI)
+        const runStartup = shouldRunStartup(selectedWorktree);
+        if (runStartup) {
+          clearWorktreeStartup(selectedWorktree);
+        }
+
         // Call server directly and wait for actual session ID (like desktop app)
-        const result = await adapter.startShell(selectedWorktree);
+        const result = await adapter.startShell(selectedWorktree, undefined, undefined, undefined, runStartup);
         
         if (result.success && result.processId) {
           // Use the actual session ID returned by server

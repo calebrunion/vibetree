@@ -6,6 +6,7 @@ import { useWebSocket } from '../hooks/useWebSocket';
 export function FloatingAddWorktree() {
   const updateProjectWorktrees = useAppStore((state) => state.updateProjectWorktrees);
   const setSelectedWorktree = useAppStore((state) => state.setSelectedWorktree);
+  const markWorktreeForStartup = useAppStore((state) => state.markWorktreeForStartup);
   const connected = useAppStore((state) => state.connected);
   const showDialog = useAppStore((state) => state.showAddWorktreeDialog);
   const setShowDialog = useAppStore((state) => state.setShowAddWorktreeDialog);
@@ -30,6 +31,7 @@ export function FloatingAddWorktree() {
       const result = await adapter.addWorktree(activeProject.path, branchName);
       const trees = await adapter.listWorktrees(activeProject.path);
       updateProjectWorktrees(activeProject.id, trees);
+      markWorktreeForStartup(result.path);
       setSelectedWorktree(activeProject.id, result.path);
       setShowDialog(false);
       setBranchName('');
