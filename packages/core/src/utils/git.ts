@@ -192,10 +192,10 @@ export async function getCommitDiff(worktreePath: string, commitHash: string, fi
 /**
  * Get diff against a base branch (e.g., origin/main)
  * @param worktreePath - Path to the git worktree
- * @param baseBranch - Base branch to diff against (default: origin/main)
+ * @param baseBranch - Base branch to diff against (default: origin/HEAD)
  * @returns Diff output as string
  */
-export async function getDiffAgainstBase(worktreePath: string, baseBranch: string = 'origin/main', filePath?: string): Promise<string> {
+export async function getDiffAgainstBase(worktreePath: string, baseBranch: string = 'origin/HEAD', filePath?: string): Promise<string> {
   const expandedPath = expandPath(worktreePath);
   try {
     const mergeBase = await executeGitCommand(['merge-base', baseBranch, 'HEAD'], expandedPath);
@@ -225,10 +225,10 @@ export async function getDiffAgainstBase(worktreePath: string, baseBranch: strin
 /**
  * Get list of files changed against a base branch
  * @param worktreePath - Path to the git worktree
- * @param baseBranch - Base branch to compare against (default: origin/main)
+ * @param baseBranch - Base branch to compare against (default: origin/HEAD)
  * @returns Array of changed files with their status
  */
-export async function getFilesChangedAgainstBase(worktreePath: string, baseBranch: string = 'origin/main'): Promise<CommitFile[]> {
+export async function getFilesChangedAgainstBase(worktreePath: string, baseBranch: string = 'origin/HEAD'): Promise<CommitFile[]> {
   const expandedPath = expandPath(worktreePath);
   try {
     const mergeBase = await executeGitCommand(['merge-base', baseBranch, 'HEAD'], expandedPath);

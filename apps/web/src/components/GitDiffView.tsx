@@ -342,7 +342,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
               {!allChangesCollapsed && (
                 <div className="px-2 pb-2">
                   {allChangesFiles.length === 0 ? (
-                    <p className="text-xs text-muted-foreground text-center py-2">No changes against main</p>
+                    <p className="text-xs text-muted-foreground text-center py-2">No changes against origin</p>
                   ) : (
                     <div className="space-y-1">
                       {allChangesFiles.map((file) => (
@@ -463,7 +463,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                 {selectedFile}
               </span>
               <span className="ml-auto text-xs text-muted-foreground">
-                {selectedSection === 'all' ? 'vs origin/main' : selectedSection === 'commit' ? `commit ${selectedCommit?.shortHash}` : 'current'}
+                {selectedSection === 'all' ? 'vs origin' : selectedSection === 'commit' ? `commit ${selectedCommit?.shortHash}` : 'current'}
               </span>
             </div>
           )}
