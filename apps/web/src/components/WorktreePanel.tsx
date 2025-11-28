@@ -354,6 +354,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
+                inputMode="url"
               />
               
               <div className="flex justify-end gap-2 mt-6">

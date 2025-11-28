@@ -64,11 +64,15 @@ export function ProjectSelector({ onSelectProject, onClose }: ProjectSelectorPro
               id="projectPath"
               type="text"
               value={projectPath}
-              onChange={(e) => setProjectPath(e.target.value.replace(/\s/g, ''))}
+              onChange={(e) => setProjectPath(e.target.value.replace(/[^a-zA-Z0-9.\/\-~]/g, ''))}
               placeholder="~/project/path"
               className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               disabled={isLoading}
               autoFocus
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              inputMode="url"
             />
             {error && (
               <p className="text-sm text-red-500">{error}</p>
