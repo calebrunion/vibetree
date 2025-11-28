@@ -19,6 +19,8 @@ release/
 *.pem
 .dev-port
 .web-port
+.playwright-mcp/
+.trees/
 
 # Debug
 npm-debug.log*
