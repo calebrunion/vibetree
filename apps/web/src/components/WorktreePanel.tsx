@@ -295,7 +295,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 truncate text-sm font-semibold">
                         {isMainWorktree ? (
-                          <span className="truncate text-muted-foreground">(main)</span>
+                          <span className="truncate">HEAD</span>
                         ) : (
                           <span className="truncate">{worktreeName}</span>
                         )}

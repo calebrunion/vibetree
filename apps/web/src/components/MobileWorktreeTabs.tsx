@@ -89,11 +89,7 @@ export function MobileWorktreeTabs({
               `}
             >
               <span className="text-sm font-medium flex items-center gap-1.5">
-                {isMainWorktree ? (
-                  <span className="text-muted-foreground">(main)</span>
-                ) : (
-                  worktreeName
-                )}
+                {isMainWorktree ? 'HEAD' : worktreeName}
                 {hasChanges && (
                   <span className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0" />
                 )}
