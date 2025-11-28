@@ -18,6 +18,7 @@ interface GitDiffViewProps {
   theme?: 'light' | 'dark';
   viewMode: 'unstaged' | 'staged';
   onLoadingChange?: (loading: boolean) => void;
+  onFileCountChange?: (count: number) => void;
 }
 
 export interface GitDiffViewRef {
@@ -25,7 +26,7 @@ export interface GitDiffViewRef {
 }
 
 export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function GitDiffView(
-  { worktreePath, theme = 'light', viewMode, onLoadingChange },
+  { worktreePath, theme = 'light', viewMode, onLoadingChange, onFileCountChange },
   ref
 ) {
   const [files, setFiles] = useState<GitFile[]>([]);
@@ -110,6 +111,10 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   useEffect(() => {
     onLoadingChange?.(loading);
   }, [loading, onLoadingChange]);
+
+  useEffect(() => {
+    onFileCountChange?.(files.length);
+  }, [files.length, onFileCountChange]);
 
   useImperativeHandle(ref, () => ({
     refresh: loadGitStatus

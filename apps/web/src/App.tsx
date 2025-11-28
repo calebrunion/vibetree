@@ -36,6 +36,7 @@ function App() {
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [gitViewMode, setGitViewMode] = useState<'unstaged' | 'staged'>('unstaged')
+  const [changedFilesCount, setChangedFilesCount] = useState(0)
   const gitDiffRef = useRef<GitDiffViewRef>(null)
 
   // const activeProject = getActiveProject();
@@ -299,6 +300,11 @@ function App() {
                       >
                         <GitBranch className="h-3.5 w-3.5" />
                         Changes
+                        {changedFilesCount > 0 && (
+                          <span className="ml-auto -mr-1.5 px-1.5 py-0.5 text-xs font-medium text-amber-500 bg-amber-500/30 rounded min-w-[1.25rem] text-center">
+                            {changedFilesCount}
+                          </span>
+                        )}
                       </button>
                     </div>
                     {project.selectedTab === 'terminal' ? (
@@ -368,6 +374,7 @@ function App() {
                         worktreePath={project.selectedWorktree}
                         theme={theme}
                         viewMode={gitViewMode}
+                        onFileCountChange={setChangedFilesCount}
                       />
                     </div>
                   </div>
