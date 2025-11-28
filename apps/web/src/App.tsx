@@ -44,6 +44,7 @@ function App() {
     connected,
     toggleTerminalSplit,
     toggleTerminalFullscreen,
+    setShowAddWorktreeDialog,
   } = useAppStore()
   const { connect, getAdapter } = useWebSocket()
   const [showProjectSelector, setShowProjectSelector] = useState(false)
@@ -172,12 +173,22 @@ function App() {
           e.preventDefault()
           setActiveProject(projects[num - 1].id)
         }
+
+        if (e.key === 'n' && activeProjectId) {
+          e.preventDefault()
+          setShowAddWorktreeDialog(true)
+        }
+
+        if (e.key === 't') {
+          e.preventDefault()
+          setShowProjectSelector(true)
+        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [cycleProject, projects, setActiveProject])
+  }, [cycleProject, projects, setActiveProject, activeProjectId, setShowAddWorktreeDialog])
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark'

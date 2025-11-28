@@ -19,12 +19,13 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
     updateProjectWorktrees,
     setSelectedWorktree,
     markWorktreeForStartup,
-    connected
+    connected,
+    showAddWorktreeDialog,
+    setShowAddWorktreeDialog
   } = useAppStore();
 
   const { getAdapter } = useWebSocket();
   const [loading, setLoading] = useState(false);
-  const [showNewBranchDialog, setShowNewBranchDialog] = useState(false);
   const [newBranchName, setNewBranchName] = useState('');
   const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set());
   const [deleteConfirmWorktree, setDeleteConfirmWorktree] = useState<{ path: string; branch: string } | null>(null);
@@ -88,7 +89,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
       const result = await adapter.addWorktree(project.path, newBranchName);
       console.log('✅ Created worktree:', result);
 
-      setShowNewBranchDialog(false);
+      setShowAddWorktreeDialog(false);
       setNewBranchName('');
 
       // Refresh worktrees to show the new one
@@ -313,7 +314,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
         <button
-          onClick={() => setShowNewBranchDialog(true)}
+          onClick={() => setShowAddWorktreeDialog(true)}
           disabled={!connected}
           className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent disabled:opacity-50 transition-colors"
           title="Create new worktree"
@@ -323,7 +324,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
       </div>
 
       {/* Create New Branch Dialog */}
-      {showNewBranchDialog && (
+      {showAddWorktreeDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-background border rounded-lg shadow-lg w-full max-w-md">
             <div className="p-6">
@@ -342,7 +343,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                     handleCreateBranch();
                   }
                   if (e.key === 'Escape') {
-                    setShowNewBranchDialog(false);
+                    setShowAddWorktreeDialog(false);
                     setNewBranchName('');
                   }
                 }}
@@ -357,7 +358,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
               <div className="flex justify-end gap-2 mt-6">
                 <button
                   onClick={() => {
-                    setShowNewBranchDialog(false);
+                    setShowAddWorktreeDialog(false);
                     setNewBranchName('');
                   }}
                   className="px-4 py-2 text-sm border border-border rounded-md hover:bg-accent"
