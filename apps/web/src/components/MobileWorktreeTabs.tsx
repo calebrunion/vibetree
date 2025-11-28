@@ -7,12 +7,14 @@ interface MobileWorktreeTabsProps {
   worktrees: Worktree[];
   selectedWorktree: string | null;
   onSelectWorktree: (path: string) => void;
+  projectPath: string;
 }
 
 export function MobileWorktreeTabs({
   worktrees,
   selectedWorktree,
-  onSelectWorktree
+  onSelectWorktree,
+  projectPath
 }: MobileWorktreeTabsProps) {
   const { getAdapter } = useWebSocket();
   const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set());
@@ -70,6 +72,7 @@ export function MobileWorktreeTabs({
             : `${worktree.head.substring(0, 8)}`;
           const worktreeName = worktree.path.split('/').pop() || branchName;
           const isSelected = selectedWorktree === worktree.path;
+          const isMainWorktree = worktree.path === projectPath;
 
           const hasChanges = worktreesWithChanges.has(worktree.path);
 
@@ -86,7 +89,11 @@ export function MobileWorktreeTabs({
               `}
             >
               <span className="text-sm font-medium flex items-center gap-1.5">
-                {worktreeName}
+                {isMainWorktree ? (
+                  <span className="text-muted-foreground">(main)</span>
+                ) : (
+                  worktreeName
+                )}
                 {hasChanges && (
                   <span className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0" />
                 )}

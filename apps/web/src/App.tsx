@@ -332,6 +332,7 @@ function App() {
                     worktrees={project.worktrees}
                     selectedWorktree={project.selectedWorktree}
                     onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
+                    projectPath={project.path}
                   />
 
                   {/* Tab Navigation */}
