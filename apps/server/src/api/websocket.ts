@@ -9,6 +9,8 @@ import {
   getGitLog,
   getCommitFiles,
   getCommitDiff,
+  getDiffAgainstBase,
+  getFilesChangedAgainstBase,
   addWorktree,
   removeWorktree,
   getStartupCommands
@@ -377,6 +379,49 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
               ws.send(JSON.stringify({
                 type: 'git:commit:diff:response',
                 payload: { diff },
+                id: message.id
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                payload: { error: (error as Error).message },
+                id: message.id
+              }));
+            }
+            break;
+          }
+
+          case 'git:diff:base': {
+            try {
+              const diff = await getDiffAgainstBase(
+                message.payload.worktreePath,
+                message.payload.baseBranch,
+                message.payload.filePath
+              );
+              ws.send(JSON.stringify({
+                type: 'git:diff:base:response',
+                payload: { diff },
+                id: message.id
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                payload: { error: (error as Error).message },
+                id: message.id
+              }));
+            }
+            break;
+          }
+
+          case 'git:files:base': {
+            try {
+              const files = await getFilesChangedAgainstBase(
+                message.payload.worktreePath,
+                message.payload.baseBranch
+              );
+              ws.send(JSON.stringify({
+                type: 'git:files:base:response',
+                payload: { files },
                 id: message.id
               }));
             } catch (error) {

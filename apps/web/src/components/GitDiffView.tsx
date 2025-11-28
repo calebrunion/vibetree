@@ -48,12 +48,14 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [files, setFiles] = useState<GitFile[]>([]);
   const [commits, setCommits] = useState<GitCommitType[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [selectedSection, setSelectedSection] = useState<'staged' | 'unstaged' | 'commit'>('unstaged');
+  const [selectedSection, setSelectedSection] = useState<'staged' | 'unstaged' | 'commit' | 'all'>('unstaged');
   const [selectedCommit, setSelectedCommit] = useState<GitCommitType | null>(null);
   const [commitFiles, setCommitFiles] = useState<CommitFile[]>([]);
   const [diffText, setDiffText] = useState<string>('');
+  const [allChangesFiles, setAllChangesFiles] = useState<CommitFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [allChangesCollapsed, setAllChangesCollapsed] = useState(false);
   const [stagedCollapsed, setStagedCollapsed] = useState(false);
   const [unstagedCollapsed, setUnstagedCollapsed] = useState(false);
   const [historyCollapsed, setHistoryCollapsed] = useState(false);
@@ -160,20 +162,59 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     }
   }, [worktreePath, getAdapter]);
 
+  const loadAllChangesFiles = useCallback(async () => {
+    const adapter = getAdapter();
+    if (!adapter || !('getFilesChangedAgainstBase' in adapter)) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const files = await (adapter as any).getFilesChangedAgainstBase(worktreePath);
+      setAllChangesFiles(files);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load all changes');
+      setAllChangesFiles([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [worktreePath, getAdapter]);
+
+  const loadDiffAgainstBase = useCallback(async (filePath: string) => {
+    const adapter = getAdapter();
+    if (!adapter || !('getDiffAgainstBase' in adapter)) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const diffTextResult = await (adapter as any).getDiffAgainstBase(worktreePath, undefined, filePath);
+      setDiffText(diffTextResult ? diffTextResult.trim() : '');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load diff');
+      setDiffText('');
+    } finally {
+      setLoading(false);
+    }
+  }, [worktreePath, getAdapter]);
+
   useEffect(() => {
     if (worktreePath) {
       loadGitStatus();
       loadGitLog();
+      loadAllChangesFiles();
     }
-  }, [worktreePath, loadGitStatus, loadGitLog]);
+  }, [worktreePath, loadGitStatus, loadGitLog, loadAllChangesFiles]);
 
   useEffect(() => {
-    if (selectedFile && selectedSection !== 'commit') {
+    if (selectedFile && selectedSection === 'all') {
+      loadDiffAgainstBase(selectedFile);
+    } else if (selectedFile && selectedSection !== 'commit') {
       loadDiff(selectedFile, selectedSection === 'staged');
     } else if (selectedFile && selectedSection === 'commit' && selectedCommit) {
       loadCommitDiff(selectedCommit.hash, selectedFile);
     }
-  }, [selectedFile, selectedSection, selectedCommit, loadDiff, loadCommitDiff]);
+  }, [selectedFile, selectedSection, selectedCommit, loadDiff, loadCommitDiff, loadDiffAgainstBase]);
 
   useEffect(() => {
     onLoadingChange?.(loading);
@@ -187,8 +228,15 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     refresh: () => {
       loadGitStatus();
       loadGitLog();
+      loadAllChangesFiles();
     }
-  }), [loadGitStatus, loadGitLog]);
+  }), [loadGitStatus, loadGitLog, loadAllChangesFiles]);
+
+  const handleAllChangesFileClick = (file: CommitFile) => {
+    setSelectedFile(file.path);
+    setSelectedSection('all');
+    setSelectedCommit(null);
+  };
 
   const getStatusIcon = (status: string, forStaged: boolean) => {
     const char = forStaged ? status[0] : status[1];
@@ -257,6 +305,46 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
           w-full md:w-80 border-r flex-col min-w-0
         `}>
           <div className="flex-1 overflow-auto">
+            {/* All Changes Section */}
+            <div className="border-b">
+              <button
+                onClick={() => setAllChangesCollapsed(!allChangesCollapsed)}
+                className="w-full p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
+              >
+                {allChangesCollapsed ? (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium">All Changes</span>
+                <span className="ml-auto text-xs text-muted-foreground">{allChangesFiles.length}</span>
+              </button>
+              {!allChangesCollapsed && (
+                <div className="px-2 pb-2">
+                  {allChangesFiles.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-2">No changes against main</p>
+                  ) : (
+                    <div className="space-y-1">
+                      {allChangesFiles.map((file) => (
+                        <div
+                          key={`all-${file.path}`}
+                          className={`flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
+                            selectedFile === file.path && selectedSection === 'all' ? 'bg-muted' : ''
+                          }`}
+                          onClick={() => handleAllChangesFileClick(file)}
+                        >
+                          {getCommitFileStatusIcon(file.status)}
+                          <span className="text-sm truncate flex-1 text-left" title={file.path}>
+                            {file.path}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Staged Section */}
             <div className="border-b">
               <button
@@ -385,26 +473,27 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
           flex-1 flex-col min-w-0 overflow-hidden
         `}>
           {/* Mobile back button and file name */}
-          {(selectedFile || (selectedSection === 'commit' && selectedCommit)) && (
+          {selectedFile && (
             <div className="md:hidden p-2 border-b bg-muted/30 flex items-center gap-2">
               <button
                 onClick={() => {
                   setSelectedFile(null);
+                  setDiffText('');
                   if (selectedSection === 'commit') {
                     setSelectedCommit(null);
                     setCommitFiles([]);
-                    setSelectedSection('unstaged');
                   }
+                  setSelectedSection('unstaged');
                 }}
                 className="p-1 hover:bg-accent rounded"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <span className="text-sm font-medium truncate">
-                {selectedFile || selectedCommit?.shortHash}
+                {selectedFile}
               </span>
               <span className="ml-auto text-xs text-muted-foreground capitalize">
-                {selectedSection === 'commit' ? `commit ${selectedCommit?.shortHash}` : selectedSection}
+                {selectedSection === 'all' ? 'vs origin/main' : selectedSection === 'commit' ? `commit ${selectedCommit?.shortHash}` : selectedSection}
               </span>
             </div>
           )}

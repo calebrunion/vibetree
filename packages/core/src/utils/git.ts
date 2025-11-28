@@ -190,6 +190,78 @@ export async function getCommitDiff(worktreePath: string, commitHash: string, fi
 }
 
 /**
+ * Get diff against a base branch (e.g., origin/main)
+ * @param worktreePath - Path to the git worktree
+ * @param baseBranch - Base branch to diff against (default: origin/main)
+ * @returns Diff output as string
+ */
+export async function getDiffAgainstBase(worktreePath: string, baseBranch: string = 'origin/main', filePath?: string): Promise<string> {
+  const expandedPath = expandPath(worktreePath);
+  try {
+    const mergeBase = await executeGitCommand(['merge-base', baseBranch, 'HEAD'], expandedPath);
+    const args = ['diff', mergeBase.trim(), 'HEAD'];
+    if (filePath) {
+      args.push('--', filePath);
+    }
+    return executeGitCommand(args, expandedPath);
+  } catch {
+    try {
+      const mergeBase = await executeGitCommand(['merge-base', 'origin/master', 'HEAD'], expandedPath);
+      const args = ['diff', mergeBase.trim(), 'HEAD'];
+      if (filePath) {
+        args.push('--', filePath);
+      }
+      return executeGitCommand(args, expandedPath);
+    } catch {
+      const args = ['diff', 'HEAD'];
+      if (filePath) {
+        args.push('--', filePath);
+      }
+      return executeGitCommand(args, expandedPath);
+    }
+  }
+}
+
+/**
+ * Get list of files changed against a base branch
+ * @param worktreePath - Path to the git worktree
+ * @param baseBranch - Base branch to compare against (default: origin/main)
+ * @returns Array of changed files with their status
+ */
+export async function getFilesChangedAgainstBase(worktreePath: string, baseBranch: string = 'origin/main'): Promise<CommitFile[]> {
+  const expandedPath = expandPath(worktreePath);
+  try {
+    const mergeBase = await executeGitCommand(['merge-base', baseBranch, 'HEAD'], expandedPath);
+    const output = await executeGitCommand(['diff', '--name-status', mergeBase.trim(), 'HEAD'], expandedPath);
+
+    const lines = output.trim().split('\n').filter(line => line.length > 0);
+    return lines.map(line => {
+      const [status, ...pathParts] = line.split('\t');
+      return {
+        path: pathParts.join('\t'),
+        status: status[0] as CommitFile['status']
+      };
+    });
+  } catch {
+    try {
+      const mergeBase = await executeGitCommand(['merge-base', 'origin/master', 'HEAD'], expandedPath);
+      const output = await executeGitCommand(['diff', '--name-status', mergeBase.trim(), 'HEAD'], expandedPath);
+
+      const lines = output.trim().split('\n').filter(line => line.length > 0);
+      return lines.map(line => {
+        const [status, ...pathParts] = line.split('\t');
+        return {
+          path: pathParts.join('\t'),
+          status: status[0] as CommitFile['status']
+        };
+      });
+    } catch {
+      return [];
+    }
+  }
+}
+
+/**
  * Create a new git worktree with a new branch
  * @param projectPath - Path to the main git repository
  * @param branchName - Name for the new branch

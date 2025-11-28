@@ -193,6 +193,16 @@ export class WebSocketAdapter extends BaseAdapter {
     return result.diff;
   }
 
+  async getDiffAgainstBase(worktreePath: string, baseBranch?: string, filePath?: string): Promise<string> {
+    const result = await this.sendMessage<{ diff: string }>('git:diff:base', { worktreePath, baseBranch, filePath });
+    return result.diff;
+  }
+
+  async getFilesChangedAgainstBase(worktreePath: string, baseBranch?: string): Promise<CommitFile[]> {
+    const result = await this.sendMessage<{ files: CommitFile[] }>('git:files:base', { worktreePath, baseBranch });
+    return result.files;
+  }
+
   async addWorktree(projectPath: string, branchName: string): Promise<WorktreeAddResult> {
     return this.sendMessage('git:worktree:add', { projectPath, branchName });
   }
