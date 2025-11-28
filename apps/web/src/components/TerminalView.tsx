@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Terminal } from '@vibetree/ui';
 import { useAppStore } from '../store';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { X } from 'lucide-react';
+import { X, Minimize2 } from 'lucide-react';
 import type { Terminal as XTerm } from '@xterm/xterm';
 
 // Cache for terminal states per session ID (like desktop app)
@@ -19,7 +19,8 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     addTerminalSession,
     removeTerminalSession,
     theme,
-    setTerminalSplit
+    setTerminalSplit,
+    toggleTerminalFullscreen
   } = useAppStore();
 
   const activeProject = getActiveProject();
@@ -429,6 +430,15 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
 
   return (
     <div className={`flex flex-col w-full h-full ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''}`}>
+      {isFullscreen && activeProject && (
+        <button
+          onClick={() => toggleTerminalFullscreen(activeProject.id)}
+          className="fixed top-4 right-4 z-[51] p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
+          title="Exit Fullscreen"
+        >
+          <Minimize2 className="h-4 w-4" />
+        </button>
+      )}
       {/* Terminal Container */}
       <div className={`flex-1 flex ${isSplit ? 'flex-col md:flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
         <div className={`${isSplit ? 'h-1/2 md:h-full w-full md:w-1/2 border-b md:border-b-0 md:border-r' : 'w-full'} h-full`}>
