@@ -642,21 +642,31 @@ function App() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => toggleTerminalSplit(project.id)}
-                          className="size-[34px] p-0 hover:bg-accent rounded-md transition-colors border border-border inline-flex items-center justify-center"
-                          title="Split Terminal"
+                          className={`group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center ${project.isTerminalSplit ? 'bg-muted' : ''}`}
+                          title={project.isTerminalSplit ? 'Close Split' : 'Split Terminal'}
                         >
-                          <Columns2 className="h-4 w-4 hidden md:block" />
-                          <Rows2 className="h-4 w-4 md:hidden" />
+                          {project.isTerminalSplit ? (
+                            <>
+                              <Columns2 className="h-4 w-4 hidden md:block group-hover:hidden text-white" />
+                              <Rows2 className="h-4 w-4 md:hidden group-hover:hidden text-white" />
+                              <X className="h-4 w-4 hidden group-hover:block text-white" />
+                            </>
+                          ) : (
+                            <>
+                              <Columns2 className="h-4 w-4 hidden md:block text-[#999] group-hover:text-white" />
+                              <Rows2 className="h-4 w-4 md:hidden text-[#999] group-hover:text-white" />
+                            </>
+                          )}
                         </button>
                         <button
                           onClick={() => toggleTerminalFullscreen(project.id)}
-                          className="size-[34px] p-0 hover:bg-accent rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                          className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                           title={project.isTerminalFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                         >
                           {project.isTerminalFullscreen ? (
-                            <Minimize2 className="h-4 w-4" />
+                            <Minimize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
                           ) : (
-                            <Maximize2 className="h-4 w-4" />
+                            <Maximize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
                           )}
                         </button>
                         {(() => {
@@ -683,13 +693,13 @@ function App() {
                         {getCurrentTab(project) === 'changes' && (
                           <button
                             onClick={() => toggleDiffFullscreen(project.id)}
-                            className="size-[34px] p-0 hover:bg-accent rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                            className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                             title={project.isDiffFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                           >
                             {project.isDiffFullscreen ? (
-                              <Minimize2 className="h-4 w-4" />
+                              <Minimize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
                             ) : (
-                              <Maximize2 className="h-4 w-4" />
+                              <Maximize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
                             )}
                           </button>
                         )}

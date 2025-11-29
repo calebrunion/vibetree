@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Terminal } from '@vibetree/ui'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
-import { X, Minimize2, Columns2, Rows2 } from 'lucide-react'
+import { Minimize2, Columns2, Rows2 } from 'lucide-react'
 import type { Terminal as XTerm } from '@xterm/xterm'
 
 // Cache for terminal states per session ID (like desktop app)
@@ -505,12 +505,6 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     setTerminalSplit,
   ])
 
-  const closeSplitTerminal = () => {
-    if (activeProject) {
-      setTerminalSplit(activeProject.id, false)
-    }
-  }
-
   if (!selectedWorktree) return null
 
   return (
@@ -562,13 +556,6 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
         </div>
         {isSplit && (
           <div className={`${useColumns ? 'h-full w-1/2' : 'h-1/2 w-full'} relative`}>
-            <button
-              onClick={closeSplitTerminal}
-              className="absolute top-2 right-2 z-10 p-1 hover:bg-accent/80 rounded bg-background/50"
-              title="Close Split Terminal"
-            >
-              <X className="h-4 w-4" />
-            </button>
             {splitSessionId && (
               <Terminal
                 id={splitSessionId}
