@@ -492,13 +492,7 @@ function App() {
                         <GitBranch className="h-3.5 w-3.5" />
                         Changes
                         {changedFilesCount > 0 && (
-                          <span
-                            className={`ml-auto -mr-1.5 px-1.5 py-0.5 text-xs font-medium rounded min-w-[1.25rem] text-center ${
-                              getCurrentTab(project) === 'changes'
-                                ? 'text-gray-700 bg-gray-400/40 dark:text-gray-300 dark:bg-gray-400/30'
-                                : 'text-gray-500 bg-gray-500/30'
-                            }`}
-                          >
+                          <span className="ml-auto -mr-1.5 px-1.5 py-0.5 text-xs font-medium rounded min-w-[1.25rem] text-center text-muted-foreground bg-muted">
                             {changedFilesCount}
                           </span>
                         )}
