@@ -434,7 +434,7 @@ function App() {
 
       {/* Project Tabs and Content */}
       <Tabs value={activeProjectId || ''} onValueChange={setActiveProject} className="flex-1 flex flex-col">
-        <div className="flex items-center gap-2 h-10 overflow-hidden bg-muted titlebar-area titlebar-area-inset">
+        <div className="flex items-center gap-2 h-10 overflow-hidden bg-black titlebar-area titlebar-area-inset">
           <TabsList className="h-full bg-transparent p-0 rounded-none gap-1 min-w-0 overflow-x-auto scrollbar-hide app-region-no-drag">
             {projects.map((project) => (
               <TabsTrigger
