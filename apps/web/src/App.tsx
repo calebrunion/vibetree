@@ -23,6 +23,7 @@ import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
 import { TerminalManager } from './components/TerminalManager'
 import { WorktreePanel } from './components/WorktreePanel'
+import { FloatingAddWorktree } from './components/FloatingAddWorktree'
 import { useWakeLock } from './hooks/useWakeLock'
 import { useWebSocket } from './hooks/useWebSocket'
 import { autoLoadProjects, validateProjectPaths } from './services/projectValidation'
@@ -597,6 +598,8 @@ function App() {
         onConfirm={handleConfirmDeleteWorktree}
         onCancel={() => setWorktreeToDelete(null)}
       />
+
+      <FloatingAddWorktree />
     </div>
   )
 }
