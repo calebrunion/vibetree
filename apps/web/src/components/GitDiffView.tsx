@@ -75,32 +75,16 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   }, [])
 
   useEffect(() => {
-    if (!onExitFullscreen) return
-
-    if (isFullscreen) {
-      document.documentElement.requestFullscreen?.().catch(() => {})
-    } else if (document.fullscreenElement) {
-      document.exitFullscreen?.().catch(() => {})
-    }
+    if (!isFullscreen || !onExitFullscreen) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isFullscreen) {
-        onExitFullscreen()
-      }
-    }
-
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement && isFullscreen) {
+      if (e.key === 'Escape') {
         onExitFullscreen()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      document.removeEventListener('fullscreenchange', handleFullscreenChange)
-    }
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isFullscreen, onExitFullscreen])
 
   const loadGitStatus = useCallback(async () => {

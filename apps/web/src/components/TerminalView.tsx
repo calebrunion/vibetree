@@ -75,35 +75,23 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     }
   }, [selectedWorktree])
 
-  // Handle native fullscreen API for terminal fullscreen
+  // Handle Escape key to exit app fullscreen
+  const projectIdRef = useRef(activeProject?.id)
+  projectIdRef.current = activeProject?.id
+
   useEffect(() => {
-    if (!activeProject) return
-
-    if (isFullscreen) {
-      document.documentElement.requestFullscreen?.().catch(() => {})
-    } else if (document.fullscreenElement) {
-      document.exitFullscreen?.().catch(() => {})
-    }
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isFullscreen) {
-        toggleTerminalFullscreen(activeProject.id)
+      if (e.key === 'Escape' && projectIdRef.current) {
+        const project = useAppStore.getState().projects.find((p) => p.id === projectIdRef.current)
+        if (project?.isTerminalFullscreen) {
+          toggleTerminalFullscreen(projectIdRef.current)
+        }
       }
     }
 
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement && isFullscreen) {
-        toggleTerminalFullscreen(activeProject.id)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      document.removeEventListener('fullscreenchange', handleFullscreenChange)
-    }
-  }, [isFullscreen, activeProject, toggleTerminalFullscreen])
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
+  }, [toggleTerminalFullscreen])
 
   useEffect(() => {
     if (!selectedWorktree) {
