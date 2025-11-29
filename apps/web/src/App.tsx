@@ -518,7 +518,7 @@ function App() {
         <div className="flex items-center h-10 overflow-hidden bg-black titlebar-area titlebar-area-inset">
           <button
             onClick={toggleSidebarCollapsed}
-            className="hidden md:inline-flex h-[30px] w-[30px] p-0 hover:bg-accent rounded transition-colors items-center justify-center flex-shrink-0 border border-border app-region-no-drag"
+            className="hidden md:inline-flex size-[30px] p-0 hover:bg-accent rounded-md transition-colors items-center justify-center flex-shrink-0 border border-border app-region-no-drag"
             aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -527,7 +527,7 @@ function App() {
           {activeProject && (
             <button
               onClick={() => setShowMobileSettingsModal(true)}
-              className="h-[30px] w-[30px] p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 border border-border app-region-no-drag ml-1"
+              className="size-[30px] p-0 hover:bg-accent rounded-md transition-colors inline-flex items-center justify-center flex-shrink-0 border border-border app-region-no-drag ml-1"
               aria-label="Project settings"
               title="Project settings"
             >
@@ -539,7 +539,7 @@ function App() {
               <TabsTrigger
                 key={project.id}
                 value={project.id}
-                className="relative pr-8 h-full min-w-[100px] lg:min-w-[150px] border border-border rounded-md app-region-no-drag"
+                className="relative pr-8 h-[30px] min-w-[100px] lg:min-w-[150px] border border-border rounded-md app-region-no-drag"
               >
                 {project.name}
                 <span
@@ -553,7 +553,7 @@ function App() {
           </TabsList>
           <button
             onClick={() => setShowAddProjectModal(true)}
-            className="h-[30px] w-[30px] p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 border border-border app-region-no-drag"
+            className="size-[30px] p-0 hover:bg-accent rounded-md transition-colors inline-flex items-center justify-center flex-shrink-0 border border-border app-region-no-drag"
             aria-label="Add project"
           >
             <Plus className="h-4 w-4" />
