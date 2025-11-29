@@ -11,6 +11,7 @@ interface Project {
   selectedTabs: Record<string, 'terminal' | 'changes' | 'graph'> // worktreePath -> tab
   isTerminalSplit: boolean
   isTerminalFullscreen: boolean
+  isDiffFullscreen: boolean
 }
 
 interface AppState {
@@ -64,6 +65,7 @@ interface AppState {
   toggleTerminalSplit: (projectId: string) => void
   toggleTerminalFullscreen: (projectId: string) => void
   setTerminalSplit: (projectId: string, isSplit: boolean) => void
+  toggleDiffFullscreen: (projectId: string) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -110,6 +112,7 @@ export const useAppStore = create<AppState>()(
           selectedTabs: {},
           isTerminalSplit: false,
           isTerminalFullscreen: false,
+          isDiffFullscreen: false,
         }
 
         set((state) => ({
@@ -144,6 +147,7 @@ export const useAppStore = create<AppState>()(
             selectedTabs: {},
             isTerminalSplit: false,
             isTerminalFullscreen: false,
+            isDiffFullscreen: false,
           }
 
           newProjects.push(newProject)
@@ -272,6 +276,14 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           projects: state.projects.map((project) =>
             project.id === projectId ? { ...project, isTerminalSplit: isSplit } : project
+          ),
+        }))
+      },
+
+      toggleDiffFullscreen: (projectId: string) => {
+        set((state) => ({
+          projects: state.projects.map((project) =>
+            project.id === projectId ? { ...project, isDiffFullscreen: !project.isDiffFullscreen } : project
           ),
         }))
       },

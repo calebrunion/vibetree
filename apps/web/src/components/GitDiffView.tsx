@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useImperativeHandle, forwardRef, Component, ReactNode } from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, RefreshCw } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, Minimize2, RefreshCw } from 'lucide-react'
 import { DiffView, DiffModeEnum } from '@git-diff-view/react'
 import '@git-diff-view/react/styles/diff-view.css'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -35,6 +35,8 @@ interface GitDiffViewProps {
   theme?: 'light' | 'dark'
   onLoadingChange?: (loading: boolean) => void
   onFileCountChange?: (count: number) => void
+  isFullscreen?: boolean
+  onExitFullscreen?: () => void
 }
 
 export interface GitDiffViewRef {
@@ -42,7 +44,7 @@ export interface GitDiffViewRef {
 }
 
 export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function GitDiffView(
-  { worktreePath, theme = 'light', onLoadingChange, onFileCountChange },
+  { worktreePath, theme = 'light', onLoadingChange, onFileCountChange, isFullscreen = false, onExitFullscreen },
   ref
 ) {
   const [files, setFiles] = useState<GitFile[]>([])
@@ -59,8 +61,47 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [allChangesCollapsed, setAllChangesCollapsed] = useState(true)
   const [currentCollapsed, setCurrentCollapsed] = useState(false)
   const [historyCollapsed, setHistoryCollapsed] = useState(false)
+  const [isWideScreen, setIsWideScreen] = useState(false)
 
   const { getAdapter } = useWebSocket()
+
+  useEffect(() => {
+    const checkWidth = () => {
+      setIsWideScreen(window.innerWidth >= 1200)
+    }
+    checkWidth()
+    window.addEventListener('resize', checkWidth)
+    return () => window.removeEventListener('resize', checkWidth)
+  }, [])
+
+  useEffect(() => {
+    if (!onExitFullscreen) return
+
+    if (isFullscreen) {
+      document.documentElement.requestFullscreen?.().catch(() => {})
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {})
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        onExitFullscreen()
+      }
+    }
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isFullscreen) {
+        onExitFullscreen()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [isFullscreen, onExitFullscreen])
 
   const loadGitStatus = useCallback(async () => {
     const adapter = getAdapter()
@@ -388,7 +429,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <div className={`flex-1 flex flex-col h-full ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''}`}>
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* File List - Full width on mobile, fixed width on desktop */}
         <div
@@ -558,9 +599,18 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
         <div
           className={`
           ${selectedFile ? 'flex' : 'hidden md:flex'}
-          flex-1 flex-col min-w-0 overflow-hidden
+          flex-1 flex-col min-w-0 overflow-hidden relative
         `}
         >
+          {isFullscreen && onExitFullscreen && (
+            <button
+              onClick={onExitFullscreen}
+              className="fixed bottom-[3px] left-[3px] md:absolute md:bottom-auto md:top-[3px] md:left-[3px] z-[51] p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
+              title="Exit Fullscreen"
+            >
+              <Minimize2 className="h-4 w-4" />
+            </button>
+          )}
           {/* Mobile back button and file name */}
           {selectedFile && (
             <button
@@ -647,7 +697,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                       },
                       hunks: [diffText],
                     }}
-                    diffViewMode={DiffModeEnum.Unified}
+                    diffViewMode={isWideScreen ? DiffModeEnum.Split : DiffModeEnum.Unified}
                     diffViewTheme={theme}
                     diffViewHighlight={true}
                     diffViewWrap={true}

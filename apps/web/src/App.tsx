@@ -51,6 +51,7 @@ function App() {
     reconnecting,
     toggleTerminalSplit,
     toggleTerminalFullscreen,
+    toggleDiffFullscreen,
     setShowAddWorktreeDialog,
     sidebarCollapsed,
     toggleSidebarCollapsed,
@@ -224,12 +225,25 @@ function App() {
           e.preventDefault()
           setSelectedTab(activeProject.id, activeProject.selectedWorktree, 'graph')
         }
+
+        if (e.key === 'd' && activeProject?.selectedWorktree) {
+          e.preventDefault()
+          toggleTerminalSplit(activeProject.id)
+        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [cycleProject, projects, activeProjectId, setSelectedWorktree, setShowAddWorktreeDialog, setSelectedTab])
+  }, [
+    cycleProject,
+    projects,
+    activeProjectId,
+    setSelectedWorktree,
+    setShowAddWorktreeDialog,
+    setSelectedTab,
+    toggleTerminalSplit,
+  ])
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark'
@@ -571,6 +585,19 @@ function App() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-1">
+                        {getCurrentTab(project) === 'changes' && (
+                          <button
+                            onClick={() => toggleDiffFullscreen(project.id)}
+                            className="p-1.5 hover:bg-accent rounded transition-colors border border-border"
+                            title={project.isDiffFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                          >
+                            {project.isDiffFullscreen ? (
+                              <Minimize2 className="h-4 w-4" />
+                            ) : (
+                              <Maximize2 className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
                         {(() => {
                           const worktreeInfo = getSelectedWorktreeInfo(project)
                           const canDelete =
@@ -620,6 +647,8 @@ function App() {
                         worktreePath={project.selectedWorktree}
                         theme={theme}
                         onFileCountChange={setChangedFilesCount}
+                        isFullscreen={project.isDiffFullscreen}
+                        onExitFullscreen={() => toggleDiffFullscreen(project.id)}
                       />
                     </div>
 

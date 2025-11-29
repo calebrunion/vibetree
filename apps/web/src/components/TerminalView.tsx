@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Terminal } from '@vibetree/ui'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
-import { X, Minimize2 } from 'lucide-react'
+import { X, Minimize2, Columns2, Rows2 } from 'lucide-react'
 import type { Terminal as XTerm } from '@xterm/xterm'
 
 // Cache for terminal states per session ID (like desktop app)
@@ -21,6 +21,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     clearWorktreeStartup,
     theme,
     setTerminalSplit,
+    toggleTerminalSplit,
     toggleTerminalFullscreen,
   } = useAppStore()
 
@@ -34,16 +35,33 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
   const { getAdapter } = useWebSocket()
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [splitSessionId, setSplitSessionId] = useState<string | null>(null)
+  const [containerWidth, setContainerWidth] = useState(0)
   const terminalRef = useRef<XTerm | null>(null)
   const splitTerminalRef = useRef<XTerm | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const cleanupRef = useRef<(() => void)[]>([])
   const splitCleanupRef = useRef<(() => void)[]>([])
   const saveIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const splitSaveIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const useColumns = containerWidth >= 768
+
   // Stability refs to prevent duplicate initialization and listener registration
   const initializingRef = useRef(false)
   const initializedWorktreeRef = useRef<string | null>(null)
+
+  // Track container width for responsive split layout
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width)
+      }
+    })
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
   const splitInitializingRef = useRef(false)
 
   // Reset initialization state when worktree changes
@@ -56,6 +74,36 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
       }
     }
   }, [selectedWorktree])
+
+  // Handle native fullscreen API for terminal fullscreen
+  useEffect(() => {
+    if (!activeProject) return
+
+    if (isFullscreen) {
+      document.documentElement.requestFullscreen?.().catch(() => {})
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {})
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        toggleTerminalFullscreen(activeProject.id)
+      }
+    }
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isFullscreen) {
+        toggleTerminalFullscreen(activeProject.id)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [isFullscreen, activeProject, toggleTerminalFullscreen])
 
   useEffect(() => {
     if (!selectedWorktree) {
@@ -471,21 +519,30 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
   return (
     <div className={`flex flex-col w-full h-full ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''}`}>
       {isFullscreen && activeProject && (
-        <button
-          onClick={() => toggleTerminalFullscreen(activeProject.id)}
-          className="fixed top-4 right-4 z-[51] p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
-          title="Exit Fullscreen"
-        >
-          <Minimize2 className="h-4 w-4" />
-        </button>
+        <div className="fixed top-4 right-4 z-[51] flex items-center gap-1">
+          <button
+            onClick={() => toggleTerminalSplit(activeProject.id)}
+            className="p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
+            title="Split Terminal"
+          >
+            <Columns2 className="h-4 w-4 hidden md:block" />
+            <Rows2 className="h-4 w-4 md:hidden" />
+          </button>
+          <button
+            onClick={() => toggleTerminalFullscreen(activeProject.id)}
+            className="p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
+            title="Exit Fullscreen"
+          >
+            <Minimize2 className="h-4 w-4" />
+          </button>
+        </div>
       )}
       {/* Terminal Container */}
       <div
-        className={`flex-1 flex min-h-0 ${isSplit ? 'flex-col md:flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
+        ref={containerRef}
+        className={`flex-1 flex min-h-0 ${isSplit ? (useColumns ? 'flex-row' : 'flex-col') : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
       >
-        <div
-          className={isSplit ? 'h-1/2 md:h-full w-full md:w-1/2 border-b md:border-b-0 md:border-r' : 'w-full h-full'}
-        >
+        <div className={isSplit ? (useColumns ? 'h-full w-1/2 border-r' : 'h-1/2 w-full border-b') : 'w-full h-full'}>
           {sessionId && (
             <Terminal
               id={sessionId}
@@ -507,7 +564,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
           )}
         </div>
         {isSplit && (
-          <div className="h-1/2 md:h-full w-full md:w-1/2 relative">
+          <div className={`${useColumns ? 'h-full w-1/2' : 'h-1/2 w-full'} relative`}>
             <button
               onClick={closeSplitTerminal}
               className="absolute top-2 right-2 z-10 p-1 hover:bg-accent/80 rounded bg-background/50"
