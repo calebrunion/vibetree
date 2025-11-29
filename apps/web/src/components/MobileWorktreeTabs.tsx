@@ -1,4 +1,4 @@
-import { GitBranch, Plus } from 'lucide-react'
+import { GitBranch, Plus, Sliders } from 'lucide-react'
 import type { Worktree } from '@vibetree/core'
 import { useState, useEffect } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -9,6 +9,7 @@ interface MobileWorktreeTabsProps {
   selectedWorktree: string | null
   onSelectWorktree: (path: string) => void
   projectPath: string
+  onOpenSettings?: () => void
 }
 
 export function MobileWorktreeTabs({
@@ -16,6 +17,7 @@ export function MobileWorktreeTabs({
   selectedWorktree,
   onSelectWorktree,
   projectPath,
+  onOpenSettings,
 }: MobileWorktreeTabsProps) {
   const { getAdapter } = useWebSocket()
   const setShowAddWorktreeDialog = useAppStore((state) => state.setShowAddWorktreeDialog)
@@ -68,6 +70,16 @@ export function MobileWorktreeTabs({
       style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
       <div className="inline-flex items-center gap-1 px-2 pt-4">
+        {onOpenSettings && (
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center justify-center size-12 flex-shrink-0 rounded-md transition-colors border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            aria-label="Project settings"
+            title="Project settings"
+          >
+            <Sliders className="h-5 w-5" />
+          </button>
+        )}
         {sortedWorktrees.map((worktree) => {
           const branchName = worktree.branch
             ? worktree.branch.replace('refs/heads/', '')

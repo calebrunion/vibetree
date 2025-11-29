@@ -21,6 +21,7 @@ import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
 import MobileTerminalToolbar from './components/MobileTerminalToolbar'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
+import StartupScriptModal from './components/StartupScriptModal'
 import { TerminalManager } from './components/TerminalManager'
 import { WorktreePanel } from './components/WorktreePanel'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
@@ -60,6 +61,7 @@ function App() {
     null
   )
   const [deletingWorktree, setDeletingWorktree] = useState(false)
+  const [showMobileSettingsModal, setShowMobileSettingsModal] = useState(false)
   const gitDiffRef = useRef<GitDiffViewRef>(null)
 
   // const activeProject = getActiveProject();
@@ -414,6 +416,7 @@ function App() {
                     selectedWorktree={project.selectedWorktree}
                     onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
                     projectPath={project.path}
+                    onOpenSettings={() => setShowMobileSettingsModal(true)}
                   />
 
                   {/* Tab Navigation */}
@@ -600,6 +603,14 @@ function App() {
       />
 
       <FloatingAddWorktree />
+
+      {/* Mobile Settings Modal */}
+      {showMobileSettingsModal && activeProject && (
+        <StartupScriptModal
+          projectPath={activeProject.path}
+          onClose={() => setShowMobileSettingsModal(false)}
+        />
+      )}
     </div>
   )
 }
