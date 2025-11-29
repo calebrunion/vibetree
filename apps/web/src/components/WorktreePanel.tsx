@@ -1,8 +1,7 @@
-import { GitBranch, PanelLeftClose, Plus, Sliders, Trash2 } from 'lucide-react'
+import { GitBranch, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAppStore } from '../store'
-import StartupScriptModal from './StartupScriptModal'
 
 function isProtectedBranch(branch: string): boolean {
   const branchName = branch.replace('refs/heads/', '')
@@ -22,7 +21,6 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
     connected,
     showAddWorktreeDialog,
     setShowAddWorktreeDialog,
-    toggleSidebarCollapsed,
   } = useAppStore()
 
   const { getAdapter } = useWebSocket()
@@ -31,7 +29,6 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
   const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set())
   const [deleteConfirmWorktree, setDeleteConfirmWorktree] = useState<{ path: string; branch: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [showSettingsModal, setShowSettingsModal] = useState(false)
 
   const project = getProject(projectId)
   const adapter = getAdapter() // Get adapter once per render
@@ -293,29 +290,6 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
         )}
       </div>
 
-      {/* Floating Settings Button - Left */}
-      <div className="absolute bottom-4 left-4 hidden md:flex gap-2">
-        <button
-          onClick={() => setShowSettingsModal(true)}
-          disabled={!connected}
-          className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent disabled:opacity-50 transition-colors"
-          title="Project settings"
-        >
-          <Sliders className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Floating Action Buttons - Right */}
-      <div className="absolute bottom-4 right-4 hidden md:flex gap-2">
-        <button
-          onClick={toggleSidebarCollapsed}
-          className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent transition-colors"
-          title="Collapse sidebar"
-        >
-          <PanelLeftClose className="h-4 w-4" />
-        </button>
-      </div>
-
       {/* Create New Branch Dialog */}
       {showAddWorktreeDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -403,11 +377,6 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Settings Modal */}
-      {showSettingsModal && project && (
-        <StartupScriptModal projectPath={project.path} onClose={() => setShowSettingsModal(false)} />
       )}
     </div>
   )

@@ -8,8 +8,11 @@ import {
   Maximize2,
   Minimize2,
   Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Rows2,
+  Sliders,
   Sun,
   Terminal,
   Trash2,
@@ -183,11 +186,32 @@ function App() {
     [projects, activeProjectId, setActiveProject]
   )
 
+  const getCurrentTab = useCallback((project: (typeof projects)[0]): 'terminal' | 'changes' | 'graph' => {
+    if (!project.selectedWorktree) return 'terminal'
+    return project.selectedTabs?.[project.selectedWorktree] || 'terminal'
+  }, [])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey && e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         e.preventDefault()
         cycleProject(e.key === 'ArrowLeft' ? 'prev' : 'next')
+      }
+
+      // Opt+Tab to toggle between terminal and changes tabs (if on graph, switch to terminal)
+      if (e.altKey && e.key === 'Tab' && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+        const activeProject = projects.find((p) => p.id === activeProjectId)
+        if (activeProject?.selectedWorktree) {
+          e.preventDefault()
+          const currentTab = getCurrentTab(activeProject)
+          if (currentTab === 'graph') {
+            setSelectedTab(activeProject.id, activeProject.selectedWorktree, 'terminal')
+          } else if (currentTab === 'terminal') {
+            setSelectedTab(activeProject.id, activeProject.selectedWorktree, 'changes')
+          } else {
+            setSelectedTab(activeProject.id, activeProject.selectedWorktree, 'terminal')
+          }
+        }
       }
 
       if (e.metaKey && !e.altKey && !e.shiftKey && !e.ctrlKey) {
@@ -221,6 +245,16 @@ function App() {
           setShowAddProjectModal(true)
         }
 
+        if (e.key === 'e' && activeProject?.selectedWorktree) {
+          e.preventDefault()
+          setSelectedTab(activeProject.id, activeProject.selectedWorktree, 'terminal')
+        }
+
+        if (e.key === 's' && activeProject?.selectedWorktree) {
+          e.preventDefault()
+          setSelectedTab(activeProject.id, activeProject.selectedWorktree, 'changes')
+        }
+
         if (e.key === 'g' && activeProject?.selectedWorktree) {
           e.preventDefault()
           setSelectedTab(activeProject.id, activeProject.selectedWorktree, 'graph')
@@ -230,6 +264,55 @@ function App() {
           e.preventDefault()
           toggleTerminalSplit(activeProject.id)
         }
+
+        // Vim-style navigation: Cmd+H/L for projects, Cmd+J/K for worktrees
+        if (e.key === 'h') {
+          e.preventDefault()
+          cycleProject('prev')
+        }
+
+        if (e.key === 'l') {
+          e.preventDefault()
+          cycleProject('next')
+        }
+
+        if ((e.key === 'j' || e.key === 'k') && activeProject) {
+          const sortedWorktrees = [...activeProject.worktrees].sort((a, b) => {
+            const getBranchName = (wt: typeof a) => {
+              if (!wt.branch) return wt.head.substring(0, 8)
+              return wt.branch.replace('refs/heads/', '')
+            }
+            const branchA = getBranchName(a)
+            const branchB = getBranchName(b)
+            if (branchA === 'main' || branchA === 'master') return -1
+            if (branchB === 'main' || branchB === 'master') return 1
+            return branchA.localeCompare(branchB)
+          })
+
+          if (sortedWorktrees.length > 0) {
+            e.preventDefault()
+            const currentIndex = sortedWorktrees.findIndex((wt) => wt.path === activeProject.selectedWorktree)
+            let newIndex: number
+            if (e.key === 'j') {
+              newIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % sortedWorktrees.length
+            } else {
+              newIndex = currentIndex === -1 ? 0 : (currentIndex - 1 + sortedWorktrees.length) % sortedWorktrees.length
+            }
+            setSelectedWorktree(activeProject.id, sortedWorktrees[newIndex].path)
+          }
+        }
+
+        // Cmd+B to toggle sidebar
+        if (e.key === 'b') {
+          e.preventDefault()
+          toggleSidebarCollapsed()
+        }
+
+        // Cmd+, to show project settings
+        if (e.key === ',' && activeProject) {
+          e.preventDefault()
+          setShowMobileSettingsModal(true)
+        }
       }
     }
 
@@ -237,12 +320,14 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [
     cycleProject,
+    getCurrentTab,
     projects,
     activeProjectId,
     setSelectedWorktree,
     setShowAddWorktreeDialog,
     setSelectedTab,
     toggleTerminalSplit,
+    toggleSidebarCollapsed,
   ])
 
   const toggleTheme = () => {
@@ -342,11 +427,6 @@ function App() {
     return project.worktrees.find((wt) => wt.path === project.selectedWorktree)
   }
 
-  const getCurrentTab = (project: (typeof projects)[0]): 'terminal' | 'changes' | 'graph' => {
-    if (!project.selectedWorktree) return 'terminal'
-    return project.selectedTabs?.[project.selectedWorktree] || 'terminal'
-  }
-
   const handleRefreshChanges = async (project: (typeof projects)[0]) => {
     gitDiffRef.current?.refresh()
     const adapter = getAdapter()
@@ -435,6 +515,24 @@ function App() {
       {/* Project Tabs and Content */}
       <Tabs value={activeProjectId || ''} onValueChange={setActiveProject} className="flex-1 flex flex-col">
         <div className="flex items-center h-10 overflow-hidden bg-black titlebar-area titlebar-area-inset">
+          <button
+            onClick={toggleSidebarCollapsed}
+            className="hidden md:inline-flex h-[30px] w-[30px] p-0 hover:bg-accent rounded transition-colors items-center justify-center flex-shrink-0 border border-border app-region-no-drag"
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </button>
+          {activeProject && (
+            <button
+              onClick={() => setShowMobileSettingsModal(true)}
+              className="h-[30px] w-[30px] p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 border border-border app-region-no-drag ml-1"
+              aria-label="Project settings"
+              title="Project settings"
+            >
+              <Sliders className="h-4 w-4" />
+            </button>
+          )}
           <TabsList className="h-full bg-transparent p-0 rounded-none gap-1 min-w-0 overflow-x-auto scrollbar-hide app-region-no-drag">
             {projects.map((project) => (
               <TabsTrigger
@@ -484,9 +582,7 @@ function App() {
                     selectedWorktree={project.selectedWorktree}
                     onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
                     projectPath={project.path}
-                    onOpenSettings={() => setShowMobileSettingsModal(true)}
                     showOnDesktop={sidebarCollapsed}
-                    onExpandSidebar={sidebarCollapsed ? toggleSidebarCollapsed : undefined}
                   />
 
                   {/* Tab Navigation */}
@@ -670,9 +766,7 @@ function App() {
                         selectedWorktree={project.selectedWorktree}
                         onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
                         projectPath={project.path}
-                        onOpenSettings={() => setShowMobileSettingsModal(true)}
                         showOnDesktop={true}
-                        onExpandSidebar={toggleSidebarCollapsed}
                       />
                     </div>
                   )}
