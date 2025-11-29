@@ -473,7 +473,7 @@ function App() {
                         }`}
                         onClick={() => setSelectedTab(project.id, project.selectedWorktree!, 'terminal')}
                       >
-                        <Terminal className="h-3.5 w-3.5" />
+                        <Terminal className="h-3.5 w-3.5 -ml-1" />
                         Terminal
                       </button>
                       <button
@@ -489,7 +489,7 @@ function App() {
                           handleRefreshChanges(project)
                         }}
                       >
-                        <GitBranch className="h-3.5 w-3.5" />
+                        <GitBranch className="h-3.5 w-3.5 -ml-1" />
                         Changes
                         {changedFilesCount > 0 && (
                           <span className="ml-auto -mr-1.5 px-1.5 py-0.5 text-xs font-medium rounded min-w-[1.25rem] text-center text-muted-foreground bg-muted">
@@ -505,7 +505,7 @@ function App() {
                         }`}
                         onClick={() => setSelectedTab(project.id, project.selectedWorktree!, 'graph')}
                       >
-                        <GitCommitHorizontal className="h-3.5 w-3.5" />
+                        <GitCommitHorizontal className="h-3.5 w-3.5 -ml-1" />
                         Graph
                       </button>
                     </div>
