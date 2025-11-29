@@ -589,7 +589,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
           {isFullscreen && onExitFullscreen && (
             <button
               onClick={onExitFullscreen}
-              className="fixed bottom-[3px] left-[3px] md:absolute md:bottom-auto md:top-[3px] md:left-[3px] z-[51] p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
+              className="fixed bottom-4 right-4 z-[51] p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
               title="Exit Fullscreen"
             >
               <Minimize2 className="h-4 w-4" />

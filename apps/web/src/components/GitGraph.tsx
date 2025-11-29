@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { GitCommitHorizontal } from 'lucide-react'
 import type { GitCommit } from '@vibetree/core'
 
@@ -6,6 +6,7 @@ interface GitGraphProps {
   commits: GitCommit[]
   onCommitClick?: (commit: GitCommit) => void
   theme?: 'light' | 'dark'
+  isFullscreen?: boolean
 }
 
 const BRANCH_COLORS = {
@@ -206,11 +207,15 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
   )
 }
 
-export default function GitGraph({ commits, onCommitClick, theme = 'dark' }: GitGraphProps) {
-  const [graphWidth, setGraphWidth] = useState(60)
+export default function GitGraph({ commits, onCommitClick, theme = 'dark', isFullscreen = false }: GitGraphProps) {
+  const [graphWidth, setGraphWidth] = useState(isFullscreen ? 100 : 60)
   const isDragging = useRef(false)
   const startX = useRef(0)
   const startWidth = useRef(0)
+
+  useEffect(() => {
+    setGraphWidth(isFullscreen ? 100 : 60)
+  }, [isFullscreen])
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {

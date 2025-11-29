@@ -55,6 +55,7 @@ function App() {
     toggleTerminalSplit,
     toggleTerminalFullscreen,
     toggleDiffFullscreen,
+    toggleGraphFullscreen,
     setShowAddWorktreeDialog,
     sidebarCollapsed,
     toggleSidebarCollapsed,
@@ -703,6 +704,19 @@ function App() {
                             )}
                           </button>
                         )}
+                        {getCurrentTab(project) === 'graph' && (
+                          <button
+                            onClick={() => toggleGraphFullscreen(project.id)}
+                            className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                            title={project.isGraphFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                          >
+                            {project.isGraphFullscreen ? (
+                              <Minimize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
+                            ) : (
+                              <Maximize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
+                            )}
+                          </button>
+                        )}
                         {(() => {
                           const worktreeInfo = getSelectedWorktreeInfo(project)
                           const canDelete =
@@ -759,7 +773,13 @@ function App() {
 
                     {/* Git Graph View */}
                     <div className={`absolute inset-0 ${getCurrentTab(project) === 'graph' ? 'block' : 'hidden'}`}>
-                      <GitGraphView ref={gitGraphRef} worktreePath={project.selectedWorktree} theme={theme} />
+                      <GitGraphView
+                        ref={gitGraphRef}
+                        worktreePath={project.selectedWorktree}
+                        theme={theme}
+                        isFullscreen={project.isGraphFullscreen}
+                        onExitFullscreen={() => toggleGraphFullscreen(project.id)}
+                      />
                     </div>
                   </div>
                 </div>

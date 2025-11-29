@@ -521,10 +521,10 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
           </button>
           <button
             onClick={() => toggleTerminalFullscreen(activeProject.id)}
-            className="p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
+            className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
             title="Exit Fullscreen"
           >
-            <Minimize2 className="h-4 w-4" />
+            <Minimize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
           </button>
         </div>
       )}

@@ -12,6 +12,7 @@ interface Project {
   isTerminalSplit: boolean
   isTerminalFullscreen: boolean
   isDiffFullscreen: boolean
+  isGraphFullscreen: boolean
 }
 
 interface AppState {
@@ -66,6 +67,7 @@ interface AppState {
   toggleTerminalFullscreen: (projectId: string) => void
   setTerminalSplit: (projectId: string, isSplit: boolean) => void
   toggleDiffFullscreen: (projectId: string) => void
+  toggleGraphFullscreen: (projectId: string) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -113,6 +115,7 @@ export const useAppStore = create<AppState>()(
           isTerminalSplit: false,
           isTerminalFullscreen: false,
           isDiffFullscreen: false,
+          isGraphFullscreen: false,
         }
 
         set((state) => ({
@@ -148,6 +151,7 @@ export const useAppStore = create<AppState>()(
             isTerminalSplit: false,
             isTerminalFullscreen: false,
             isDiffFullscreen: false,
+            isGraphFullscreen: false,
           }
 
           newProjects.push(newProject)
@@ -284,6 +288,14 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           projects: state.projects.map((project) =>
             project.id === projectId ? { ...project, isDiffFullscreen: !project.isDiffFullscreen } : project
+          ),
+        }))
+      },
+
+      toggleGraphFullscreen: (projectId: string) => {
+        set((state) => ({
+          projects: state.projects.map((project) =>
+            project.id === projectId ? { ...project, isGraphFullscreen: !project.isGraphFullscreen } : project
           ),
         }))
       },

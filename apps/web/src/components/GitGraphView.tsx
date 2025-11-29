@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
-import { RefreshCw, Users, User } from 'lucide-react'
+import { Minimize2, RefreshCw, Users, User } from 'lucide-react'
 import GitGraph from './GitGraph'
 import { useWebSocket } from '../hooks/useWebSocket'
 import type { GitCommit } from '@vibetree/core'
@@ -7,6 +7,8 @@ import type { GitCommit } from '@vibetree/core'
 interface GitGraphViewProps {
   worktreePath: string
   theme?: 'light' | 'dark'
+  isFullscreen?: boolean
+  onExitFullscreen?: () => void
 }
 
 export interface GitGraphViewRef {
@@ -14,7 +16,7 @@ export interface GitGraphViewRef {
 }
 
 export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(function GitGraphView(
-  { worktreePath, theme = 'dark' },
+  { worktreePath, theme = 'dark', isFullscreen = false, onExitFullscreen },
   ref
 ) {
   const [commits, setCommits] = useState<GitCommit[]>([])
@@ -63,6 +65,17 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
     }
   }, [worktreePath, loadGitLog])
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen && onExitFullscreen) {
+        onExitFullscreen()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
+  }, [isFullscreen, onExitFullscreen])
+
   useImperativeHandle(
     ref,
     () => ({
@@ -94,7 +107,16 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
   }
 
   return (
-    <div className="h-full overflow-hidden bg-background flex flex-col">
+    <div className={`h-full overflow-hidden bg-background flex flex-col ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+      {isFullscreen && onExitFullscreen && (
+        <button
+          onClick={onExitFullscreen}
+          className="fixed bottom-4 right-4 z-[51] p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
+          title="Exit Fullscreen"
+        >
+          <Minimize2 className="h-4 w-4" />
+        </button>
+      )}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
         <button
           onClick={() => setShowAllAuthors(!showAllAuthors)}
@@ -121,6 +143,7 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
         <GitGraph
           commits={commits}
           theme={theme}
+          isFullscreen={isFullscreen}
           onCommitClick={(commit) => {
             console.log('Clicked commit:', commit)
           }}

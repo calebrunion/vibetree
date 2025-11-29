@@ -66,7 +66,7 @@ export function FloatingAddWorktree() {
                     setError('')
                   }
                 }}
-                className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                 autoFocus
                 autoCapitalize="none"
                 autoCorrect="off"
