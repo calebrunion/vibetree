@@ -6,15 +6,12 @@ interface TerminalManagerProps {
   selectedWorktree: string | null;
 }
 
-// Component cache to maintain terminal instances
-// const terminalComponents = new Map<string, React.ComponentType>();
-
 export function TerminalManager({ worktrees, selectedWorktree }: TerminalManagerProps) {
   const [mountedTerminals, setMountedTerminals] = useState<Set<string>>(new Set());
-  
+
   // Track which terminals have been created
   const createdTerminals = useRef<Set<string>>(new Set());
-  
+
   useEffect(() => {
     if (!selectedWorktree) return;
     
@@ -60,7 +57,7 @@ export function TerminalManager({ worktrees, selectedWorktree }: TerminalManager
       {Array.from(mountedTerminals).map((worktreePath) => (
         <div
           key={worktreePath}
-          style={{ 
+          style={{
             display: selectedWorktree === worktreePath ? 'block' : 'none',
             position: 'absolute',
             top: 0,
