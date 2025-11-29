@@ -83,7 +83,7 @@ body,
   overflow: hidden;
   position: fixed;
   inset: 0;
-  background-color: #000;
+  background-color: #1a1a1a;
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
