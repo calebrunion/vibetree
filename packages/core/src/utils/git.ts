@@ -121,6 +121,45 @@ export async function getGitDiffStaged(worktreePath: string, filePath?: string):
 }
 
 /**
+ * Get diff for an untracked file (shows full file as additions)
+ * @param worktreePath - Path to the git worktree
+ * @param filePath - Path to the untracked file
+ * @returns Diff output showing the file as new additions
+ */
+export async function getGitDiffUntracked(worktreePath: string, filePath: string): Promise<string> {
+  const expandedPath = expandPath(worktreePath);
+  const fullFilePath = path.join(expandedPath, filePath);
+
+  if (!fs.existsSync(fullFilePath)) {
+    return '';
+  }
+
+  const content = fs.readFileSync(fullFilePath, 'utf-8');
+  const hasTrailingNewline = content.endsWith('\n');
+  const lines = content.split('\n');
+
+  if (hasTrailingNewline && lines[lines.length - 1] === '') {
+    lines.pop();
+  }
+
+  const lineCount = lines.length;
+
+  const header = [
+    `diff --git a/${filePath} b/${filePath}`,
+    'new file mode 100644',
+    'index 0000000..1234567',
+    '--- /dev/null',
+    `+++ b/${filePath}`,
+    `@@ -0,0 +1,${lineCount} @@`
+  ].join('\n');
+
+  const body = lines.map(line => `+${line}`).join('\n');
+  const noNewlineMarker = hasTrailingNewline ? '' : '\n\\ No newline at end of file';
+
+  return `${header}\n${body}${noNewlineMarker}`;
+}
+
+/**
  * Get git commit log
  * @param worktreePath - Path to the git worktree
  * @param limit - Maximum number of commits to return (default 20)

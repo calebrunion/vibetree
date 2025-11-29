@@ -179,6 +179,11 @@ export class WebSocketAdapter extends BaseAdapter {
     return result.diff;
   }
 
+  async getGitDiffUntracked(worktreePath: string, filePath: string): Promise<string> {
+    const result = await this.sendMessage<{ diff: string }>('git:diff:untracked', { worktreePath, filePath });
+    return result.diff;
+  }
+
   async getGitLog(worktreePath: string, limit?: number): Promise<GitCommit[]> {
     const result = await this.sendMessage<{ commits: GitCommit[] }>('git:log', { worktreePath, limit });
     return result.commits;

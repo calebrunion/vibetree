@@ -101,7 +101,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     }
   }, [worktreePath, getAdapter]);
 
-  const loadDiff = useCallback(async (filePath: string, staged: boolean = false) => {
+  const loadDiff = useCallback(async (filePath: string, options: { staged?: boolean; untracked?: boolean } = {}) => {
     const adapter = getAdapter();
     if (!adapter) return;
 
@@ -109,9 +109,14 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
       setLoading(true);
       setError(null);
 
-      const diffTextResult = staged
-        ? await adapter.getGitDiffStaged(worktreePath, filePath)
-        : await adapter.getGitDiff(worktreePath, filePath);
+      let diffTextResult: string;
+      if (options.untracked && 'getGitDiffUntracked' in adapter) {
+        diffTextResult = await (adapter as any).getGitDiffUntracked(worktreePath, filePath);
+      } else if (options.staged) {
+        diffTextResult = await adapter.getGitDiffStaged(worktreePath, filePath);
+      } else {
+        diffTextResult = await adapter.getGitDiff(worktreePath, filePath);
+      }
 
       setDiffText(diffTextResult ? diffTextResult.trim() : '');
     } catch (err) {
@@ -223,8 +228,9 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
       loadDiffAgainstBase(selectedFile);
     } else if (selectedFile && selectedSection === 'current') {
       const file = files.find(f => f.path === selectedFile);
+      const isUntracked = file?.status === '??';
       const isStaged = file?.staged && !file?.modified;
-      loadDiff(selectedFile, isStaged);
+      loadDiff(selectedFile, { staged: isStaged, untracked: isUntracked });
     } else if (selectedFile && selectedSection === 'commit' && selectedCommit) {
       loadCommitDiff(selectedCommit.hash, selectedFile);
     }
@@ -288,7 +294,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     switch (char) {
       case 'M': return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>M</span>;
       case 'D': return <span className={`${baseClass} text-red-500 bg-red-500/20`}>D</span>;
-      case '?': return <span className={`${baseClass} text-gray-500 bg-gray-500/20`}>?</span>;
+      case '?': return <span className={`${baseClass} text-green-500 bg-green-500/20`}>U</span>;
       default: return <span className={`${baseClass} text-gray-400`}>{char || ' '}</span>;
     }
   };

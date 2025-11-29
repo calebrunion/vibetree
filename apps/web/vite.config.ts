@@ -32,6 +32,24 @@ export default defineConfig({
       devOptions: {
         enabled: true
       },
+      workbox: {
+        clientsClaim: true,
+        skipWaiting: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 300
+              }
+            }
+          }
+        ]
+      },
       manifest: {
         name: 'VibeTree',
         short_name: 'VibeTree',
@@ -40,6 +58,9 @@ export default defineConfig({
         background_color: '#000000',
         display: 'standalone',
         orientation: 'any',
+        start_url: '/',
+        scope: '/',
+        categories: ['developer tools', 'productivity'],
         icons: [
           {
             src: 'icon.svg',

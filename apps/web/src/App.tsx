@@ -24,7 +24,7 @@ import { ProjectSelector } from './components/ProjectSelector'
 import { TerminalManager } from './components/TerminalManager'
 import { WorktreePanel } from './components/WorktreePanel'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
-import { useWakeLock } from './hooks/useWakeLock'
+import { useKeepAwake } from './hooks/useKeepAwake'
 import { useWebSocket } from './hooks/useWebSocket'
 import { autoLoadProjects, validateProjectPaths } from './services/projectValidation'
 import { useAppStore } from './store'
@@ -49,7 +49,7 @@ function App() {
     setShowAddWorktreeDialog,
   } = useAppStore()
   const { connect, getAdapter } = useWebSocket()
-  const { request: requestWakeLock } = useWakeLock()
+  const { request: requestKeepAwake } = useKeepAwake()
   const [showProjectSelector, setShowProjectSelector] = useState(false)
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
@@ -74,9 +74,9 @@ function App() {
 
   useEffect(() => {
     if (hasActiveWorktree) {
-      requestWakeLock()
+      requestKeepAwake()
     }
-  }, [hasActiveWorktree, requestWakeLock])
+  }, [hasActiveWorktree, requestKeepAwake])
 
   // Auto-load projects when connection is established
   useEffect(() => {

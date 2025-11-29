@@ -6,6 +6,7 @@ import {
   getGitStatus,
   getGitDiff,
   getGitDiffStaged,
+  getGitDiffUntracked,
   getGitLog,
   getCommitFiles,
   getCommitDiff,
@@ -316,6 +317,27 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
               );
               ws.send(JSON.stringify({
                 type: 'git:diff:staged:response',
+                payload: { diff },
+                id: message.id
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                payload: { error: (error as Error).message },
+                id: message.id
+              }));
+            }
+            break;
+          }
+
+          case 'git:diff:untracked': {
+            try {
+              const diff = await getGitDiffUntracked(
+                message.payload.worktreePath,
+                message.payload.filePath
+              );
+              ws.send(JSON.stringify({
+                type: 'git:diff:untracked:response',
                 payload: { diff },
                 id: message.id
               }));
