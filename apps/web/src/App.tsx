@@ -9,7 +9,6 @@ import {
   Minimize2,
   Moon,
   Plus,
-  RefreshCw,
   Rows2,
   Sun,
   Terminal,
@@ -474,7 +473,6 @@ function App() {
                     onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
                     projectPath={project.path}
                     onOpenSettings={() => setShowMobileSettingsModal(true)}
-                    onRefresh={() => handleRefreshChanges(project)}
                     showOnDesktop={sidebarCollapsed}
                     onExpandSidebar={sidebarCollapsed ? toggleSidebarCollapsed : undefined}
                   />
@@ -488,7 +486,10 @@ function App() {
                             ? 'bg-accent text-accent-foreground border-border shadow-sm'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                         }`}
-                        onClick={() => setSelectedTab(project.id, project.selectedWorktree!, 'terminal')}
+                        onClick={() => {
+                          setSelectedTab(project.id, project.selectedWorktree!, 'terminal')
+                          handleRefreshChanges(project)
+                        }}
                       >
                         <Terminal className="h-3.5 w-3.5 -ml-1" />
                         Terminal
@@ -500,9 +501,7 @@ function App() {
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                         }`}
                         onClick={() => {
-                          if (getCurrentTab(project) !== 'changes') {
-                            setSelectedTab(project.id, project.selectedWorktree!, 'changes')
-                          }
+                          setSelectedTab(project.id, project.selectedWorktree!, 'changes')
                           handleRefreshChanges(project)
                         }}
                       >
@@ -520,7 +519,11 @@ function App() {
                             ? 'bg-accent text-accent-foreground border-border shadow-sm'
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
                         }`}
-                        onClick={() => setSelectedTab(project.id, project.selectedWorktree!, 'graph')}
+                        onClick={() => {
+                          setSelectedTab(project.id, project.selectedWorktree!, 'graph')
+                          handleRefreshChanges(project)
+                          gitGraphRef.current?.refresh()
+                        }}
                       >
                         <GitCommitHorizontal className="h-3.5 w-3.5 -ml-1" />
                         Graph
@@ -568,19 +571,6 @@ function App() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            if (getCurrentTab(project) === 'graph') {
-                              gitGraphRef.current?.refresh()
-                            } else {
-                              handleRefreshChanges(project)
-                            }
-                          }}
-                          className="p-1.5 hover:bg-accent rounded transition-colors border border-border"
-                          title="Refresh"
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                        </button>
                         {(() => {
                           const worktreeInfo = getSelectedWorktreeInfo(project)
                           const canDelete =
@@ -652,7 +642,6 @@ function App() {
                         onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
                         projectPath={project.path}
                         onOpenSettings={() => setShowMobileSettingsModal(true)}
-                        onRefresh={() => handleRefreshChanges(project)}
                         showOnDesktop={true}
                         onExpandSidebar={toggleSidebarCollapsed}
                       />

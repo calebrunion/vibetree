@@ -1,4 +1,4 @@
-import { GitBranch, PanelLeftClose, Plus, RefreshCw, Sliders, Trash2 } from 'lucide-react'
+import { GitBranch, PanelLeftClose, Plus, Sliders, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAppStore } from '../store'
@@ -54,22 +54,6 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
       })
     )
     setWorktreesWithChanges(changesSet)
-  }
-
-  const handleRefresh = async () => {
-    const adapter = getAdapter()
-    if (!adapter || !connected || !project || loading) return
-
-    setLoading(true)
-    try {
-      const trees = await adapter.listWorktrees(project.path)
-      updateProjectWorktrees(projectId, trees)
-      await fetchWorktreeChanges(trees)
-    } catch (error) {
-      console.error('Failed to refresh worktrees:', error)
-    } finally {
-      setLoading(false)
-    }
   }
 
   const handleSelectWorktree = (path: string) => {
@@ -318,14 +302,6 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
           title="Project settings"
         >
           <Sliders className="h-4 w-4" />
-        </button>
-        <button
-          onClick={handleRefresh}
-          disabled={!connected || loading}
-          className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent disabled:opacity-50 transition-colors"
-          title="Refresh worktrees"
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
