@@ -1,3 +1,4 @@
+import { GitCommit, SquarePen } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SpeechRecognitionEvent extends Event {
@@ -167,6 +168,41 @@ export default function VoiceInputDialog({
             enterKeyHint="send"
           />
         </form>
+
+        <div className="flex items-center gap-2 mt-3">
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onTouchEnd={() => {
+              onSend('/clear\n')
+              onClose()
+            }}
+            onClick={() => {
+              onSend('/clear\n')
+              onClose()
+            }}
+            className="flex-1 h-10 rounded-lg border border-border bg-muted active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
+          >
+            <SquarePen className="h-4 w-4" />
+            New Chat
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onTouchEnd={() => {
+              onSend('commit\n')
+              onClose()
+            }}
+            onClick={() => {
+              onSend('commit\n')
+              onClose()
+            }}
+            className="flex-1 h-10 rounded-lg border border-border bg-muted active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
+          >
+            <GitCommit className="h-4 w-4" />
+            Commit
+          </button>
+        </div>
 
         {isListening && (
           <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">

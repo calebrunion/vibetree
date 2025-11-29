@@ -118,20 +118,6 @@ export default function MobileTerminalToolbar() {
             <Bot className="h-5 w-5" />
           </button>
           <button
-            onClick={() => sendTextToTerminal('/clear')}
-            className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0"
-            title="Clear"
-          >
-            <SquarePen className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => sendTextToTerminal('commit')}
-            className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
-            title="Commit"
-          >
-            <GitCommit className="h-5 w-5" />
-          </button>
-          <button
             onClick={() => sendTextToTerminal('clear\n')}
             className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0 mr-2"
             title="Clear Terminal"
