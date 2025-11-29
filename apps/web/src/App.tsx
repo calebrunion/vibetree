@@ -434,7 +434,7 @@ function App() {
 
       {/* Project Tabs and Content */}
       <Tabs value={activeProjectId || ''} onValueChange={setActiveProject} className="flex-1 flex flex-col">
-        <div className="flex items-center gap-2 h-10 overflow-hidden bg-muted/50">
+        <div className="flex items-center gap-2 h-10 overflow-hidden bg-muted">
           <TabsList className="h-full bg-transparent p-0 rounded-none gap-1 min-w-0 overflow-x-auto scrollbar-hide">
             {projects.map((project) => (
               <TabsTrigger
@@ -448,15 +448,13 @@ function App() {
                   onClick={(e) => handleCloseProject(e, project.id)}
                 >
                   <X className="h-3 w-3" />
-                  {/* Need this to generate the following text-black class */}
-                  <br className="hidden !text-black" />
                 </span>
               </TabsTrigger>
             ))}
           </TabsList>
           <button
             onClick={() => setShowAddProjectModal(true)}
-            className="h-8 w-8 p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 ml-auto border border-border"
+            className="h-8 w-8 p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 ml-auto mr-2 border border-border"
             aria-label="Add project"
           >
             <Plus className="h-4 w-4" />
@@ -661,7 +659,9 @@ function App() {
               ) : (
                 /* Empty state when no worktree selected */
                 <div
-                  className={`${sidebarCollapsed ? 'flex' : 'hidden md:flex'} flex-1 flex-col items-center justify-center text-muted-foreground`}
+                  className={`${
+                    sidebarCollapsed ? 'flex' : 'hidden md:flex'
+                  } flex-1 flex-col items-center justify-center text-muted-foreground`}
                 >
                   {sidebarCollapsed && (
                     <div className="w-full">
