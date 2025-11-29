@@ -1,4 +1,3 @@
-import { Mic, MicOff } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SpeechRecognitionEvent extends Event {
@@ -147,20 +146,6 @@ export default function VoiceInputDialog({
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full bg-background border-t rounded-t-2xl p-4 animate-in slide-in-from-bottom duration-200">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          {isVoiceSupported && (
-            <button
-              type="button"
-              onClick={toggleVoiceInput}
-              className={`flex-shrink-0 p-3 rounded-full transition-colors ${
-                isListening
-                  ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-                  : 'bg-muted hover:bg-accent text-muted-foreground'
-              }`}
-              title={isListening ? 'Stop voice input' : 'Start voice input'}
-            >
-              {isListening ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-            </button>
-          )}
           <input
             ref={inputRef}
             type="text"
@@ -172,7 +157,7 @@ export default function VoiceInputDialog({
               }
             }}
             placeholder="Type or use voice input..."
-            className="flex-1 h-10 px-3 text-sm bg-muted border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
+            className="flex-1 h-10 px-3 text-sm bg-muted border rounded-lg focus:outline-none focus:ring-1 focus:ring-border"
             enterKeyHint="send"
           />
         </form>

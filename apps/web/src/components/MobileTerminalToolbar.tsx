@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bot, Clipboard, CornerDownLeft, GitCommit, MessageSquare, MessageSquarePlus } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bot, Clipboard, CornerDownLeft, GitCommit, MessageSquare, SquarePen } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -86,7 +86,7 @@ export default function MobileTerminalToolbar() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => sendKey(KEYS.ESC)}
-            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0 mr-2"
           >
             ESC
           </button>
@@ -106,16 +106,22 @@ export default function MobileTerminalToolbar() {
           </button>
           <button
             onClick={() => sendTextToTerminal('/clear')}
-            className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0"
             title="Clear"
           >
-            <MessageSquarePlus className="h-5 w-5" />
+            <SquarePen className="h-4 w-4" />
           </button>
           <button
             onClick={() => sendKey(KEYS.SHIFT_TAB)}
             className="px-3 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0"
           >
             ⇧TAB
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.TAB)}
+            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0"
+          >
+            TAB
           </button>
           <button
             onClick={async () => {
@@ -126,20 +132,14 @@ export default function MobileTerminalToolbar() {
                 console.error('Failed to read clipboard:', err)
               }
             }}
-            className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0"
             title="Paste"
           >
-            <Clipboard className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.TAB)}
-            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0"
-          >
-            TAB
+            <Clipboard className="h-4 w-4" />
           </button>
           <button
             onClick={() => sendKey(KEYS.CTRL_C)}
-            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400 flex-shrink-0"
+            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400 flex-shrink-0 ml-2"
           >
             ^C
           </button>
