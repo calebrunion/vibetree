@@ -248,6 +248,7 @@ function App() {
         if (e.key === 'e' && activeProject?.selectedWorktree) {
           e.preventDefault()
           setSelectedTab(activeProject.id, activeProject.selectedWorktree, 'terminal')
+          setTimeout(() => window.dispatchEvent(new CustomEvent('focus-terminal')), 50)
         }
 
         if (e.key === 's' && activeProject?.selectedWorktree) {

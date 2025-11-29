@@ -94,6 +94,15 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
   }, [toggleTerminalFullscreen])
 
   useEffect(() => {
+    const handleFocusTerminal = () => {
+      terminalRef.current?.focus()
+    }
+
+    window.addEventListener('focus-terminal', handleFocusTerminal)
+    return () => window.removeEventListener('focus-terminal', handleFocusTerminal)
+  }, [])
+
+  useEffect(() => {
     if (!selectedWorktree) {
       return
     }
