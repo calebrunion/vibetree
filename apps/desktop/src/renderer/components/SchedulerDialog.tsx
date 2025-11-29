@@ -1,105 +1,96 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { PlayCircle, StopCircle, History } from 'lucide-react';
+import { useState, useEffect } from 'react'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
+import { PlayCircle, StopCircle, History } from 'lucide-react'
 
 export interface SchedulerConfig {
-  command: string;
-  delayMs: number;
-  repeat: boolean;
+  command: string
+  delayMs: number
+  repeat: boolean
 }
 
 interface SchedulerDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onStart: (config: SchedulerConfig) => void;
-  onStop: () => void | Promise<void>;
-  isRunning: boolean;
-  currentConfig: SchedulerConfig | null;
+  open: boolean
+  onClose: () => void
+  onStart: (config: SchedulerConfig) => void
+  onStop: () => void | Promise<void>
+  isRunning: boolean
+  currentConfig: SchedulerConfig | null
 }
 
 interface SchedulerHistoryEntry {
-  command: string;
-  delayMs: number;
-  repeat: boolean;
-  timestamp: number;
+  command: string
+  delayMs: number
+  repeat: boolean
+  timestamp: number
 }
 
-export function SchedulerDialog({
-  open,
-  onClose,
-  onStart,
-  onStop,
-  isRunning,
-  currentConfig,
-}: SchedulerDialogProps) {
-  const [command, setCommand] = useState('');
-  const [delaySeconds, setDelaySeconds] = useState('1');
-  const [repeat, setRepeat] = useState(false);
-  const [history, setHistory] = useState<SchedulerHistoryEntry[]>([]);
+export function SchedulerDialog({ open, onClose, onStart, onStop, isRunning, currentConfig }: SchedulerDialogProps) {
+  const [command, setCommand] = useState('')
+  const [delaySeconds, setDelaySeconds] = useState('1')
+  const [repeat, setRepeat] = useState(false)
+  const [history, setHistory] = useState<SchedulerHistoryEntry[]>([])
 
   // Load history when dialog opens
   useEffect(() => {
     if (open) {
       window.electronAPI.schedulerHistory.get().then((historyEntries: SchedulerHistoryEntry[]) => {
-        setHistory(historyEntries);
-      });
+        setHistory(historyEntries)
+      })
     }
-  }, [open]);
+  }, [open])
 
   // Update form when currentConfig changes
   useEffect(() => {
     if (currentConfig) {
-      setCommand(currentConfig.command);
-      setDelaySeconds((currentConfig.delayMs / 1000).toString());
-      setRepeat(currentConfig.repeat);
+      setCommand(currentConfig.command)
+      setDelaySeconds((currentConfig.delayMs / 1000).toString())
+      setRepeat(currentConfig.repeat)
     } else {
       // Reset to defaults when no config
-      setCommand('');
-      setDelaySeconds('1');
-      setRepeat(false);
+      setCommand('')
+      setDelaySeconds('1')
+      setRepeat(false)
     }
-  }, [currentConfig]);
+  }, [currentConfig])
 
   const handleStart = () => {
-    const delayMs = parseFloat(delaySeconds) * 1000;
+    const delayMs = parseFloat(delaySeconds) * 1000
 
     if (!command.trim()) {
-      return;
+      return
     }
 
     if (isNaN(delayMs) || delayMs <= 0) {
-      return;
+      return
     }
 
     const config = {
       command: command.trim(),
       delayMs,
       repeat,
-    };
+    }
 
     // Save to history
-    window.electronAPI.schedulerHistory.add(config.command, config.delayMs, config.repeat);
+    window.electronAPI.schedulerHistory.add(config.command, config.delayMs, config.repeat)
 
-    onStart(config);
-  };
+    onStart(config)
+  }
 
   const handleLoadFromHistory = (entry: SchedulerHistoryEntry) => {
-    setCommand(entry.command);
-    setDelaySeconds((entry.delayMs / 1000).toString());
-    setRepeat(entry.repeat);
-  };
+    setCommand(entry.command)
+    setDelaySeconds((entry.delayMs / 1000).toString())
+    setRepeat(entry.repeat)
+  }
 
   const handleStop = async () => {
-    await onStop();
-    onClose();
-  };
+    await onStop()
+    onClose()
+  }
 
-  const isValid = command.trim().length > 0 &&
-                  !isNaN(parseFloat(delaySeconds)) &&
-                  parseFloat(delaySeconds) > 0;
+  const isValid = command.trim().length > 0 && !isNaN(parseFloat(delaySeconds)) && parseFloat(delaySeconds) > 0
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -122,11 +113,7 @@ export function SchedulerDialog({
               {history.length > 0 && !isRunning && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 gap-1"
-                    >
+                    <Button variant="outline" size="sm" className="h-7 gap-1">
                       <History className="h-3 w-3" />
                       History
                     </Button>
@@ -138,11 +125,9 @@ export function SchedulerDialog({
                         onClick={() => handleLoadFromHistory(entry)}
                         className="flex flex-col items-start gap-1 py-2"
                       >
-                        <div className="font-mono text-xs truncate w-full">
-                          {entry.command}
-                        </div>
+                        <div className="font-mono text-xs truncate w-full">{entry.command}</div>
                         <div className="text-xs text-muted-foreground">
-                          {(entry.delayMs / 1000)}s {entry.repeat ? '• Repeat' : '• One-time'}
+                          {entry.delayMs / 1000}s {entry.repeat ? '• Repeat' : '• One-time'}
                         </div>
                       </DropdownMenuItem>
                     ))}
@@ -201,9 +186,7 @@ export function SchedulerDialog({
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                  Scheduler is running
-                </p>
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Scheduler is running</p>
                 <p className="text-xs text-blue-700 dark:text-blue-300">
                   {repeat ? 'Repeating' : 'One-time'} • Every {delaySeconds}s
                 </p>
@@ -214,28 +197,16 @@ export function SchedulerDialog({
 
         <DialogFooter>
           {isRunning ? (
-            <Button
-              onClick={handleStop}
-              variant="destructive"
-              className="w-full"
-            >
+            <Button onClick={handleStop} variant="destructive" className="w-full">
               <StopCircle className="h-4 w-4 mr-2" />
               Stop Scheduler
             </Button>
           ) : (
             <div className="flex gap-2 w-full">
-              <Button
-                onClick={onClose}
-                variant="outline"
-                className="flex-1"
-              >
+              <Button onClick={onClose} variant="outline" className="flex-1">
                 Cancel
               </Button>
-              <Button
-                onClick={handleStart}
-                disabled={!isValid}
-                className="flex-1"
-              >
+              <Button onClick={handleStart} disabled={!isValid} className="flex-1">
                 <PlayCircle className="h-4 w-4 mr-2" />
                 Start
               </Button>
@@ -244,5 +215,5 @@ export function SchedulerDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

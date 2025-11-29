@@ -1,4 +1,4 @@
-import { Worktree, GitStatus } from '../types';
+import { Worktree, GitStatus } from '../types'
 
 /**
  * Parses the output of `git worktree list --porcelain` command
@@ -6,9 +6,9 @@ import { Worktree, GitStatus } from '../types';
  * @returns Array of parsed worktree objects
  */
 export function parseWorktrees(output: string): Worktree[] {
-  const lines = output.trim().split('\n');
-  const worktrees: Worktree[] = [];
-  let current: Partial<Worktree> = {};
+  const lines = output.trim().split('\n')
+  const worktrees: Worktree[] = []
+  let current: Partial<Worktree> = {}
 
   for (const line of lines) {
     if (line.startsWith('worktree ')) {
@@ -16,14 +16,14 @@ export function parseWorktrees(output: string): Worktree[] {
       // A worktree is complete if it has at least a path and head
       // Branch is optional (can be undefined for detached HEAD)
       if (current.path && current.head) {
-        worktrees.push(current as Worktree);
+        worktrees.push(current as Worktree)
       }
       // Start a new worktree entry
-      current = { path: line.substring(9) };
+      current = { path: line.substring(9) }
     } else if (line.startsWith('HEAD ')) {
-      current.head = line.substring(5);
+      current.head = line.substring(5)
     } else if (line.startsWith('branch ')) {
-      current.branch = line.substring(7);
+      current.branch = line.substring(7)
     }
   }
 
@@ -31,10 +31,10 @@ export function parseWorktrees(output: string): Worktree[] {
   // A worktree is complete if it has at least a path and head
   // Branch is optional (can be undefined for detached HEAD)
   if (current.path && current.head) {
-    worktrees.push(current as Worktree);
+    worktrees.push(current as Worktree)
   }
 
-  return worktrees;
+  return worktrees
 }
 
 /**
@@ -45,22 +45,22 @@ export function parseWorktrees(output: string): Worktree[] {
 export function parseGitStatus(output: string): GitStatus[] {
   // Don't use trim() on the whole output as it removes leading spaces from the first line
   // which corrupts the status parsing (e.g., " M filename" becomes "M filename")
-  const lines = output.split('\n').filter(line => line.length > 0);
+  const lines = output.split('\n').filter((line) => line.length > 0)
 
-  return lines.map(line => {
+  return lines.map((line) => {
     // Git status porcelain v1 format: XY filename
     // X = status in index (staged), Y = status in working tree (unstaged)
     // Position 0: X, Position 1: Y, Position 2: space separator, Position 3+: path
-    const statusCode = line.substring(0, 2);
-    const filePath = line.substring(3);
+    const statusCode = line.substring(0, 2)
+    const filePath = line.substring(3)
 
     return {
       path: filePath,
       status: statusCode,
       staged: statusCode[0] !== ' ' && statusCode[0] !== '?',
-      modified: statusCode[1] !== ' ' && statusCode[1] !== '?'
-    };
-  });
+      modified: statusCode[1] !== ' ' && statusCode[1] !== '?',
+    }
+  })
 }
 
 /**
@@ -70,9 +70,9 @@ export function parseGitStatus(output: string): GitStatus[] {
  */
 export function extractBranchName(ref: string): string {
   if (ref.startsWith('refs/heads/')) {
-    return ref.substring('refs/heads/'.length);
+    return ref.substring('refs/heads/'.length)
   }
-  return ref;
+  return ref
 }
 
 /**
@@ -81,6 +81,6 @@ export function extractBranchName(ref: string): string {
  * @returns True if branch is main or master
  */
 export function isMainBranch(branchName: string): boolean {
-  const cleanName = extractBranchName(branchName);
-  return cleanName === 'main' || cleanName === 'master';
+  const cleanName = extractBranchName(branchName)
+  return cleanName === 'main' || cleanName === 'master'
 }

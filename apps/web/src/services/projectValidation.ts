@@ -1,17 +1,17 @@
-import { getServerHttpUrl } from './portDiscovery';
-import { authenticatedFetch } from './authService';
+import { getServerHttpUrl } from './portDiscovery'
+import { authenticatedFetch } from './authService'
 
 interface ProjectValidationResult {
-  path: string;
-  name?: string;
-  valid: boolean;
-  error?: string;
+  path: string
+  name?: string
+  valid: boolean
+  error?: string
 }
 
 interface AutoLoadResponse {
-  projectPaths: string[];
-  validationResults: ProjectValidationResult[];
-  defaultProjectPath: string | null;
+  projectPaths: string[]
+  validationResults: ProjectValidationResult[]
+  defaultProjectPath: string | null
 }
 
 /**
@@ -21,30 +21,30 @@ interface AutoLoadResponse {
  */
 export async function validateProjectPaths(projectPaths: string[]): Promise<ProjectValidationResult[]> {
   if (projectPaths.length === 0) {
-    return [];
+    return []
   }
 
   try {
-    const httpUrl = await getServerHttpUrl();
-    
+    const httpUrl = await getServerHttpUrl()
+
     const response = await authenticatedFetch(`${httpUrl}/api/projects/validate`, {
       method: 'POST',
       body: JSON.stringify({ projectPaths }),
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
-    console.error('Failed to validate projects:', error);
+    console.error('Failed to validate projects:', error)
     // Return error results for all paths
-    return projectPaths.map(path => ({
+    return projectPaths.map((path) => ({
       path,
       valid: false,
       error: `Validation failed: ${(error as Error).message}`,
-    }));
+    }))
   }
 }
 
@@ -54,22 +54,22 @@ export async function validateProjectPaths(projectPaths: string[]): Promise<Proj
  */
 export async function autoLoadProjects(): Promise<AutoLoadResponse> {
   try {
-    const httpUrl = await getServerHttpUrl();
-    
-    const response = await authenticatedFetch(`${httpUrl}/api/projects/auto-load`);
+    const httpUrl = await getServerHttpUrl()
+
+    const response = await authenticatedFetch(`${httpUrl}/api/projects/auto-load`)
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
-    console.error('Failed to auto-load projects:', error);
+    console.error('Failed to auto-load projects:', error)
     // Return empty response on error
     return {
       projectPaths: [],
       validationResults: [],
       defaultProjectPath: null,
-    };
+    }
   }
 }

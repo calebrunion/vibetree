@@ -1,13 +1,13 @@
-import * as crypto from 'crypto';
+import * as crypto from 'crypto'
 
 // Type definitions to avoid importing node-pty directly
 export interface IPty {
-  pid: number;
-  write(data: string): void;
-  resize(cols: number, rows: number): void;
-  kill(signal?: string): void;
-  onData(callback: (data: string) => void): { dispose: () => void };
-  onExit(callback: (event: { exitCode: number }) => void): { dispose: () => void };
+  pid: number
+  write(data: string): void
+  resize(cols: number, rows: number): void
+  kill(signal?: string): void
+  onData(callback: (data: string) => void): { dispose: () => void }
+  onExit(callback: (event: { exitCode: number }) => void): { dispose: () => void }
 }
 
 /**
@@ -15,9 +15,7 @@ export interface IPty {
  * @returns Shell path
  */
 export function getDefaultShell(): string {
-  return process.platform === 'win32' 
-    ? 'powershell.exe' 
-    : process.env.SHELL || '/bin/bash';
+  return process.platform === 'win32' ? 'powershell.exe' : process.env.SHELL || '/bin/bash'
 }
 
 /**
@@ -35,47 +33,47 @@ function getSystemLocale(): string {
   if (process.platform === 'darwin') {
     try {
       // Try to get macOS system locale preference
-      const { execSync } = require('child_process');
-      const appleLocale = execSync('defaults read NSGlobalDomain AppleLocale 2>/dev/null', { 
-        encoding: 'utf8' 
-      }).trim();
-      
+      const { execSync } = require('child_process')
+      const appleLocale = execSync('defaults read NSGlobalDomain AppleLocale 2>/dev/null', {
+        encoding: 'utf8',
+      }).trim()
+
       if (appleLocale) {
         // Convert Apple locale format (e.g., 'en_US') to POSIX format (e.g., 'en_US.UTF-8')
-        return `${appleLocale}.UTF-8`;
+        return `${appleLocale}.UTF-8`
       }
     } catch (error) {
       // Silently fall through to default
     }
   }
-  
+
   // Default fallback
-  return 'en_US.UTF-8';
+  return 'en_US.UTF-8'
 }
 
 export function getPtyOptions(
-  worktreePath: string, 
-  cols: number = 80, 
+  worktreePath: string,
+  cols: number = 80,
   rows: number = 30,
   setLocaleVariables: boolean = true
 ): any {
   // Create a copy of process.env to avoid modifying the original
-  const env = { ...process.env } as Record<string, string>;
-  
+  const env = { ...process.env } as Record<string, string>
+
   // Set LANG if not already set and setting is enabled
   // This matches iTerm2 and Terminal.app "Set locale environment variables automatically" behavior
   if (setLocaleVariables && (!env.LANG || env.LANG === '')) {
     // Use the system's locale preference, matching iTerm2's behavior
-    env.LANG = getSystemLocale();
+    env.LANG = getSystemLocale()
   }
-  
+
   return {
     name: 'xterm-256color',
     cols,
     rows,
     cwd: worktreePath,
-    env
-  };
+    env,
+  }
 }
 
 /**
@@ -84,7 +82,7 @@ export function getPtyOptions(
  * @param data - Data to write
  */
 export function writeToPty(ptyProcess: IPty, data: string): void {
-  ptyProcess.write(data);
+  ptyProcess.write(data)
 }
 
 /**
@@ -94,7 +92,7 @@ export function writeToPty(ptyProcess: IPty, data: string): void {
  * @param rows - New row count
  */
 export function resizePty(ptyProcess: IPty, cols: number, rows: number): void {
-  ptyProcess.resize(cols, rows);
+  ptyProcess.resize(cols, rows)
 }
 
 /**
@@ -107,7 +105,7 @@ export function resizePty(ptyProcess: IPty, cols: number, rows: number): void {
 export async function killPtyGraceful(ptyProcess: IPty, _timeoutMs?: number): Promise<void> {
   // Graceful kill with SIGTERM doesn't work reliably for killing child processes like irb
   // Force kill with SIGKILL to process group is the only reliable way
-  return killPtyForce(ptyProcess);
+  return killPtyForce(ptyProcess)
 }
 
 /**
@@ -117,65 +115,65 @@ export async function killPtyGraceful(ptyProcess: IPty, _timeoutMs?: number): Pr
  */
 export async function killPtyForce(ptyProcess: IPty): Promise<void> {
   return new Promise<void>((resolve) => {
-    const pid = ptyProcess.pid;
-    let isKilled = false;
-    let exitListener: { dispose: () => void } | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
+    const pid = ptyProcess.pid
+    let isKilled = false
+    let exitListener: { dispose: () => void } | null = null
+    let timeoutId: NodeJS.Timeout | null = null
 
     let cleanup = (source: 'exit' | 'timeout') => {
-      console.log(`PTY process ${pid} cleanup triggered by: ${source}`);
+      console.log(`PTY process ${pid} cleanup triggered by: ${source}`)
 
       if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
+        clearTimeout(timeoutId)
+        timeoutId = null
       }
 
       if (exitListener) {
-        exitListener.dispose();
-        exitListener = null;
+        exitListener.dispose()
+        exitListener = null
       }
 
       if (!isKilled) {
-        isKilled = true;
-        resolve();
+        isKilled = true
+        resolve()
       }
-    };
+    }
 
     // Listen for exit event
     exitListener = ptyProcess.onExit(() => {
-      console.log(`PTY process ${pid} exit event fired`);
-      cleanup('exit');
-    });
+      console.log(`PTY process ${pid} exit event fired`)
+      cleanup('exit')
+    })
 
     // Send SIGKILL to force kill
     try {
       if (process.platform !== 'win32') {
         // Send SIGKILL to process group to ensure all processes are killed
         try {
-          process.kill(-pid, 'SIGKILL');
-          console.log(`Sent SIGKILL to process group -${pid}`);
+          process.kill(-pid, 'SIGKILL')
+          console.log(`Sent SIGKILL to process group -${pid}`)
         } catch (pgError) {
-          console.warn(`Could not kill process group -${pid}, falling back to PTY process:`, pgError);
-          ptyProcess.kill('SIGKILL');
-          console.log(`Sent SIGKILL to PTY process ${pid}`);
+          console.warn(`Could not kill process group -${pid}, falling back to PTY process:`, pgError)
+          ptyProcess.kill('SIGKILL')
+          console.log(`Sent SIGKILL to PTY process ${pid}`)
         }
       } else {
-        ptyProcess.kill('SIGKILL');
-        console.log(`Sent SIGKILL to PTY process ${pid}`);
+        ptyProcess.kill('SIGKILL')
+        console.log(`Sent SIGKILL to PTY process ${pid}`)
       }
     } catch (error) {
-      console.error(`Error sending SIGKILL to PTY process ${pid}:`, error);
-      cleanup('timeout');
-      return;
+      console.error(`Error sending SIGKILL to PTY process ${pid}:`, error)
+      cleanup('timeout')
+      return
     }
 
     // Fallback timeout in case exit event never fires
     // This should rarely happen with SIGKILL
     timeoutId = setTimeout(() => {
-      console.warn(`PTY process ${pid} exit event did not fire within 500ms, forcing cleanup`);
-      cleanup('timeout');
-    }, 500);
-  });
+      console.warn(`PTY process ${pid} exit event did not fire within 500ms, forcing cleanup`)
+      cleanup('timeout')
+    }, 500)
+  })
 }
 
 /**
@@ -187,11 +185,11 @@ export async function killPtyForce(ptyProcess: IPty): Promise<void> {
  */
 export async function killPty(ptyProcess: IPty, timeoutMs: number = 2000): Promise<void> {
   try {
-    await killPtyGraceful(ptyProcess, timeoutMs);
+    await killPtyGraceful(ptyProcess, timeoutMs)
   } catch (error) {
     // If graceful kill times out, force kill
-    console.log(`Graceful kill timed out, force killing PTY process ${ptyProcess.pid}`);
-    await killPtyForce(ptyProcess);
+    console.log(`Graceful kill timed out, force killing PTY process ${ptyProcess.pid}`)
+    await killPtyForce(ptyProcess)
   }
 }
 
@@ -202,9 +200,9 @@ export async function killPty(ptyProcess: IPty, timeoutMs: number = 2000): Promi
  */
 export function killPtySync(ptyProcess: IPty): void {
   try {
-    ptyProcess.kill('SIGTERM');
+    ptyProcess.kill('SIGTERM')
   } catch (error) {
-    console.error('Error killing PTY process:', error);
+    console.error('Error killing PTY process:', error)
   }
 }
 
@@ -214,10 +212,7 @@ export function killPtySync(ptyProcess: IPty): void {
  * @returns 16-character hex string
  */
 export function generateSessionId(worktreePath: string): string {
-  return crypto.createHash('sha256')
-    .update(worktreePath)
-    .digest('hex')
-    .substring(0, 16);
+  return crypto.createHash('sha256').update(worktreePath).digest('hex').substring(0, 16)
 }
 
 /**
@@ -226,11 +221,8 @@ export function generateSessionId(worktreePath: string): string {
  * @param callback - Callback for data events
  * @returns Disposable to remove the listener
  */
-export function onPtyData(
-  ptyProcess: IPty, 
-  callback: (data: string) => void
-): { dispose: () => void } {
-  return ptyProcess.onData(callback);
+export function onPtyData(ptyProcess: IPty, callback: (data: string) => void): { dispose: () => void } {
+  return ptyProcess.onData(callback)
 }
 
 /**
@@ -239,9 +231,6 @@ export function onPtyData(
  * @param callback - Callback for exit events
  * @returns Disposable to remove the listener
  */
-export function onPtyExit(
-  ptyProcess: IPty, 
-  callback: (exitCode: number) => void
-): { dispose: () => void } {
-  return ptyProcess.onExit((event) => callback(event.exitCode));
+export function onPtyExit(ptyProcess: IPty, callback: (exitCode: number) => void): { dispose: () => void } {
+  return ptyProcess.onExit((event) => callback(event.exitCode))
 }

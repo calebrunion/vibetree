@@ -1,4 +1,15 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bot, Clipboard, CornerDownLeft, Delete, GitCommit, SquarePen } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Bot,
+  Clipboard,
+  CornerDownLeft,
+  Delete,
+  GitCommit,
+  SquarePen,
+} from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -23,39 +34,45 @@ export default function MobileTerminalToolbar() {
   const [isVoiceDialogOpen, setIsVoiceDialogOpen] = useState(false)
   const [inputText, setInputText] = useState('')
 
-  const sendKey = useCallback(async (key: string) => {
-    const activeProject = getActiveProject()
-    if (!activeProject?.selectedWorktree) return
+  const sendKey = useCallback(
+    async (key: string) => {
+      const activeProject = getActiveProject()
+      if (!activeProject?.selectedWorktree) return
 
-    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
-    if (!sessionId) return
+      const sessionId = terminalSessions.get(activeProject.selectedWorktree)
+      if (!sessionId) return
 
-    const adapter = getAdapter()
-    if (!adapter) return
+      const adapter = getAdapter()
+      if (!adapter) return
 
-    try {
-      await adapter.writeToShell(sessionId, key)
-    } catch (error) {
-      console.error('Failed to send key:', error)
-    }
-  }, [getActiveProject, terminalSessions, getAdapter])
+      try {
+        await adapter.writeToShell(sessionId, key)
+      } catch (error) {
+        console.error('Failed to send key:', error)
+      }
+    },
+    [getActiveProject, terminalSessions, getAdapter]
+  )
 
-  const sendTextToTerminal = useCallback(async (text: string) => {
-    const activeProject = getActiveProject()
-    if (!activeProject?.selectedWorktree) return
+  const sendTextToTerminal = useCallback(
+    async (text: string) => {
+      const activeProject = getActiveProject()
+      if (!activeProject?.selectedWorktree) return
 
-    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
-    if (!sessionId) return
+      const sessionId = terminalSessions.get(activeProject.selectedWorktree)
+      if (!sessionId) return
 
-    const adapter = getAdapter()
-    if (!adapter) return
+      const adapter = getAdapter()
+      if (!adapter) return
 
-    try {
-      await adapter.writeToShell(sessionId, text)
-    } catch (error) {
-      console.error('Failed to send text:', error)
-    }
-  }, [getActiveProject, terminalSessions, getAdapter])
+      try {
+        await adapter.writeToShell(sessionId, text)
+      } catch (error) {
+        console.error('Failed to send text:', error)
+      }
+    },
+    [getActiveProject, terminalSessions, getAdapter]
+  )
 
   const launchClaude = useCallback(async () => {
     const activeProject = getActiveProject()
@@ -69,7 +86,7 @@ export default function MobileTerminalToolbar() {
 
     try {
       await adapter.writeToShell(sessionId, KEYS.CTRL_C)
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
       await adapter.writeToShell(sessionId, 'claude -c --permission-mode bypassPermissions\n')
     } catch (error) {
       console.error('Failed to launch Claude:', error)

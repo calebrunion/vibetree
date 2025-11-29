@@ -6,10 +6,7 @@ interface StartupScriptModalProps {
   onClose: () => void
 }
 
-export default function StartupScriptModal({
-  projectPath,
-  onClose,
-}: StartupScriptModalProps) {
+export default function StartupScriptModal({ projectPath, onClose }: StartupScriptModalProps) {
   const { getAdapter } = useWebSocket()
   const [startupCommand, setStartupCommand] = useState('')
   const [loading, setLoading] = useState(true)
@@ -66,14 +63,10 @@ export default function StartupScriptModal({
           </p>
 
           {loading ? (
-            <div className="h-32 flex items-center justify-center text-muted-foreground">
-              Loading...
-            </div>
+            <div className="h-32 flex items-center justify-center text-muted-foreground">Loading...</div>
           ) : (
             <>
-              <label className="block text-sm font-medium mb-2">
-                Startup Command
-              </label>
+              <label className="block text-sm font-medium mb-2">Startup Command</label>
               <textarea
                 value={startupCommand}
                 onChange={(e) => setStartupCommand(e.target.value)}

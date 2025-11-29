@@ -1,350 +1,388 @@
-import { useEffect, useState, useCallback, useImperativeHandle, forwardRef, Component, ReactNode } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, RefreshCw } from 'lucide-react';
-import { DiffView, DiffModeEnum } from '@git-diff-view/react';
-import '@git-diff-view/react/styles/diff-view.css';
-import { useWebSocket } from '../hooks/useWebSocket';
-import type { GitStatus, GitCommit as GitCommitType, CommitFile } from '@vibetree/core';
+import { useEffect, useState, useCallback, useImperativeHandle, forwardRef, Component, ReactNode } from 'react'
+import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, RefreshCw } from 'lucide-react'
+import { DiffView, DiffModeEnum } from '@git-diff-view/react'
+import '@git-diff-view/react/styles/diff-view.css'
+import { useWebSocket } from '../hooks/useWebSocket'
+import type { GitStatus, GitCommit as GitCommitType, CommitFile } from '@vibetree/core'
 
 class DiffErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode; fallback: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
+    super(props)
+    this.state = { hasError: false }
   }
 
   static getDerivedStateFromError() {
-    return { hasError: true };
+    return { hasError: true }
   }
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback;
+      return this.props.fallback
     }
-    return this.props.children;
+    return this.props.children
   }
 }
 
 interface GitFile {
-  path: string;
-  status: string;
-  staged: boolean;
-  modified: boolean;
+  path: string
+  status: string
+  staged: boolean
+  modified: boolean
 }
 
 interface GitDiffViewProps {
-  worktreePath: string;
-  theme?: 'light' | 'dark';
-  onLoadingChange?: (loading: boolean) => void;
-  onFileCountChange?: (count: number) => void;
+  worktreePath: string
+  theme?: 'light' | 'dark'
+  onLoadingChange?: (loading: boolean) => void
+  onFileCountChange?: (count: number) => void
 }
 
 export interface GitDiffViewRef {
-  refresh: () => void;
+  refresh: () => void
 }
 
 export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function GitDiffView(
   { worktreePath, theme = 'light', onLoadingChange, onFileCountChange },
   ref
 ) {
-  const [files, setFiles] = useState<GitFile[]>([]);
-  const [commits, setCommits] = useState<GitCommitType[]>([]);
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [selectedSection, setSelectedSection] = useState<'current' | 'commit' | 'all'>('current');
-  const [selectedCommit, setSelectedCommit] = useState<GitCommitType | null>(null);
-  const [commitFilesMap, setCommitFilesMap] = useState<Record<string, CommitFile[]>>({});
-  const [expandedCommits, setExpandedCommits] = useState<Set<string>>(new Set());
-  const [diffText, setDiffText] = useState<string>('');
-  const [allChangesFiles, setAllChangesFiles] = useState<CommitFile[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [allChangesCollapsed, setAllChangesCollapsed] = useState(true);
-  const [currentCollapsed, setCurrentCollapsed] = useState(false);
-  const [historyCollapsed, setHistoryCollapsed] = useState(false);
+  const [files, setFiles] = useState<GitFile[]>([])
+  const [commits, setCommits] = useState<GitCommitType[]>([])
+  const [selectedFile, setSelectedFile] = useState<string | null>(null)
+  const [selectedSection, setSelectedSection] = useState<'current' | 'commit' | 'all'>('current')
+  const [selectedCommit, setSelectedCommit] = useState<GitCommitType | null>(null)
+  const [commitFilesMap, setCommitFilesMap] = useState<Record<string, CommitFile[]>>({})
+  const [expandedCommits, setExpandedCommits] = useState<Set<string>>(new Set())
+  const [diffText, setDiffText] = useState<string>('')
+  const [allChangesFiles, setAllChangesFiles] = useState<CommitFile[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [allChangesCollapsed, setAllChangesCollapsed] = useState(true)
+  const [currentCollapsed, setCurrentCollapsed] = useState(false)
+  const [historyCollapsed, setHistoryCollapsed] = useState(false)
 
-  const { getAdapter } = useWebSocket();
+  const { getAdapter } = useWebSocket()
 
   const loadGitStatus = useCallback(async () => {
-    const adapter = getAdapter();
-    if (!adapter) return;
+    const adapter = getAdapter()
+    if (!adapter) return
 
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError(null)
 
-      const status: GitStatus[] = await adapter.getGitStatus(worktreePath);
+      const status: GitStatus[] = await adapter.getGitStatus(worktreePath)
 
-      const gitFiles: GitFile[] = status.map(file => ({
+      const gitFiles: GitFile[] = status.map((file) => ({
         path: file.path,
         status: file.status,
         staged: file.status[0] !== ' ' && file.status[0] !== '?',
-        modified: file.status[1] !== ' ' && file.status[1] !== '?'
-      }));
+        modified: file.status[1] !== ' ' && file.status[1] !== '?',
+      }))
 
-      setFiles(gitFiles);
+      setFiles(gitFiles)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load git status');
-      setFiles([]);
+      setError(err instanceof Error ? err.message : 'Failed to load git status')
+      setFiles([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [worktreePath, getAdapter]);
+  }, [worktreePath, getAdapter])
 
   const loadGitLog = useCallback(async () => {
-    const adapter = getAdapter();
-    if (!adapter || !('getGitLog' in adapter)) return;
+    const adapter = getAdapter()
+    if (!adapter || !('getGitLog' in adapter)) return
 
     try {
-      const gitCommits = await (adapter as any).getGitLog(worktreePath, 20);
-      setCommits(gitCommits);
+      const gitCommits = await (adapter as any).getGitLog(worktreePath, 20)
+      setCommits(gitCommits)
     } catch (err) {
-      console.error('Failed to load git log:', err);
-      setCommits([]);
+      console.error('Failed to load git log:', err)
+      setCommits([])
     }
-  }, [worktreePath, getAdapter]);
+  }, [worktreePath, getAdapter])
 
-  const loadDiff = useCallback(async (filePath: string, options: { staged?: boolean; untracked?: boolean } = {}) => {
-    const adapter = getAdapter();
-    if (!adapter) return;
+  const loadDiff = useCallback(
+    async (filePath: string, options: { staged?: boolean; untracked?: boolean } = {}) => {
+      const adapter = getAdapter()
+      if (!adapter) return
 
-    try {
-      setLoading(true);
-      setError(null);
+      try {
+        setLoading(true)
+        setError(null)
 
-      let diffTextResult: string;
-      if (options.untracked && 'getGitDiffUntracked' in adapter) {
-        diffTextResult = await (adapter as any).getGitDiffUntracked(worktreePath, filePath);
-      } else if (options.staged) {
-        diffTextResult = await adapter.getGitDiffStaged(worktreePath, filePath);
-      } else {
-        diffTextResult = await adapter.getGitDiff(worktreePath, filePath);
+        let diffTextResult: string
+        if (options.untracked && 'getGitDiffUntracked' in adapter) {
+          diffTextResult = await (adapter as any).getGitDiffUntracked(worktreePath, filePath)
+        } else if (options.staged) {
+          diffTextResult = await adapter.getGitDiffStaged(worktreePath, filePath)
+        } else {
+          diffTextResult = await adapter.getGitDiff(worktreePath, filePath)
+        }
+
+        setDiffText(diffTextResult ? diffTextResult.trim() : '')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load diff')
+        setDiffText('')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [worktreePath, getAdapter]
+  )
+
+  const toggleCommitExpanded = useCallback(
+    async (commit: GitCommitType) => {
+      const adapter = getAdapter()
+      if (!adapter || !('getCommitFiles' in adapter)) return
+
+      const isExpanded = expandedCommits.has(commit.hash)
+
+      if (isExpanded) {
+        setExpandedCommits((prev) => {
+          const next = new Set(prev)
+          next.delete(commit.hash)
+          return next
+        })
+        return
       }
 
-      setDiffText(diffTextResult ? diffTextResult.trim() : '');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load diff');
-      setDiffText('');
-    } finally {
-      setLoading(false);
-    }
-  }, [worktreePath, getAdapter]);
+      setExpandedCommits((prev) => new Set(prev).add(commit.hash))
 
-  const toggleCommitExpanded = useCallback(async (commit: GitCommitType) => {
-    const adapter = getAdapter();
-    if (!adapter || !('getCommitFiles' in adapter)) return;
+      if (commitFilesMap[commit.hash]) {
+        return
+      }
 
-    const isExpanded = expandedCommits.has(commit.hash);
+      try {
+        setLoading(true)
+        setError(null)
 
-    if (isExpanded) {
-      setExpandedCommits(prev => {
-        const next = new Set(prev);
-        next.delete(commit.hash);
-        return next;
-      });
-      return;
-    }
+        const files = await (adapter as any).getCommitFiles(worktreePath, commit.hash)
+        setCommitFilesMap((prev) => ({ ...prev, [commit.hash]: files }))
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load commit files')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [worktreePath, getAdapter, expandedCommits, commitFilesMap]
+  )
 
-    setExpandedCommits(prev => new Set(prev).add(commit.hash));
+  const loadCommitDiff = useCallback(
+    async (commitHash: string, filePath?: string) => {
+      const adapter = getAdapter()
+      if (!adapter || !('getCommitDiff' in adapter)) return
 
-    if (commitFilesMap[commit.hash]) {
-      return;
-    }
+      try {
+        setLoading(true)
+        setError(null)
 
-    try {
-      setLoading(true);
-      setError(null);
-
-      const files = await (adapter as any).getCommitFiles(worktreePath, commit.hash);
-      setCommitFilesMap(prev => ({ ...prev, [commit.hash]: files }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load commit files');
-    } finally {
-      setLoading(false);
-    }
-  }, [worktreePath, getAdapter, expandedCommits, commitFilesMap]);
-
-  const loadCommitDiff = useCallback(async (commitHash: string, filePath?: string) => {
-    const adapter = getAdapter();
-    if (!adapter || !('getCommitDiff' in adapter)) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const diffTextResult = await (adapter as any).getCommitDiff(worktreePath, commitHash, filePath);
-      setDiffText(diffTextResult ? diffTextResult.trim() : '');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load commit diff');
-      setDiffText('');
-    } finally {
-      setLoading(false);
-    }
-  }, [worktreePath, getAdapter]);
+        const diffTextResult = await (adapter as any).getCommitDiff(worktreePath, commitHash, filePath)
+        setDiffText(diffTextResult ? diffTextResult.trim() : '')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load commit diff')
+        setDiffText('')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [worktreePath, getAdapter]
+  )
 
   const loadAllChangesFiles = useCallback(async () => {
-    const adapter = getAdapter();
-    if (!adapter || !('getFilesChangedAgainstBase' in adapter)) return;
+    const adapter = getAdapter()
+    if (!adapter || !('getFilesChangedAgainstBase' in adapter)) return
 
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError(null)
 
-      const files = await (adapter as any).getFilesChangedAgainstBase(worktreePath);
-      setAllChangesFiles(files);
+      const files = await (adapter as any).getFilesChangedAgainstBase(worktreePath)
+      setAllChangesFiles(files)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load all changes');
-      setAllChangesFiles([]);
+      setError(err instanceof Error ? err.message : 'Failed to load all changes')
+      setAllChangesFiles([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [worktreePath, getAdapter]);
+  }, [worktreePath, getAdapter])
 
-  const loadDiffAgainstBase = useCallback(async (filePath: string) => {
-    const adapter = getAdapter();
-    if (!adapter || !('getDiffAgainstBase' in adapter)) return;
+  const loadDiffAgainstBase = useCallback(
+    async (filePath: string) => {
+      const adapter = getAdapter()
+      if (!adapter || !('getDiffAgainstBase' in adapter)) return
 
-    try {
-      setLoading(true);
-      setError(null);
+      try {
+        setLoading(true)
+        setError(null)
 
-      const diffTextResult = await (adapter as any).getDiffAgainstBase(worktreePath, undefined, filePath);
-      setDiffText(diffTextResult ? diffTextResult.trim() : '');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load diff');
-      setDiffText('');
-    } finally {
-      setLoading(false);
-    }
-  }, [worktreePath, getAdapter]);
+        const diffTextResult = await (adapter as any).getDiffAgainstBase(worktreePath, undefined, filePath)
+        setDiffText(diffTextResult ? diffTextResult.trim() : '')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load diff')
+        setDiffText('')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [worktreePath, getAdapter]
+  )
 
   useEffect(() => {
     if (worktreePath) {
-      loadGitStatus();
-      loadGitLog();
-      loadAllChangesFiles();
+      loadGitStatus()
+      loadGitLog()
+      loadAllChangesFiles()
     }
-  }, [worktreePath, loadGitStatus, loadGitLog, loadAllChangesFiles]);
+  }, [worktreePath, loadGitStatus, loadGitLog, loadAllChangesFiles])
 
   useEffect(() => {
     if (selectedFile && selectedSection === 'all') {
-      loadDiffAgainstBase(selectedFile);
+      loadDiffAgainstBase(selectedFile)
     } else if (selectedFile && selectedSection === 'current') {
-      const file = files.find(f => f.path === selectedFile);
-      const isUntracked = file?.status === '??';
-      const isStaged = file?.staged && !file?.modified;
-      loadDiff(selectedFile, { staged: isStaged, untracked: isUntracked });
+      const file = files.find((f) => f.path === selectedFile)
+      const isUntracked = file?.status === '??'
+      const isStaged = file?.staged && !file?.modified
+      loadDiff(selectedFile, { staged: isStaged, untracked: isUntracked })
     } else if (selectedFile && selectedSection === 'commit' && selectedCommit) {
-      loadCommitDiff(selectedCommit.hash, selectedFile);
+      loadCommitDiff(selectedCommit.hash, selectedFile)
     }
-  }, [selectedFile, selectedSection, selectedCommit, files, loadDiff, loadCommitDiff, loadDiffAgainstBase]);
+  }, [selectedFile, selectedSection, selectedCommit, files, loadDiff, loadCommitDiff, loadDiffAgainstBase])
 
   useEffect(() => {
-    onLoadingChange?.(loading);
-  }, [loading, onLoadingChange]);
+    onLoadingChange?.(loading)
+  }, [loading, onLoadingChange])
 
   useEffect(() => {
-    onFileCountChange?.(files.length);
-  }, [files.length, onFileCountChange]);
+    onFileCountChange?.(files.length)
+  }, [files.length, onFileCountChange])
 
-  useImperativeHandle(ref, () => ({
-    refresh: () => {
-      loadGitStatus();
-      loadGitLog();
-      loadAllChangesFiles();
-    }
-  }), [loadGitStatus, loadGitLog, loadAllChangesFiles]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      refresh: () => {
+        loadGitStatus()
+        loadGitLog()
+        loadAllChangesFiles()
+      },
+    }),
+    [loadGitStatus, loadGitLog, loadAllChangesFiles]
+  )
 
   const handleAllChangesFileClick = (file: CommitFile) => {
-    setSelectedFile(file.path);
-    setSelectedSection('all');
-    setSelectedCommit(null);
-  };
+    setSelectedFile(file.path)
+    setSelectedSection('all')
+    setSelectedCommit(null)
+  }
 
   const getCommitFileStatusIcon = (status: CommitFile['status']) => {
-    const baseClass = "px-1.5 py-0.5 rounded text-xs font-medium inline-flex items-center justify-center min-w-[20px]";
+    const baseClass = 'px-1.5 py-0.5 rounded text-xs font-medium inline-flex items-center justify-center min-w-[20px]'
     switch (status) {
-      case 'M': return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>M</span>;
-      case 'A': return <span className={`${baseClass} text-green-500 bg-green-500/20`}>A</span>;
-      case 'D': return <span className={`${baseClass} text-red-500 bg-red-500/20`}>D</span>;
-      case 'R': return <span className={`${baseClass} text-yellow-500 bg-yellow-500/20`}>R</span>;
-      case 'C': return <span className={`${baseClass} text-cyan-500 bg-cyan-500/20`}>C</span>;
-      default: return <span className={`${baseClass} text-gray-400`}>{status}</span>;
+      case 'M':
+        return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>M</span>
+      case 'A':
+        return <span className={`${baseClass} text-green-500 bg-green-500/20`}>A</span>
+      case 'D':
+        return <span className={`${baseClass} text-red-500 bg-red-500/20`}>D</span>
+      case 'R':
+        return <span className={`${baseClass} text-yellow-500 bg-yellow-500/20`}>R</span>
+      case 'C':
+        return <span className={`${baseClass} text-cyan-500 bg-cyan-500/20`}>C</span>
+      default:
+        return <span className={`${baseClass} text-gray-400`}>{status}</span>
     }
-  };
+  }
 
   const handleCommitFileClick = (commit: GitCommitType, file: CommitFile) => {
-    setSelectedFile(file.path);
-    setSelectedCommit(commit);
-    setSelectedSection('commit');
-  };
+    setSelectedFile(file.path)
+    setSelectedCommit(commit)
+    setSelectedSection('commit')
+  }
 
   const handleCurrentFileClick = (file: GitFile) => {
-    setSelectedFile(file.path);
-    setSelectedSection('current');
-    setSelectedCommit(null);
-  };
+    setSelectedFile(file.path)
+    setSelectedSection('current')
+    setSelectedCommit(null)
+  }
 
   const getCurrentFileStatusIcon = (file: GitFile) => {
-    const baseClass = "px-1.5 py-0.5 rounded text-xs font-medium inline-flex items-center justify-center min-w-[20px]";
+    const baseClass = 'px-1.5 py-0.5 rounded text-xs font-medium inline-flex items-center justify-center min-w-[20px]'
     if (file.staged && file.modified) {
-      return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>SM</span>;
+      return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>SM</span>
     }
     if (file.staged) {
-      return <span className={`${baseClass} text-green-500 bg-green-500/20`}>S</span>;
+      return <span className={`${baseClass} text-green-500 bg-green-500/20`}>S</span>
     }
-    const char = file.status[1];
+    const char = file.status[1]
     switch (char) {
-      case 'M': return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>M</span>;
-      case 'D': return <span className={`${baseClass} text-red-500 bg-red-500/20`}>D</span>;
-      case '?': return <span className={`${baseClass} text-green-500 bg-green-500/20`}>U</span>;
-      default: return <span className={`${baseClass} text-gray-400`}>{char || ' '}</span>;
+      case 'M':
+        return <span className={`${baseClass} text-amber-500 bg-amber-500/20`}>M</span>
+      case 'D':
+        return <span className={`${baseClass} text-red-500 bg-red-500/20`}>D</span>
+      case '?':
+        return <span className={`${baseClass} text-green-500 bg-green-500/20`}>U</span>
+      default:
+        return <span className={`${baseClass} text-gray-400`}>{char || ' '}</span>
     }
-  };
+  }
 
   const getCurrentFileColors = (file: GitFile) => {
-    if (file.staged && file.modified) return { dir: 'text-amber-500/50', file: 'text-amber-500' };
-    if (file.staged) return { dir: 'text-green-500/50', file: 'text-green-500' };
-    const char = file.status[1];
+    if (file.staged && file.modified) return { dir: 'text-amber-500/50', file: 'text-amber-500' }
+    if (file.staged) return { dir: 'text-green-500/50', file: 'text-green-500' }
+    const char = file.status[1]
     switch (char) {
-      case 'M': return { dir: 'text-amber-500/50', file: 'text-amber-500' };
-      case 'D': return { dir: 'text-red-500/50', file: 'text-red-500' };
-      case '?': return { dir: 'text-green-500/50', file: 'text-green-500' };
-      default: return { dir: 'text-gray-400/50', file: 'text-gray-400' };
+      case 'M':
+        return { dir: 'text-amber-500/50', file: 'text-amber-500' }
+      case 'D':
+        return { dir: 'text-red-500/50', file: 'text-red-500' }
+      case '?':
+        return { dir: 'text-green-500/50', file: 'text-green-500' }
+      default:
+        return { dir: 'text-gray-400/50', file: 'text-gray-400' }
     }
-  };
+  }
 
   const getCommitFileColors = (status: CommitFile['status']) => {
     switch (status) {
-      case 'M': return { dir: 'text-amber-500/50', file: 'text-amber-500' };
-      case 'A': return { dir: 'text-green-500/50', file: 'text-green-500' };
-      case 'D': return { dir: 'text-red-500/50', file: 'text-red-500' };
-      case 'R': return { dir: 'text-yellow-500/50', file: 'text-yellow-500' };
-      case 'C': return { dir: 'text-cyan-500/50', file: 'text-cyan-500' };
-      default: return { dir: 'text-gray-400/50', file: 'text-gray-400' };
+      case 'M':
+        return { dir: 'text-amber-500/50', file: 'text-amber-500' }
+      case 'A':
+        return { dir: 'text-green-500/50', file: 'text-green-500' }
+      case 'D':
+        return { dir: 'text-red-500/50', file: 'text-red-500' }
+      case 'R':
+        return { dir: 'text-yellow-500/50', file: 'text-yellow-500' }
+      case 'C':
+        return { dir: 'text-cyan-500/50', file: 'text-cyan-500' }
+      default:
+        return { dir: 'text-gray-400/50', file: 'text-gray-400' }
     }
-  };
+  }
 
   const renderFilePath = (path: string, colors: { dir: string; file: string }) => {
-    const lastSlash = path.lastIndexOf('/');
+    const lastSlash = path.lastIndexOf('/')
     if (lastSlash === -1) {
-      return <span className={colors.file}>{path}</span>;
+      return <span className={colors.file}>{path}</span>
     }
-    const dirPath = path.substring(0, lastSlash + 1);
-    const fileName = path.substring(lastSlash + 1);
+    const dirPath = path.substring(0, lastSlash + 1)
+    const fileName = path.substring(lastSlash + 1)
     return (
       <>
         <span className={colors.dir}>{dirPath}</span>
         <span className={colors.file}>{fileName}</span>
       </>
-    );
-  };
+    )
+  }
 
   return (
     <div className="flex-1 flex flex-col h-full">
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* File List - Full width on mobile, fixed width on desktop */}
-        <div className={`
+        <div
+          className={`
           ${selectedFile ? 'hidden md:flex' : 'flex'}
           w-full md:w-80 md:border-r flex-col min-w-0
-        `}>
+        `}
+        >
           <div className="flex-1 overflow-auto">
             {/* Current Section - only show if dirty working directory */}
             {files.length > 0 && (
@@ -445,8 +483,8 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                   ) : (
                     <div className="space-y-1">
                       {commits.map((commit) => {
-                        const isExpanded = expandedCommits.has(commit.hash);
-                        const files = commitFilesMap[commit.hash] || [];
+                        const isExpanded = expandedCommits.has(commit.hash)
+                        const files = commitFilesMap[commit.hash] || []
                         return (
                           <div key={commit.hash}>
                             <div
@@ -477,7 +515,11 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                                   <div
                                     key={file.path}
                                     className={`flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
-                                      selectedFile === file.path && selectedSection === 'commit' && selectedCommit?.hash === commit.hash ? 'bg-muted' : ''
+                                      selectedFile === file.path &&
+                                      selectedSection === 'commit' &&
+                                      selectedCommit?.hash === commit.hash
+                                        ? 'bg-muted'
+                                        : ''
                                     }`}
                                     onClick={() => handleCommitFileClick(commit, file)}
                                   >
@@ -490,7 +532,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                               </div>
                             )}
                           </div>
-                        );
+                        )
                       })}
                     </div>
                   )}
@@ -501,34 +543,36 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
         </div>
 
         {/* Diff View - Hidden on mobile when no file selected */}
-        <div className={`
+        <div
+          className={`
           ${selectedFile ? 'flex' : 'hidden md:flex'}
           flex-1 flex-col min-w-0 overflow-hidden
-        `}>
+        `}
+        >
           {/* Mobile back button and file name */}
           {selectedFile && (
             <button
               onClick={() => {
-                setSelectedFile(null);
-                setDiffText('');
+                setSelectedFile(null)
+                setDiffText('')
                 if (selectedSection === 'commit') {
-                  setSelectedCommit(null);
+                  setSelectedCommit(null)
                 }
-                setSelectedSection('current');
+                setSelectedSection('current')
               }}
               className="md:hidden pl-1 pr-2 py-2 border-b bg-muted/30 flex items-center gap-2 w-full text-left hover:bg-muted/50 transition-colors"
             >
               <ChevronLeft className="h-5 w-5 flex-shrink-0" />
               <span className="text-sm font-medium truncate">
                 {(() => {
-                  const lastSlash = selectedFile.lastIndexOf('/');
-                  if (lastSlash === -1) return selectedFile;
+                  const lastSlash = selectedFile.lastIndexOf('/')
+                  if (lastSlash === -1) return selectedFile
                   return (
                     <>
                       <span className="opacity-50">{selectedFile.substring(0, lastSlash + 1)}</span>
                       {selectedFile.substring(lastSlash + 1)}
                     </>
-                  );
+                  )
                 })()}
               </span>
               <span className="ml-auto text-xs text-muted-foreground flex-shrink-0 flex items-center gap-1">
@@ -577,23 +621,19 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
               <div className="w-full overflow-hidden">
                 <DiffErrorBoundary
                   key={`${selectedFile}-${selectedSection}`}
-                  fallback={
-                    <pre className="p-4 text-sm font-mono whitespace-pre-wrap break-all">
-                      {diffText}
-                    </pre>
-                  }
+                  fallback={<pre className="p-4 text-sm font-mono whitespace-pre-wrap break-all">{diffText}</pre>}
                 >
                   <DiffView
                     data={{
                       oldFile: {
                         fileName: selectedFile || '',
-                        content: null
+                        content: null,
                       },
                       newFile: {
                         fileName: selectedFile || '',
-                        content: null
+                        content: null,
                       },
-                      hunks: [diffText]
+                      hunks: [diffText],
                     }}
                     diffViewMode={DiffModeEnum.Unified}
                     diffViewTheme={theme}
@@ -609,5 +649,5 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
         </div>
       </div>
     </div>
-  );
-});
+  )
+})

@@ -618,11 +618,7 @@ function App() {
 
                     {/* Git Graph View */}
                     <div className={`absolute inset-0 ${getCurrentTab(project) === 'graph' ? 'block' : 'hidden'}`}>
-                      <GitGraphView
-                        ref={gitGraphRef}
-                        worktreePath={project.selectedWorktree}
-                        theme={theme}
-                      />
+                      <GitGraphView ref={gitGraphRef} worktreePath={project.selectedWorktree} theme={theme} />
                     </div>
                   </div>
                 </div>
@@ -669,10 +665,7 @@ function App() {
 
       {/* Mobile Settings Modal */}
       {showMobileSettingsModal && activeProject && (
-        <StartupScriptModal
-          projectPath={activeProject.path}
-          onClose={() => setShowMobileSettingsModal(false)}
-        />
+        <StartupScriptModal projectPath={activeProject.path} onClose={() => setShowMobileSettingsModal(false)} />
       )}
 
       {/* Reconnecting Modal */}

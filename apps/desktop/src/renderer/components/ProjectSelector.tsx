@@ -1,17 +1,17 @@
-import { Button } from './ui/button';
-import { FolderOpen } from 'lucide-react';
+import { Button } from './ui/button'
+import { FolderOpen } from 'lucide-react'
 
 interface ProjectSelectorProps {
-  onSelectProject: (path: string) => void;
+  onSelectProject: (path: string) => void
 }
 
 export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
   const handleSelectFolder = async () => {
-    const path = await window.electronAPI.dialog.selectDirectory();
+    const path = await window.electronAPI.dialog.selectDirectory()
     if (path) {
-      onSelectProject(path);
+      onSelectProject(path)
     }
-  };
+  }
 
   return (
     <div className="flex-1 flex items-center justify-center">
@@ -22,15 +22,11 @@ export function ProjectSelector({ onSelectProject }: ProjectSelectorProps) {
             Choose a git repository to start collaborating with Claude in parallel worktrees
           </p>
         </div>
-        <Button
-          size="lg"
-          onClick={handleSelectFolder}
-          className="gap-2"
-        >
+        <Button size="lg" onClick={handleSelectFolder} className="gap-2">
           <FolderOpen className="h-5 w-5" />
           Open Project Folder
         </Button>
       </div>
     </div>
-  );
+  )
 }

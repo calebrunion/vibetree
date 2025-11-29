@@ -1,36 +1,35 @@
-import { useState } from 'react';
-import { FolderOpen, Plus, X } from 'lucide-react';
+import { useState } from 'react'
+import { FolderOpen, Plus, X } from 'lucide-react'
 
 interface ProjectSelectorProps {
-  onSelectProject: (path: string) => void;
-  onClose?: () => void;
+  onSelectProject: (path: string) => void
+  onClose?: () => void
 }
 
 export function ProjectSelector({ onSelectProject, onClose }: ProjectSelectorProps) {
-  const [projectPath, setProjectPath] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [projectPath, setProjectPath] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     if (!projectPath.trim()) {
-      setError('Please enter a project path');
-      return;
+      setError('Please enter a project path')
+      return
     }
 
-    setError('');
-    setIsLoading(true);
+    setError('')
+    setIsLoading(true)
 
     try {
-      onSelectProject(projectPath.trim());
+      onSelectProject(projectPath.trim())
     } catch (err) {
-      setError('Failed to add project. Please check the path.');
+      setError('Failed to add project. Please check the path.')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
-
+  }
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
@@ -49,11 +48,8 @@ export function ProjectSelector({ onSelectProject, onClose }: ProjectSelectorPro
             <FolderOpen className="h-8 w-8 text-muted-foreground" />
           </div>
           <h2 className="text-2xl font-bold">Select a Project</h2>
-          <p className="text-muted-foreground">
-            Enter the path to your git repository
-          </p>
+          <p className="text-muted-foreground">Enter the path to your git repository</p>
         </div>
-
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -74,9 +70,7 @@ export function ProjectSelector({ onSelectProject, onClose }: ProjectSelectorPro
               spellCheck={false}
               inputMode="url"
             />
-            {error && (
-              <p className="text-sm text-red-500">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
 
           <button
@@ -90,11 +84,9 @@ export function ProjectSelector({ onSelectProject, onClose }: ProjectSelectorPro
         </form>
 
         <div className="text-center">
-          <p className="text-xs text-muted-foreground">
-            Make sure the path points to a valid git repository
-          </p>
+          <p className="text-xs text-muted-foreground">Make sure the path points to a valid git repository</p>
         </div>
       </div>
     </div>
-  );
+  )
 }

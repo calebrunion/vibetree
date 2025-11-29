@@ -1,103 +1,113 @@
-import { useEffect, useState, useCallback } from 'react';
-import { Button } from './ui/button';
-import { ScrollArea } from './ui/scroll-area';
-import { RefreshCw, FileText } from 'lucide-react';
-import { DiffView, DiffModeEnum } from '@git-diff-view/react';
-import '@git-diff-view/react/styles/diff-view.css';
+import { useEffect, useState, useCallback } from 'react'
+import { Button } from './ui/button'
+import { ScrollArea } from './ui/scroll-area'
+import { RefreshCw, FileText } from 'lucide-react'
+import { DiffView, DiffModeEnum } from '@git-diff-view/react'
+import '@git-diff-view/react/styles/diff-view.css'
 
 interface GitFile {
-  path: string;
-  status: string;
-  staged: boolean;
-  modified: boolean;
+  path: string
+  status: string
+  staged: boolean
+  modified: boolean
 }
 
 interface GitDiffViewProps {
-  worktreePath: string;
-  theme?: 'light' | 'dark';
+  worktreePath: string
+  theme?: 'light' | 'dark'
 }
 
 export function GitDiffView({ worktreePath, theme = 'light' }: GitDiffViewProps) {
-  const [files, setFiles] = useState<GitFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [diffText, setDiffText] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'unstaged' | 'staged'>('unstaged');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [files, setFiles] = useState<GitFile[]>([])
+  const [selectedFile, setSelectedFile] = useState<string | null>(null)
+  const [diffText, setDiffText] = useState<string>('')
+  const [viewMode, setViewMode] = useState<'unstaged' | 'staged'>('unstaged')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const loadGitStatus = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const status = await window.electronAPI.git.status(worktreePath);
-      setFiles(status);
+      setLoading(true)
+      setError(null)
+      const status = await window.electronAPI.git.status(worktreePath)
+      setFiles(status)
       if (status.length > 0 && !selectedFile) {
-        setSelectedFile(status[0].path);
+        setSelectedFile(status[0].path)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load git status');
-      setFiles([]);
+      setError(err instanceof Error ? err.message : 'Failed to load git status')
+      setFiles([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [worktreePath, selectedFile]);
+  }, [worktreePath, selectedFile])
 
-  const loadDiff = useCallback(async (filePath: string, staged: boolean = false) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const diffTextResult = staged 
-        ? await window.electronAPI.git.diffStaged(worktreePath, filePath)
-        : await window.electronAPI.git.diff(worktreePath, filePath);
-      
-      setDiffText(diffTextResult.trim());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load diff');
-      setDiffText('');
-    } finally {
-      setLoading(false);
-    }
-  }, [worktreePath]);
+  const loadDiff = useCallback(
+    async (filePath: string, staged: boolean = false) => {
+      try {
+        setLoading(true)
+        setError(null)
+        const diffTextResult = staged
+          ? await window.electronAPI.git.diffStaged(worktreePath, filePath)
+          : await window.electronAPI.git.diff(worktreePath, filePath)
+
+        setDiffText(diffTextResult.trim())
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load diff')
+        setDiffText('')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [worktreePath]
+  )
 
   useEffect(() => {
     if (worktreePath) {
-      loadGitStatus();
+      loadGitStatus()
     }
-  }, [worktreePath, loadGitStatus]);
+  }, [worktreePath, loadGitStatus])
 
   useEffect(() => {
     if (selectedFile) {
-      const file = files.find(f => f.path === selectedFile);
+      const file = files.find((f) => f.path === selectedFile)
       if (file) {
-        const shouldLoadStaged = viewMode === 'staged' && file.staged;
-        const shouldLoadUnstaged = viewMode === 'unstaged' && file.modified;
-        
+        const shouldLoadStaged = viewMode === 'staged' && file.staged
+        const shouldLoadUnstaged = viewMode === 'unstaged' && file.modified
+
         if (shouldLoadStaged || shouldLoadUnstaged) {
-          loadDiff(selectedFile, viewMode === 'staged');
+          loadDiff(selectedFile, viewMode === 'staged')
         } else {
-          setDiffText('');
+          setDiffText('')
         }
       }
     }
-  }, [selectedFile, viewMode, files, loadDiff]);
+  }, [selectedFile, viewMode, files, loadDiff])
 
   const getStatusIcon = (status: string) => {
     switch (status[0]) {
-      case 'M': return <span className="text-blue-500">M</span>;
-      case 'A': return <span className="text-green-500">A</span>;
-      case 'D': return <span className="text-red-500">D</span>;
-      case 'R': return <span className="text-yellow-500">R</span>;
-      case 'C': return <span className="text-cyan-500">C</span>;
-      case '?': return <span className="text-gray-500">?</span>;
-      default: return <span className="text-gray-400">{status[0] || ' '}</span>;
+      case 'M':
+        return <span className="text-blue-500">M</span>
+      case 'A':
+        return <span className="text-green-500">A</span>
+      case 'D':
+        return <span className="text-red-500">D</span>
+      case 'R':
+        return <span className="text-yellow-500">R</span>
+      case 'C':
+        return <span className="text-cyan-500">C</span>
+      case '?':
+        return <span className="text-gray-500">?</span>
+      default:
+        return <span className="text-gray-400">{status[0] || ' '}</span>
     }
-  };
+  }
 
-  const filteredFiles = files.filter(file => {
-    if (viewMode === 'staged') return file.staged;
-    if (viewMode === 'unstaged') return file.modified;
-    return true;
-  });
+  const filteredFiles = files.filter((file) => {
+    if (viewMode === 'staged') return file.staged
+    if (viewMode === 'unstaged') return file.modified
+    return true
+  })
 
   return (
     <div className="flex-1 flex flex-col h-full">
@@ -125,12 +135,7 @@ export function GitDiffView({ worktreePath, theme = 'light' }: GitDiffViewProps)
               Staged
             </Button>
           </div>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={loadGitStatus}
-            disabled={loading}
-          >
+          <Button size="icon" variant="ghost" onClick={loadGitStatus} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
@@ -159,9 +164,7 @@ export function GitDiffView({ worktreePath, theme = 'light' }: GitDiffViewProps)
                     }`}
                     onClick={() => setSelectedFile(file.path)}
                   >
-                    <span className="font-mono text-xs w-4 text-center">
-                      {getStatusIcon(file.status)}
-                    </span>
+                    <span className="font-mono text-xs w-4 text-center">{getStatusIcon(file.status)}</span>
                     <span className="text-sm truncate flex-1" title={file.path}>
                       {file.path}
                     </span>
@@ -203,15 +206,15 @@ export function GitDiffView({ worktreePath, theme = 'light' }: GitDiffViewProps)
               <div className="p-4 w-full overflow-hidden">
                 <DiffView
                   data={{
-                    oldFile: { 
-                      fileName: selectedFile || '', 
-                      content: null 
+                    oldFile: {
+                      fileName: selectedFile || '',
+                      content: null,
                     },
-                    newFile: { 
-                      fileName: selectedFile || '', 
-                      content: null 
+                    newFile: {
+                      fileName: selectedFile || '',
+                      content: null,
                     },
-                    hunks: [diffText]
+                    hunks: [diffText],
                   }}
                   diffViewMode={DiffModeEnum.Split}
                   diffViewTheme={theme}
@@ -226,5 +229,5 @@ export function GitDiffView({ worktreePath, theme = 'light' }: GitDiffViewProps)
         </div>
       </div>
     </div>
-  );
+  )
 }

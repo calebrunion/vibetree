@@ -1,74 +1,74 @@
-import { useEffect, useState } from 'react';
-import { AppHeader } from './components/AppHeader';
-import { ProjectSelector } from './components/ProjectSelector';
-import { ProjectWorkspace } from './components/ProjectWorkspace';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs';
-import { Button } from './components/ui/button';
-import { Toaster } from './components/ui/toaster';
-import { ProjectProvider, useProjects } from './contexts/ProjectContext';
-import { Plus, X } from 'lucide-react';
-import { GlobalTerminalSettings } from './components/GlobalTerminalSettings';
+import { useEffect, useState } from 'react'
+import { AppHeader } from './components/AppHeader'
+import { ProjectSelector } from './components/ProjectSelector'
+import { ProjectWorkspace } from './components/ProjectWorkspace'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs'
+import { Button } from './components/ui/button'
+import { Toaster } from './components/ui/toaster'
+import { ProjectProvider, useProjects } from './contexts/ProjectContext'
+import { Plus, X } from 'lucide-react'
+import { GlobalTerminalSettings } from './components/GlobalTerminalSettings'
 
 function AppContent() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const { projects, activeProjectId, addProject, removeProject, setActiveProject } = useProjects();
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const { projects, activeProjectId, addProject, removeProject, setActiveProject } = useProjects()
 
   useEffect(() => {
     // Get initial theme from localStorage or system
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null
     if (savedTheme) {
-      setTheme(savedTheme);
+      setTheme(savedTheme)
     } else {
-      window.electronAPI.theme.get().then(setTheme);
+      window.electronAPI.theme.get().then(setTheme)
     }
 
     // Listen for system theme changes
     window.electronAPI.theme.onChange((newTheme) => {
       if (!localStorage.getItem('theme')) {
-        setTheme(newTheme);
+        setTheme(newTheme)
       }
-    });
+    })
 
     // Load debug CSS if DEBUG_LAYOUT environment variable is set
     if (process.env.DEBUG_LAYOUT === 'true') {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = './styles/debug-layout.css';
-      document.head.appendChild(link);
-      console.log('🎨 Debug layout mode enabled - Component borders visible');
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = './styles/debug-layout.css'
+      document.head.appendChild(link)
+      console.log('🎨 Debug layout mode enabled - Component borders visible')
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     // Apply theme class to document
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark')
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('dark')
     }
-  }, [theme]);
+  }, [theme])
 
   const handleSelectProject = (path: string) => {
-    addProject(path);
-  };
+    addProject(path)
+  }
 
   const handleOpenProjectDialog = async () => {
-    const path = await window.electronAPI.dialog.selectDirectory();
+    const path = await window.electronAPI.dialog.selectDirectory()
     if (path) {
-      addProject(path);
+      addProject(path)
     }
-  };
+  }
 
   const handleCloseProject = (e: React.MouseEvent, projectId: string) => {
-    e.stopPropagation();
-    removeProject(projectId);
-  };
+    e.stopPropagation()
+    removeProject(projectId)
+  }
 
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(newTheme)
+    localStorage.setItem('theme', newTheme)
+  }
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -100,22 +100,13 @@ function AppContent() {
                 </TabsTrigger>
               ))}
             </TabsList>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleOpenProjectDialog}
-              className="h-8 w-8"
-            >
+            <Button size="icon" variant="ghost" onClick={handleOpenProjectDialog} className="h-8 w-8">
               <Plus className="h-4 w-4" />
             </Button>
           </div>
 
           {projects.map((project) => (
-            <TabsContent
-              key={project.id}
-              value={project.id}
-              className="flex-1 m-0 h-0 overflow-hidden"
-            >
+            <TabsContent key={project.id} value={project.id} className="flex-1 m-0 h-0 overflow-hidden">
               <ProjectWorkspace projectId={project.id} theme={theme} />
             </TabsContent>
           ))}
@@ -125,7 +116,7 @@ function AppContent() {
       <Toaster />
       <GlobalTerminalSettings />
     </div>
-  );
+  )
 }
 
 function App() {
@@ -133,7 +124,7 @@ function App() {
     <ProjectProvider>
       <AppContent />
     </ProjectProvider>
-  );
+  )
 }
 
-export default App;
+export default App

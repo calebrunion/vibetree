@@ -1,23 +1,23 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Terminal as XTerm } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
-import { SerializeAddon } from '@xterm/addon-serialize';
-import { Unicode11Addon } from '@xterm/addon-unicode11';
-import { SearchAddon } from '@xterm/addon-search';
-import { escapeShellPath } from '@vibetree/core';
-import '@xterm/xterm/css/xterm.css';
+import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { Terminal as XTerm } from '@xterm/xterm'
+import { FitAddon } from '@xterm/addon-fit'
+import { WebLinksAddon } from '@xterm/addon-web-links'
+import { SerializeAddon } from '@xterm/addon-serialize'
+import { Unicode11Addon } from '@xterm/addon-unicode11'
+import { SearchAddon } from '@xterm/addon-search'
+import { escapeShellPath } from '@vibetree/core'
+import '@xterm/xterm/css/xterm.css'
 
 /**
  * Configuration options for the Terminal component
  */
 export interface TerminalConfig {
-  fontSize?: number;
-  fontFamily?: string;
-  theme?: 'light' | 'dark';
-  cursorBlink?: boolean;
-  scrollback?: number;
-  tabStopWidth?: number;
+  fontSize?: number
+  fontFamily?: string
+  theme?: 'light' | 'dark'
+  cursorBlink?: boolean
+  scrollback?: number
+  tabStopWidth?: number
 }
 
 /**
@@ -27,37 +27,37 @@ export interface TerminalProps {
   /**
    * Unique identifier for this terminal instance
    */
-  id: string;
+  id: string
 
   /**
    * Configuration options for terminal appearance and behavior
    */
-  config?: TerminalConfig;
+  config?: TerminalConfig
 
   /**
    * Callback when user inputs data in the terminal
    */
-  onData?: (data: string) => void;
+  onData?: (data: string) => void
 
   /**
    * Callback when terminal is resized
    */
-  onResize?: (cols: number, rows: number) => void;
+  onResize?: (cols: number, rows: number) => void
 
   /**
    * Callback when terminal is ready
    */
-  onReady?: (terminal: XTerm) => void;
+  onReady?: (terminal: XTerm) => void
 
   /**
    * CSS class name for the terminal container
    */
-  className?: string;
+  className?: string
 
   /**
    * Whether to show the search bar
    */
-  showSearchBar?: boolean;
+  showSearchBar?: boolean
 }
 
 /**
@@ -86,7 +86,7 @@ const getTerminalTheme = (theme: 'light' | 'dark') => {
       brightBlue: '#3b8eea',
       brightMagenta: '#d670d6',
       brightCyan: '#29b8db',
-      brightWhite: '#e5e5e5'
+      brightWhite: '#e5e5e5',
     },
     dark: {
       background: '#000000',
@@ -109,12 +109,12 @@ const getTerminalTheme = (theme: 'light' | 'dark') => {
       brightBlue: '#3b8eea',
       brightMagenta: '#d670d6',
       brightCyan: '#29b8db',
-      brightWhite: '#e5e5e5'
-    }
-  };
-  
-  return themes[theme];
-};
+      brightWhite: '#e5e5e5',
+    },
+  }
+
+  return themes[theme]
+}
 
 /**
  * Terminal component that provides a cross-platform terminal interface
@@ -127,23 +127,23 @@ export const Terminal: React.FC<TerminalProps> = ({
   onResize,
   onReady,
   className = '',
-  showSearchBar = false
+  showSearchBar = false,
 }) => {
-  const terminalRef = useRef<HTMLDivElement>(null);
-  const [terminal, setTerminal] = useState<XTerm | null>(null);
-  const fitAddonRef = useRef<FitAddon | null>(null);
-  const serializeAddonRef = useRef<SerializeAddon | null>(null);
-  const searchAddonRef = useRef<SearchAddon | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchVisible, setSearchVisible] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const wasVisibleRef = useRef<boolean>(false);
+  const terminalRef = useRef<HTMLDivElement>(null)
+  const [terminal, setTerminal] = useState<XTerm | null>(null)
+  const fitAddonRef = useRef<FitAddon | null>(null)
+  const serializeAddonRef = useRef<SerializeAddon | null>(null)
+  const searchAddonRef = useRef<SearchAddon | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchVisible, setSearchVisible] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const wasVisibleRef = useRef<boolean>(false)
 
   /**
    * Initialize terminal instance and addons
    */
   useEffect(() => {
-    if (!terminalRef.current) return;
+    if (!terminalRef.current) return
 
     const {
       fontSize = 12,
@@ -151,11 +151,11 @@ export const Terminal: React.FC<TerminalProps> = ({
       theme = 'dark',
       cursorBlink = true,
       scrollback = 10000,
-      tabStopWidth = 4
-    } = config;
+      tabStopWidth = 4,
+    } = config
 
     // Detect if running on mobile device
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
     // Base terminal configuration shared by all platforms
     const baseTerminalConfig = {
@@ -169,319 +169,326 @@ export const Terminal: React.FC<TerminalProps> = ({
       windowsMode: false,
       allowProposedApi: true,
       macOptionIsMeta: true,
-      fastScrollModifier: 'shift' as const
-    };
+      fastScrollModifier: 'shift' as const,
+    }
 
     // Desktop-specific terminal configuration
     const desktopTerminalConfig = {
       ...baseTerminalConfig,
       fontSize,
       scrollback,
-      rendererType: 'canvas' as const // Better performance on desktop
-    };
+      rendererType: 'canvas' as const, // Better performance on desktop
+    }
 
     // Mobile-specific terminal configuration
     const mobileTerminalConfig = {
       ...baseTerminalConfig,
       fontSize: 10, // Smaller font on mobile to fit within viewport
       scrollback: 1000, // Less scrollback on mobile for performance
-      rendererType: 'dom' as const // Required for mobile compatibility
-    };
+      rendererType: 'dom' as const, // Required for mobile compatibility
+    }
 
     // Select appropriate configuration based on platform
-    const terminalConfig = isMobile ? mobileTerminalConfig : desktopTerminalConfig;
+    const terminalConfig = isMobile ? mobileTerminalConfig : desktopTerminalConfig
 
     const term = new XTerm({
       ...terminalConfig,
-      theme: getTerminalTheme(theme)
-    });
+      theme: getTerminalTheme(theme),
+    })
 
     // Load addons for enhanced functionality
-    const fitAddon = new FitAddon();
-    fitAddonRef.current = fitAddon;
-    term.loadAddon(fitAddon);
-    
+    const fitAddon = new FitAddon()
+    fitAddonRef.current = fitAddon
+    term.loadAddon(fitAddon)
+
     // Configure WebLinksAddon with custom handler for opening links
     const webLinksAddon = new WebLinksAddon((event, uri) => {
       // Prevent default browser behavior to avoid opening in in-app browser
-      event.preventDefault();
+      event.preventDefault()
 
       // Check if we're in Electron environment
       if (window.electronAPI && window.electronAPI.shell && window.electronAPI.shell.openExternal) {
         // Open in default system browser using Electron's shell.openExternal
         window.electronAPI.shell.openExternal(uri).catch((error) => {
-          console.error('Failed to open external link:', uri, error);
-        });
+          console.error('Failed to open external link:', uri, error)
+        })
       } else {
         // Fallback to opening in new tab for web environment
-        window.open(uri, '_blank');
+        window.open(uri, '_blank')
       }
-    });
-    term.loadAddon(webLinksAddon);
-    
-    const serializeAddon = new SerializeAddon();
-    serializeAddonRef.current = serializeAddon;
-    term.loadAddon(serializeAddon);
-    
-    const unicode11Addon = new Unicode11Addon();
-    term.loadAddon(unicode11Addon);
+    })
+    term.loadAddon(webLinksAddon)
 
-    const searchAddon = new SearchAddon();
-    searchAddonRef.current = searchAddon;
-    term.loadAddon(searchAddon);
+    const serializeAddon = new SerializeAddon()
+    serializeAddonRef.current = serializeAddon
+    term.loadAddon(serializeAddon)
+
+    const unicode11Addon = new Unicode11Addon()
+    term.loadAddon(unicode11Addon)
+
+    const searchAddon = new SearchAddon()
+    searchAddonRef.current = searchAddon
+    term.loadAddon(searchAddon)
 
     // Open terminal in DOM container
-    term.open(terminalRef.current);
-    
+    term.open(terminalRef.current)
+
     // Activate unicode support
-    unicode11Addon.activate(term);
-    
+    unicode11Addon.activate(term)
+
     // Fit terminal to container after render
     setTimeout(() => {
-      fitAddon.fit();
+      fitAddon.fit()
       // Explicitly resize terminal to ensure PTY knows the dimensions
-      term.resize(term.cols, term.rows);
-      term.focus();
-    }, 10);
+      term.resize(term.cols, term.rows)
+      term.focus()
+    }, 10)
 
-    setTerminal(term);
-
+    setTerminal(term)
 
     // Notify parent when terminal is ready
     if (onReady) {
-      onReady(term);
+      onReady(term)
     }
 
     // Handle window resize
     const handleResize = () => {
       if (terminalRef.current && terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
         // First, fit the terminal to the container
-        fitAddon.fit();
+        fitAddon.fit()
 
         // Get the new dimensions after fitting
-        const newCols = term.cols;
-        const newRows = term.rows;
+        const newCols = term.cols
+        const newRows = term.rows
 
         // Explicitly resize the terminal to notify PTY of size change
         // This is crucial for applications like vim to handle resize properly
-        term.resize(newCols, newRows);
+        term.resize(newCols, newRows)
 
         // Notify parent component of the resize
         if (onResize) {
-          onResize(newCols, newRows);
+          onResize(newCols, newRows)
         }
       }
-    };
+    }
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize)
 
     // Also observe container size changes using ResizeObserver
-    let resizeObserver: ResizeObserver | null = null;
+    let resizeObserver: ResizeObserver | null = null
     if (terminalRef.current && typeof ResizeObserver !== 'undefined') {
       resizeObserver = new ResizeObserver(() => {
-        handleResize();
-      });
-      resizeObserver.observe(terminalRef.current);
+        handleResize()
+      })
+      resizeObserver.observe(terminalRef.current)
     }
 
     // Use IntersectionObserver to detect visibility changes
     // This is critical for handling terminals that are hidden via display:none
     // When they become visible again, we need to re-fit them
-    let intersectionObserver: IntersectionObserver | null = null;
+    let intersectionObserver: IntersectionObserver | null = null
     if (terminalRef.current && typeof IntersectionObserver !== 'undefined') {
-      intersectionObserver = new IntersectionObserver((entries) => {
-        const entry = entries[0];
-        const isVisible = entry.isIntersecting && entry.intersectionRatio > 0;
+      intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0]
+          const isVisible = entry.isIntersecting && entry.intersectionRatio > 0
 
-        // Only trigger re-fit when transitioning from hidden to visible
-        if (isVisible && !wasVisibleRef.current) {
-          // Use requestAnimationFrame to ensure the DOM has settled
-          requestAnimationFrame(() => {
-            // Double-check dimensions are valid before fitting
-            if (terminalRef.current && terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
-              fitAddon.fit();
-              term.resize(term.cols, term.rows);
-              term.refresh(0, term.rows - 1);
-            }
-          });
+          // Only trigger re-fit when transitioning from hidden to visible
+          if (isVisible && !wasVisibleRef.current) {
+            // Use requestAnimationFrame to ensure the DOM has settled
+            requestAnimationFrame(() => {
+              // Double-check dimensions are valid before fitting
+              if (terminalRef.current && terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
+                fitAddon.fit()
+                term.resize(term.cols, term.rows)
+                term.refresh(0, term.rows - 1)
+              }
+            })
+          }
+          wasVisibleRef.current = isVisible
+        },
+        {
+          threshold: [0, 0.1],
         }
-        wasVisibleRef.current = isVisible;
-      }, {
-        threshold: [0, 0.1]
-      });
-      intersectionObserver.observe(terminalRef.current);
+      )
+      intersectionObserver.observe(terminalRef.current)
       // Initialize visibility state
-      wasVisibleRef.current = terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0;
+      wasVisibleRef.current = terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0
     }
 
     // Handle terminal input
     const dataDisposable = term.onData((data) => {
       if (onData) {
-        onData(data);
+        onData(data)
       }
-    });
+    })
 
     // Handle keyboard shortcuts for search
     const keyDisposable = term.onKey((e) => {
-      const { key, domEvent } = e;
+      const { key, domEvent } = e
       // Ctrl+F or Cmd+F to toggle search
       if ((domEvent.ctrlKey || domEvent.metaKey) && domEvent.key === 'f') {
-        domEvent.preventDefault();
+        domEvent.preventDefault()
         if (showSearchBar) {
-          setSearchVisible(!searchVisible);
+          setSearchVisible(!searchVisible)
         }
       }
       // Escape to close search
       if (domEvent.key === 'Escape' && searchVisible) {
-        setSearchVisible(false);
-        setSearchQuery('');
-        term.focus();
+        setSearchVisible(false)
+        setSearchQuery('')
+        term.focus()
       }
-    });
+    })
 
     // Handle bell character - play a soft chime when bell is triggered
     const bellDisposable = term.onBell(() => {
       try {
-        const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+        const audioContext = new (
+          window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+        )()
 
-        const osc1 = audioContext.createOscillator();
-        const osc2 = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+        const osc1 = audioContext.createOscillator()
+        const osc2 = audioContext.createOscillator()
+        const gainNode = audioContext.createGain()
 
-        osc1.type = 'sine';
-        osc2.type = 'sine';
+        osc1.type = 'sine'
+        osc2.type = 'sine'
 
-        osc1.frequency.setValueAtTime(523.25, audioContext.currentTime);
-        osc2.frequency.setValueAtTime(659.25, audioContext.currentTime);
+        osc1.frequency.setValueAtTime(523.25, audioContext.currentTime)
+        osc2.frequency.setValueAtTime(659.25, audioContext.currentTime)
 
-        osc1.connect(gainNode);
-        osc2.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        osc1.connect(gainNode)
+        osc2.connect(gainNode)
+        gainNode.connect(audioContext.destination)
 
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.02);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime)
+        gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.02)
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3)
 
-        osc1.start(audioContext.currentTime);
-        osc2.start(audioContext.currentTime);
-        osc1.stop(audioContext.currentTime + 0.3);
-        osc2.stop(audioContext.currentTime + 0.3);
+        osc1.start(audioContext.currentTime)
+        osc2.start(audioContext.currentTime)
+        osc1.stop(audioContext.currentTime + 0.3)
+        osc2.stop(audioContext.currentTime + 0.3)
 
-        setTimeout(() => audioContext.close(), 400);
+        setTimeout(() => audioContext.close(), 400)
       } catch (err) {
-        console.debug('Bell sound playback failed:', err);
+        console.debug('Bell sound playback failed:', err)
       }
-    });
+    })
 
     // Cleanup on unmount
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', handleResize)
       if (resizeObserver) {
-        resizeObserver.disconnect();
+        resizeObserver.disconnect()
       }
       if (intersectionObserver) {
-        intersectionObserver.disconnect();
+        intersectionObserver.disconnect()
       }
-      dataDisposable.dispose();
-      keyDisposable.dispose();
-      bellDisposable.dispose();
-      term.dispose();
-    };
-  }, []);
+      dataDisposable.dispose()
+      keyDisposable.dispose()
+      bellDisposable.dispose()
+      term.dispose()
+    }
+  }, [])
 
   /**
    * Update terminal theme when config changes
    */
   useEffect(() => {
-    if (!terminal || !config.theme) return;
-    terminal.options.theme = getTerminalTheme(config.theme);
-  }, [terminal, config.theme]);
+    if (!terminal || !config.theme) return
+    terminal.options.theme = getTerminalTheme(config.theme)
+  }, [terminal, config.theme])
 
   /**
    * Search functionality
    */
   const handleSearch = useCallback((query: string, direction: 'next' | 'previous' = 'next') => {
-    if (!searchAddonRef.current || !query) return;
+    if (!searchAddonRef.current || !query) return
 
     if (direction === 'next') {
-      searchAddonRef.current.findNext(query);
+      searchAddonRef.current.findNext(query)
     } else {
-      searchAddonRef.current.findPrevious(query);
+      searchAddonRef.current.findPrevious(query)
     }
-  }, []);
+  }, [])
 
-  const handleSearchInputChange = useCallback((value: string) => {
-    setSearchQuery(value);
-    if (value) {
-      handleSearch(value);
-    }
-  }, [handleSearch]);
+  const handleSearchInputChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value)
+      if (value) {
+        handleSearch(value)
+      }
+    },
+    [handleSearch]
+  )
 
   /**
    * Handle drag over event
    */
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = 'copy';
-    setIsDragOver(true);
-  }, []);
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'copy'
+    setIsDragOver(true)
+  }, [])
 
   /**
    * Handle drag leave event
    */
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
     // Check if we're actually leaving the terminal container
-    const rect = terminalRef.current?.getBoundingClientRect();
-    if (rect && (e.clientX < rect.left || e.clientX > rect.right ||
-                 e.clientY < rect.top || e.clientY > rect.bottom)) {
-      setIsDragOver(false);
+    const rect = terminalRef.current?.getBoundingClientRect()
+    if (rect && (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom)) {
+      setIsDragOver(false)
     }
-  }, []);
+  }, [])
 
   /**
    * Handle drop event
    */
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setIsDragOver(false)
 
-    if (!terminal || !onData) return;
+      if (!terminal || !onData) return
 
-    // Get the dropped files
-    const files = e.dataTransfer.files;
-    if (files.length === 0) return;
+      // Get the dropped files
+      const files = e.dataTransfer.files
+      if (files.length === 0) return
 
-    // Build the escaped paths
-    const paths: string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      // In web environment, we get the file name; in Electron, we get the full path
-      const path = (file as any).path || file.name;
-      if (path) {
-        paths.push(escapeShellPath(path));
+      // Build the escaped paths
+      const paths: string[] = []
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        // In web environment, we get the file name; in Electron, we get the full path
+        const path = (file as any).path || file.name
+        if (path) {
+          paths.push(escapeShellPath(path))
+        }
       }
-    }
 
-    if (paths.length > 0) {
-      // Insert the paths at current cursor position
-      const pathString = paths.join(' ');
-      onData(pathString);
-    }
-  }, [terminal, onData]);
+      if (paths.length > 0) {
+        // Insert the paths at current cursor position
+        const pathString = paths.join(' ')
+        onData(pathString)
+      }
+    },
+    [terminal, onData]
+  )
 
   /**
    * Public API methods exposed via ref
    */
   useEffect(() => {
-    if (!terminal) return;
-
-    // Expose terminal API methods
-    (window as any)[`terminal_${id}`] = {
+    if (!terminal) return // Expose terminal API methods
+    ;(window as any)[`terminal_${id}`] = {
       write: (data: string) => terminal.write(data),
       clear: () => terminal.clear(),
       focus: () => terminal.focus(),
@@ -489,19 +496,19 @@ export const Terminal: React.FC<TerminalProps> = ({
       serialize: () => serializeAddonRef.current?.serialize(),
       fit: () => fitAddonRef.current?.fit(),
       resize: (cols: number, rows: number) => {
-        terminal.resize(cols, rows);
+        terminal.resize(cols, rows)
         // Also fit after resize to ensure proper display
-        fitAddonRef.current?.fit();
+        fitAddonRef.current?.fit()
       },
       search: (query: string) => searchAddonRef.current?.findNext(query),
       searchPrevious: (query: string) => searchAddonRef.current?.findPrevious(query),
-      toggleSearch: () => setSearchVisible(!searchVisible)
-    };
+      toggleSearch: () => setSearchVisible(!searchVisible),
+    }
 
     return () => {
-      delete (window as any)[`terminal_${id}`];
-    };
-  }, [terminal, id]);
+      delete (window as any)[`terminal_${id}`]
+    }
+  }, [terminal, id])
 
   return (
     <div
@@ -509,7 +516,7 @@ export const Terminal: React.FC<TerminalProps> = ({
       style={{
         width: '100%',
         height: '100%',
-        position: 'relative'
+        position: 'relative',
       }}
     >
       {showSearchBar && searchVisible && (
@@ -528,7 +535,7 @@ export const Terminal: React.FC<TerminalProps> = ({
             alignItems: 'center',
             gap: '4px',
             fontSize: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           }}
         >
           <input
@@ -543,16 +550,16 @@ export const Terminal: React.FC<TerminalProps> = ({
               outline: 'none',
               color: config?.theme === 'light' ? '#000000' : '#ffffff',
               width: '150px',
-              fontSize: '12px'
+              fontSize: '12px',
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSearch(searchQuery, e.shiftKey ? 'previous' : 'next');
+                e.preventDefault()
+                handleSearch(searchQuery, e.shiftKey ? 'previous' : 'next')
               } else if (e.key === 'Escape') {
-                setSearchVisible(false);
-                setSearchQuery('');
-                terminal?.focus();
+                setSearchVisible(false)
+                setSearchQuery('')
+                terminal?.focus()
               }
             }}
           />
@@ -566,7 +573,7 @@ export const Terminal: React.FC<TerminalProps> = ({
               cursor: searchQuery ? 'pointer' : 'default',
               opacity: searchQuery ? 1 : 0.5,
               padding: '2px 4px',
-              fontSize: '10px'
+              fontSize: '10px',
             }}
             title="Previous match (Shift+Enter)"
           >
@@ -582,7 +589,7 @@ export const Terminal: React.FC<TerminalProps> = ({
               cursor: searchQuery ? 'pointer' : 'default',
               opacity: searchQuery ? 1 : 0.5,
               padding: '2px 4px',
-              fontSize: '10px'
+              fontSize: '10px',
             }}
             title="Next match (Enter)"
           >
@@ -590,9 +597,9 @@ export const Terminal: React.FC<TerminalProps> = ({
           </button>
           <button
             onClick={() => {
-              setSearchVisible(false);
-              setSearchQuery('');
-              terminal?.focus();
+              setSearchVisible(false)
+              setSearchQuery('')
+              terminal?.focus()
             }}
             style={{
               background: 'transparent',
@@ -600,7 +607,7 @@ export const Terminal: React.FC<TerminalProps> = ({
               color: config?.theme === 'light' ? '#000000' : '#ffffff',
               cursor: 'pointer',
               padding: '2px 4px',
-              fontSize: '10px'
+              fontSize: '10px',
             }}
             title="Close search (Escape)"
           >
@@ -626,15 +633,17 @@ export const Terminal: React.FC<TerminalProps> = ({
           minHeight: '100px',
           position: 'relative',
           paddingLeft: '8px',
-          ...(isDragOver ? {
-            outline: '2px dashed #007acc',
-            outlineOffset: '-2px',
-            backgroundColor: 'rgba(0, 122, 204, 0.1)'
-          } : {})
+          ...(isDragOver
+            ? {
+                outline: '2px dashed #007acc',
+                outlineOffset: '-2px',
+                backgroundColor: 'rgba(0, 122, 204, 0.1)',
+              }
+            : {}),
         }}
       />
     </div>
-  );
-};
+  )
+}
 
-export default Terminal;
+export default Terminal

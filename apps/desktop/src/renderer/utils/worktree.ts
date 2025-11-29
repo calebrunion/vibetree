@@ -4,6 +4,6 @@
  * @returns true if the branch is protected (exactly "main" or "master")
  */
 export function isProtectedBranch(branchRef: string): boolean {
-  const branchName = branchRef.replace('refs/heads/', '');
-  return branchName === 'main' || branchName === 'master';
+  const branchName = branchRef.replace('refs/heads/', '')
+  return branchName === 'main' || branchName === 'master'
 }

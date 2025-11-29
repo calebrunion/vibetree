@@ -1,285 +1,275 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { Worktree } from '@vibetree/core';
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { Worktree } from '@vibetree/core'
 
 interface Project {
-  id: string;
-  path: string;
-  name: string;
-  worktrees: Worktree[];
-  selectedWorktree: string | null;
-  selectedTabs: Record<string, 'terminal' | 'changes' | 'graph'>; // worktreePath -> tab
-  isTerminalSplit: boolean;
-  isTerminalFullscreen: boolean;
+  id: string
+  path: string
+  name: string
+  worktrees: Worktree[]
+  selectedWorktree: string | null
+  selectedTabs: Record<string, 'terminal' | 'changes' | 'graph'> // worktreePath -> tab
+  isTerminalSplit: boolean
+  isTerminalFullscreen: boolean
 }
 
 interface AppState {
   // Connection state
-  connected: boolean;
-  connecting: boolean;
-  reconnecting: boolean;
-  error: string | null;
-  
+  connected: boolean
+  connecting: boolean
+  reconnecting: boolean
+  error: string | null
+
   // Project state
-  projects: Project[];
-  activeProjectId: string | null;
-  
+  projects: Project[]
+  activeProjectId: string | null
+
   // Terminal state
-  terminalSessions: Map<string, string>; // worktreePath -> sessionId
-  claudeTerminalSessions: Map<string, string>; // worktreePath -> sessionId
-  pendingStartupWorktrees: Set<string>; // worktrees that need startup commands run
-  
+  terminalSessions: Map<string, string> // worktreePath -> sessionId
+  claudeTerminalSessions: Map<string, string> // worktreePath -> sessionId
+  pendingStartupWorktrees: Set<string> // worktrees that need startup commands run
+
   // Theme state
-  theme: 'light' | 'dark';
+  theme: 'light' | 'dark'
 
   // UI state
-  showAddWorktreeDialog: boolean;
+  showAddWorktreeDialog: boolean
 
   // Actions
-  setConnected: (connected: boolean) => void;
-  setConnecting: (connecting: boolean) => void;
-  setReconnecting: (reconnecting: boolean) => void;
-  setError: (error: string | null) => void;
-  addProject: (path: string) => string;
-  addProjects: (paths: string[]) => string[];
-  removeProject: (id: string) => void;
-  setActiveProject: (id: string) => void;
-  updateProjectWorktrees: (id: string, worktrees: Worktree[]) => void;
-  setSelectedWorktree: (projectId: string, worktreePath: string | null) => void;
-  setSelectedTab: (projectId: string, worktreePath: string, tab: 'terminal' | 'changes' | 'graph') => void;
-  getProject: (id: string) => Project | undefined;
-  getActiveProject: () => Project | undefined;
-  addTerminalSession: (worktreePath: string, sessionId: string) => void;
-  removeTerminalSession: (worktreePath: string) => void;
-  addClaudeTerminalSession: (worktreePath: string, sessionId: string) => void;
-  removeClaudeTerminalSession: (worktreePath: string) => void;
-  markWorktreeForStartup: (worktreePath: string) => void;
-  clearWorktreeStartup: (worktreePath: string) => void;
-  shouldRunStartup: (worktreePath: string) => boolean;
-  setTheme: (theme: 'light' | 'dark') => void;
-  setShowAddWorktreeDialog: (show: boolean) => void;
-  toggleTerminalSplit: (projectId: string) => void;
-  toggleTerminalFullscreen: (projectId: string) => void;
-  setTerminalSplit: (projectId: string, isSplit: boolean) => void;
+  setConnected: (connected: boolean) => void
+  setConnecting: (connecting: boolean) => void
+  setReconnecting: (reconnecting: boolean) => void
+  setError: (error: string | null) => void
+  addProject: (path: string) => string
+  addProjects: (paths: string[]) => string[]
+  removeProject: (id: string) => void
+  setActiveProject: (id: string) => void
+  updateProjectWorktrees: (id: string, worktrees: Worktree[]) => void
+  setSelectedWorktree: (projectId: string, worktreePath: string | null) => void
+  setSelectedTab: (projectId: string, worktreePath: string, tab: 'terminal' | 'changes' | 'graph') => void
+  getProject: (id: string) => Project | undefined
+  getActiveProject: () => Project | undefined
+  addTerminalSession: (worktreePath: string, sessionId: string) => void
+  removeTerminalSession: (worktreePath: string) => void
+  addClaudeTerminalSession: (worktreePath: string, sessionId: string) => void
+  removeClaudeTerminalSession: (worktreePath: string) => void
+  markWorktreeForStartup: (worktreePath: string) => void
+  clearWorktreeStartup: (worktreePath: string) => void
+  shouldRunStartup: (worktreePath: string) => boolean
+  setTheme: (theme: 'light' | 'dark') => void
+  setShowAddWorktreeDialog: (show: boolean) => void
+  toggleTerminalSplit: (projectId: string) => void
+  toggleTerminalFullscreen: (projectId: string) => void
+  setTerminalSplit: (projectId: string, isSplit: boolean) => void
 }
 
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
-  // Initial state
-  connected: false,
-  connecting: false,
-  reconnecting: false,
-  error: null,
-  projects: [],
-  activeProjectId: null,
-  terminalSessions: new Map(),
-  claudeTerminalSessions: new Map(),
-  pendingStartupWorktrees: new Set(),
-  theme: 'light',
-  showAddWorktreeDialog: false,
+      // Initial state
+      connected: false,
+      connecting: false,
+      reconnecting: false,
+      error: null,
+      projects: [],
+      activeProjectId: null,
+      terminalSessions: new Map(),
+      claudeTerminalSessions: new Map(),
+      pendingStartupWorktrees: new Set(),
+      theme: 'light',
+      showAddWorktreeDialog: false,
 
-  // Actions
-  setConnected: (connected) => set({ connected }),
-  setConnecting: (connecting) => set({ connecting }),
-  setReconnecting: (reconnecting) => set({ reconnecting }),
-  setError: (error) => set({ error }),
-  
-  addProject: (path: string) => {
-    const state = get();
-    // Check if project already exists
-    const existing = state.projects.find(p => p.path === path);
-    if (existing) {
-      set({ activeProjectId: existing.id });
-      return existing.id;
-    }
+      // Actions
+      setConnected: (connected) => set({ connected }),
+      setConnecting: (connecting) => set({ connecting }),
+      setReconnecting: (reconnecting) => set({ reconnecting }),
+      setError: (error) => set({ error }),
 
-    const id = `project-${Date.now()}`;
-    const name = path.split('/').pop() || 'Unnamed Project';
-    
-    const newProject: Project = {
-      id,
-      path,
-      name,
-      worktrees: [],
-      selectedWorktree: null,
-      selectedTabs: {},
-      isTerminalSplit: false,
-      isTerminalFullscreen: false
-    };
+      addProject: (path: string) => {
+        const state = get()
+        // Check if project already exists
+        const existing = state.projects.find((p) => p.path === path)
+        if (existing) {
+          set({ activeProjectId: existing.id })
+          return existing.id
+        }
 
-    set((state) => ({
-      projects: [...state.projects, newProject],
-      activeProjectId: id
-    }));
-    return id;
-  },
+        const id = `project-${Date.now()}`
+        const name = path.split('/').pop() || 'Unnamed Project'
 
-  addProjects: (paths: string[]) => {
-    const state = get();
-    const newProjects: Project[] = [];
-    const addedIds: string[] = [];
+        const newProject: Project = {
+          id,
+          path,
+          name,
+          worktrees: [],
+          selectedWorktree: null,
+          selectedTabs: {},
+          isTerminalSplit: false,
+          isTerminalFullscreen: false,
+        }
 
-    paths.forEach(path => {
-      // Check if project already exists
-      const existing = state.projects.find(p => p.path === path);
-      if (existing) {
-        addedIds.push(existing.id);
-        return;
-      }
+        set((state) => ({
+          projects: [...state.projects, newProject],
+          activeProjectId: id,
+        }))
+        return id
+      },
 
-      const id = `project-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const name = path.split('/').pop() || 'Unnamed Project';
-      
-      const newProject: Project = {
-        id,
-        path,
-        name,
-        worktrees: [],
-        selectedWorktree: null,
-        selectedTabs: {},
-        isTerminalSplit: false,
-        isTerminalFullscreen: false
-      };
+      addProjects: (paths: string[]) => {
+        const state = get()
+        const newProjects: Project[] = []
+        const addedIds: string[] = []
 
-      newProjects.push(newProject);
-      addedIds.push(id);
-    });
+        paths.forEach((path) => {
+          // Check if project already exists
+          const existing = state.projects.find((p) => p.path === path)
+          if (existing) {
+            addedIds.push(existing.id)
+            return
+          }
 
-    if (newProjects.length > 0) {
-      set((state) => ({
-        projects: [...state.projects, ...newProjects]
-      }));
-    }
+          const id = `project-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+          const name = path.split('/').pop() || 'Unnamed Project'
 
-    return addedIds;
-  },
+          const newProject: Project = {
+            id,
+            path,
+            name,
+            worktrees: [],
+            selectedWorktree: null,
+            selectedTabs: {},
+            isTerminalSplit: false,
+            isTerminalFullscreen: false,
+          }
 
-  removeProject: (id: string) => {
-    set((state) => ({
-      projects: state.projects.filter(p => p.id !== id),
-      activeProjectId: state.activeProjectId === id ? null : state.activeProjectId
-    }));
-  },
+          newProjects.push(newProject)
+          addedIds.push(id)
+        })
 
-  setActiveProject: (id: string) => {
-    set({ activeProjectId: id });
-  },
+        if (newProjects.length > 0) {
+          set((state) => ({
+            projects: [...state.projects, ...newProjects],
+          }))
+        }
 
-  updateProjectWorktrees: (id: string, worktrees: Worktree[]) => {
-    set((state) => ({
-      projects: state.projects.map(project =>
-        project.id === id ? { ...project, worktrees } : project
-      )
-    }));
-  },
+        return addedIds
+      },
 
-  setSelectedWorktree: (projectId: string, worktreePath: string | null) => {
-    set((state) => ({
-      projects: state.projects.map(project =>
-        project.id === projectId 
-          ? { ...project, selectedWorktree: worktreePath }
-          : project
-      )
-    }));
-  },
+      removeProject: (id: string) => {
+        set((state) => ({
+          projects: state.projects.filter((p) => p.id !== id),
+          activeProjectId: state.activeProjectId === id ? null : state.activeProjectId,
+        }))
+      },
 
-  setSelectedTab: (projectId: string, worktreePath: string, tab: 'terminal' | 'changes' | 'graph') => {
-    set((state) => ({
-      projects: state.projects.map(project =>
-        project.id === projectId
-          ? { ...project, selectedTabs: { ...project.selectedTabs, [worktreePath]: tab } }
-          : project
-      )
-    }));
-  },
+      setActiveProject: (id: string) => {
+        set({ activeProjectId: id })
+      },
 
-  getProject: (id: string) => {
-    return get().projects.find(p => p.id === id);
-  },
+      updateProjectWorktrees: (id: string, worktrees: Worktree[]) => {
+        set((state) => ({
+          projects: state.projects.map((project) => (project.id === id ? { ...project, worktrees } : project)),
+        }))
+      },
 
-  getActiveProject: () => {
-    const state = get();
-    return state.activeProjectId ? state.projects.find(p => p.id === state.activeProjectId) : undefined;
-  },
+      setSelectedWorktree: (projectId: string, worktreePath: string | null) => {
+        set((state) => ({
+          projects: state.projects.map((project) =>
+            project.id === projectId ? { ...project, selectedWorktree: worktreePath } : project
+          ),
+        }))
+      },
 
-  addTerminalSession: (worktreePath, sessionId) => 
-    set((state) => {
-      const sessions = new Map(state.terminalSessions);
-      sessions.set(worktreePath, sessionId);
-      return { terminalSessions: sessions };
+      setSelectedTab: (projectId: string, worktreePath: string, tab: 'terminal' | 'changes' | 'graph') => {
+        set((state) => ({
+          projects: state.projects.map((project) =>
+            project.id === projectId
+              ? { ...project, selectedTabs: { ...project.selectedTabs, [worktreePath]: tab } }
+              : project
+          ),
+        }))
+      },
+
+      getProject: (id: string) => {
+        return get().projects.find((p) => p.id === id)
+      },
+
+      getActiveProject: () => {
+        const state = get()
+        return state.activeProjectId ? state.projects.find((p) => p.id === state.activeProjectId) : undefined
+      },
+
+      addTerminalSession: (worktreePath, sessionId) =>
+        set((state) => {
+          const sessions = new Map(state.terminalSessions)
+          sessions.set(worktreePath, sessionId)
+          return { terminalSessions: sessions }
+        }),
+
+      removeTerminalSession: (worktreePath) =>
+        set((state) => {
+          const sessions = new Map(state.terminalSessions)
+          sessions.delete(worktreePath)
+          return { terminalSessions: sessions }
+        }),
+
+      addClaudeTerminalSession: (worktreePath, sessionId) =>
+        set((state) => {
+          const sessions = new Map(state.claudeTerminalSessions)
+          sessions.set(worktreePath, sessionId)
+          return { claudeTerminalSessions: sessions }
+        }),
+
+      removeClaudeTerminalSession: (worktreePath) =>
+        set((state) => {
+          const sessions = new Map(state.claudeTerminalSessions)
+          sessions.delete(worktreePath)
+          return { claudeTerminalSessions: sessions }
+        }),
+
+      markWorktreeForStartup: (worktreePath) =>
+        set((state) => {
+          const pending = new Set(state.pendingStartupWorktrees)
+          pending.add(worktreePath)
+          return { pendingStartupWorktrees: pending }
+        }),
+
+      clearWorktreeStartup: (worktreePath) =>
+        set((state) => {
+          const pending = new Set(state.pendingStartupWorktrees)
+          pending.delete(worktreePath)
+          return { pendingStartupWorktrees: pending }
+        }),
+
+      shouldRunStartup: (worktreePath) => get().pendingStartupWorktrees.has(worktreePath),
+
+      setTheme: (theme) => set({ theme }),
+      setShowAddWorktreeDialog: (show) => set({ showAddWorktreeDialog: show }),
+
+      toggleTerminalSplit: (projectId: string) => {
+        set((state) => ({
+          projects: state.projects.map((project) =>
+            project.id === projectId ? { ...project, isTerminalSplit: !project.isTerminalSplit } : project
+          ),
+        }))
+      },
+
+      toggleTerminalFullscreen: (projectId: string) => {
+        set((state) => ({
+          projects: state.projects.map((project) =>
+            project.id === projectId ? { ...project, isTerminalFullscreen: !project.isTerminalFullscreen } : project
+          ),
+        }))
+      },
+
+      setTerminalSplit: (projectId: string, isSplit: boolean) => {
+        set((state) => ({
+          projects: state.projects.map((project) =>
+            project.id === projectId ? { ...project, isTerminalSplit: isSplit } : project
+          ),
+        }))
+      },
     }),
-    
-  removeTerminalSession: (worktreePath) =>
-    set((state) => {
-      const sessions = new Map(state.terminalSessions);
-      sessions.delete(worktreePath);
-      return { terminalSessions: sessions };
-    }),
-
-  addClaudeTerminalSession: (worktreePath, sessionId) =>
-    set((state) => {
-      const sessions = new Map(state.claudeTerminalSessions);
-      sessions.set(worktreePath, sessionId);
-      return { claudeTerminalSessions: sessions };
-    }),
-
-  removeClaudeTerminalSession: (worktreePath) =>
-    set((state) => {
-      const sessions = new Map(state.claudeTerminalSessions);
-      sessions.delete(worktreePath);
-      return { claudeTerminalSessions: sessions };
-    }),
-
-  markWorktreeForStartup: (worktreePath) =>
-    set((state) => {
-      const pending = new Set(state.pendingStartupWorktrees);
-      pending.add(worktreePath);
-      return { pendingStartupWorktrees: pending };
-    }),
-
-  clearWorktreeStartup: (worktreePath) =>
-    set((state) => {
-      const pending = new Set(state.pendingStartupWorktrees);
-      pending.delete(worktreePath);
-      return { pendingStartupWorktrees: pending };
-    }),
-
-  shouldRunStartup: (worktreePath) => get().pendingStartupWorktrees.has(worktreePath),
-
-  setTheme: (theme) => set({ theme }),
-  setShowAddWorktreeDialog: (show) => set({ showAddWorktreeDialog: show }),
-
-  toggleTerminalSplit: (projectId: string) => {
-    set((state) => ({
-      projects: state.projects.map(project =>
-        project.id === projectId
-          ? { ...project, isTerminalSplit: !project.isTerminalSplit }
-          : project
-      )
-    }));
-  },
-
-  toggleTerminalFullscreen: (projectId: string) => {
-    set((state) => ({
-      projects: state.projects.map(project =>
-        project.id === projectId
-          ? { ...project, isTerminalFullscreen: !project.isTerminalFullscreen }
-          : project
-      )
-    }));
-  },
-
-  setTerminalSplit: (projectId: string, isSplit: boolean) => {
-    set((state) => ({
-      projects: state.projects.map(project =>
-        project.id === projectId
-          ? { ...project, isTerminalSplit: isSplit }
-          : project
-      )
-    }));
-  },
-}),
     {
       name: 'vibetree-web-storage',
       partialize: (state) => ({
@@ -289,4 +279,4 @@ export const useAppStore = create<AppState>()(
       }),
     }
   )
-);
+)

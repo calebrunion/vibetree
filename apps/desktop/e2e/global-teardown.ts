@@ -8,15 +8,15 @@
  * Forcing exit here is safe because all tests have already completed.
  */
 export default async function globalTeardown() {
-  console.log('[Global Teardown] Starting cleanup...');
+  console.log('[Global Teardown] Starting cleanup...')
 
   // Give a moment for any lingering processes to exit naturally
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000))
 
-  console.log('[Global Teardown] Cleanup complete');
-  console.log('[Global Teardown] Forcing process exit to prevent worker timeout...');
+  console.log('[Global Teardown] Cleanup complete')
+  console.log('[Global Teardown] Forcing process exit to prevent worker timeout...')
 
   // Force exit to prevent worker teardown timeout
   // This is safe because all tests have completed at this point
-  process.exit(0);
+  process.exit(0)
 }

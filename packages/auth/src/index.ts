@@ -1,14 +1,14 @@
 // Components
-export { LoginPage } from './components/LoginPage';
+export { LoginPage } from './components/LoginPage'
 
 // Context and Provider
-export { AuthProvider, useAuthContext } from './contexts/AuthContext';
+export { AuthProvider, useAuthContext } from './contexts/AuthContext'
 
 // Hooks
-export { useAuth } from './hooks/useAuth';
+export { useAuth } from './hooks/useAuth'
 
 // Utilities
-export { AuthAPI, AuthStorage, AuthError, createAuthenticatedFetch } from './utils/auth';
+export { AuthAPI, AuthStorage, AuthError, createAuthenticatedFetch } from './utils/auth'
 
 // Types
 export type {
@@ -20,4 +20,4 @@ export type {
   AuthProviderProps,
   LoginPageProps,
   AuthError as AuthErrorType,
-} from './types';
+} from './types'

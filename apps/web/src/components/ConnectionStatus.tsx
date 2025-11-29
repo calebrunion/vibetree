@@ -1,7 +1,7 @@
-import { useAppStore } from '../store';
+import { useAppStore } from '../store'
 
 export function ConnectionStatus() {
-  const { connected, connecting, error } = useAppStore();
+  const { connected, connecting, error } = useAppStore()
 
   if (connecting) {
     return (
@@ -9,7 +9,7 @@ export function ConnectionStatus() {
         <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
         <span className="text-xs text-muted-foreground">Connecting...</span>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -18,7 +18,7 @@ export function ConnectionStatus() {
         <div className="w-2 h-2 bg-red-500 rounded-full" />
         <span className="text-xs text-red-500">Disconnected</span>
       </div>
-    );
+    )
   }
 
   if (connected) {
@@ -27,8 +27,8 @@ export function ConnectionStatus() {
         <div className="w-2 h-2 bg-green-500 rounded-full" />
         <span className="text-xs text-green-500">Connected</span>
       </div>
-    );
+    )
   }
 
-  return null;
+  return null
 }

@@ -1,9 +1,17 @@
-import { spawn } from 'child_process';
-import * as path from 'path';
-import * as fs from 'fs';
-import * as os from 'os';
-import { Worktree, GitStatus, GitCommit, CommitFile, WorktreeAddResult, WorktreeRemoveResult, ProjectValidationResult } from '../types';
-import { parseWorktrees, parseGitStatus } from './git-parser';
+import { spawn } from 'child_process'
+import * as path from 'path'
+import * as fs from 'fs'
+import * as os from 'os'
+import {
+  Worktree,
+  GitStatus,
+  GitCommit,
+  CommitFile,
+  WorktreeAddResult,
+  WorktreeRemoveResult,
+  ProjectValidationResult,
+} from '../types'
+import { parseWorktrees, parseGitStatus } from './git-parser'
 
 /**
  * Expand path to absolute path
@@ -14,15 +22,15 @@ import { parseWorktrees, parseGitStatus } from './git-parser';
  */
 export function expandPath(filePath: string): string {
   if (filePath.startsWith('~/')) {
-    return path.join(os.homedir(), filePath.slice(2));
+    return path.join(os.homedir(), filePath.slice(2))
   }
   if (filePath === '~') {
-    return os.homedir();
+    return os.homedir()
   }
   if (!filePath.startsWith('/')) {
-    return path.join(os.homedir(), filePath);
+    return path.join(os.homedir(), filePath)
   }
-  return filePath;
+  return filePath
 }
 
 /**
@@ -34,38 +42,38 @@ export function expandPath(filePath: string): string {
 export function executeGitCommand(args: string[], cwd: string): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!fs.existsSync(cwd)) {
-      reject(new Error(`Directory does not exist: ${cwd}`));
-      return;
+      reject(new Error(`Directory does not exist: ${cwd}`))
+      return
     }
 
-    const defaultPath = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin';
-    const envPath = process.env.PATH || '';
-    const fullPath = envPath ? `${defaultPath}:${envPath}` : defaultPath;
+    const defaultPath = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin'
+    const envPath = process.env.PATH || ''
+    const fullPath = envPath ? `${defaultPath}:${envPath}` : defaultPath
 
     const child = spawn('git', args, {
       cwd,
-      env: { ...process.env, PATH: fullPath }
-    });
-    
-    let stdout = '';
-    let stderr = '';
-    
+      env: { ...process.env, PATH: fullPath },
+    })
+
+    let stdout = ''
+    let stderr = ''
+
     child.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-    
+      stdout += data.toString()
+    })
+
     child.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-    
+      stderr += data.toString()
+    })
+
     child.on('close', (code) => {
       if (code === 0) {
-        resolve(stdout);
+        resolve(stdout)
       } else {
-        reject(new Error(stderr || `Git command failed: git ${args.join(' ')}`));
+        reject(new Error(stderr || `Git command failed: git ${args.join(' ')}`))
       }
-    });
-  });
+    })
+  })
 }
 
 /**
@@ -74,9 +82,9 @@ export function executeGitCommand(args: string[], cwd: string): Promise<string> 
  * @returns Array of worktree information
  */
 export async function listWorktrees(projectPath: string): Promise<Worktree[]> {
-  const expandedPath = expandPath(projectPath);
-  const output = await executeGitCommand(['worktree', 'list', '--porcelain'], expandedPath);
-  return parseWorktrees(output);
+  const expandedPath = expandPath(projectPath)
+  const output = await executeGitCommand(['worktree', 'list', '--porcelain'], expandedPath)
+  return parseWorktrees(output)
 }
 
 /**
@@ -85,9 +93,9 @@ export async function listWorktrees(projectPath: string): Promise<Worktree[]> {
  * @returns Array of file status information
  */
 export async function getGitStatus(worktreePath: string): Promise<GitStatus[]> {
-  const expandedPath = expandPath(worktreePath);
-  const output = await executeGitCommand(['status', '--porcelain=v1'], expandedPath);
-  return parseGitStatus(output);
+  const expandedPath = expandPath(worktreePath)
+  const output = await executeGitCommand(['status', '--porcelain=v1'], expandedPath)
+  return parseGitStatus(output)
 }
 
 /**
@@ -97,12 +105,12 @@ export async function getGitStatus(worktreePath: string): Promise<GitStatus[]> {
  * @returns Diff output as string
  */
 export async function getGitDiff(worktreePath: string, filePath?: string): Promise<string> {
-  const expandedPath = expandPath(worktreePath);
-  const args = ['diff'];
+  const expandedPath = expandPath(worktreePath)
+  const args = ['diff']
   if (filePath) {
-    args.push('--', filePath);
+    args.push('--', filePath)
   }
-  return executeGitCommand(args, expandedPath);
+  return executeGitCommand(args, expandedPath)
 }
 
 /**
@@ -112,12 +120,12 @@ export async function getGitDiff(worktreePath: string, filePath?: string): Promi
  * @returns Staged diff output as string
  */
 export async function getGitDiffStaged(worktreePath: string, filePath?: string): Promise<string> {
-  const expandedPath = expandPath(worktreePath);
-  const args = ['diff', '--staged'];
+  const expandedPath = expandPath(worktreePath)
+  const args = ['diff', '--staged']
   if (filePath) {
-    args.push('--', filePath);
+    args.push('--', filePath)
   }
-  return executeGitCommand(args, expandedPath);
+  return executeGitCommand(args, expandedPath)
 }
 
 /**
@@ -127,22 +135,22 @@ export async function getGitDiffStaged(worktreePath: string, filePath?: string):
  * @returns Diff output showing the file as new additions
  */
 export async function getGitDiffUntracked(worktreePath: string, filePath: string): Promise<string> {
-  const expandedPath = expandPath(worktreePath);
-  const fullFilePath = path.join(expandedPath, filePath);
+  const expandedPath = expandPath(worktreePath)
+  const fullFilePath = path.join(expandedPath, filePath)
 
   if (!fs.existsSync(fullFilePath)) {
-    return '';
+    return ''
   }
 
-  const content = fs.readFileSync(fullFilePath, 'utf-8');
-  const hasTrailingNewline = content.endsWith('\n');
-  const lines = content.split('\n');
+  const content = fs.readFileSync(fullFilePath, 'utf-8')
+  const hasTrailingNewline = content.endsWith('\n')
+  const lines = content.split('\n')
 
   if (hasTrailingNewline && lines[lines.length - 1] === '') {
-    lines.pop();
+    lines.pop()
   }
 
-  const lineCount = lines.length;
+  const lineCount = lines.length
 
   const header = [
     `diff --git a/${filePath} b/${filePath}`,
@@ -150,13 +158,13 @@ export async function getGitDiffUntracked(worktreePath: string, filePath: string
     'index 0000000..1234567',
     '--- /dev/null',
     `+++ b/${filePath}`,
-    `@@ -0,0 +1,${lineCount} @@`
-  ].join('\n');
+    `@@ -0,0 +1,${lineCount} @@`,
+  ].join('\n')
 
-  const body = lines.map(line => `+${line}`).join('\n');
-  const noNewlineMarker = hasTrailingNewline ? '' : '\n\\ No newline at end of file';
+  const body = lines.map((line) => `+${line}`).join('\n')
+  const noNewlineMarker = hasTrailingNewline ? '' : '\n\\ No newline at end of file'
 
-  return `${header}\n${body}${noNewlineMarker}`;
+  return `${header}\n${body}${noNewlineMarker}`
 }
 
 /**
@@ -165,34 +173,41 @@ export async function getGitDiffUntracked(worktreePath: string, filePath: string
  * @param limit - Maximum number of commits to return (default 20)
  * @returns Array of commit information
  */
-export async function getGitLog(worktreePath: string, limit: number = 20, fromBranchBase: boolean = true): Promise<GitCommit[]> {
-  const expandedPath = expandPath(worktreePath);
-  const separator = '|||';
-  const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar${separator}%P${separator}%D`;
+export async function getGitLog(
+  worktreePath: string,
+  limit: number = 20,
+  fromBranchBase: boolean = true
+): Promise<GitCommit[]> {
+  const expandedPath = expandPath(worktreePath)
+  const separator = '|||'
+  const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar${separator}%P${separator}%D`
 
-  let revRange = '';
+  let revRange = ''
   if (fromBranchBase) {
     try {
-      revRange = 'origin/HEAD..HEAD';
+      revRange = 'origin/HEAD..HEAD'
     } catch {
       // Fallback to showing all commits
     }
   }
 
-  const args = ['log', `--format=${format}`, `-n`, `${limit}`];
+  const args = ['log', `--format=${format}`, `-n`, `${limit}`]
   if (revRange) {
-    args.push(revRange);
+    args.push(revRange)
   }
 
-  const output = await executeGitCommand(args, expandedPath);
+  const output = await executeGitCommand(args, expandedPath)
 
-  const lines = output.trim().split('\n').filter(line => line.length > 0);
-  return lines.map(line => {
-    const [hash, shortHash, subject, author, date, relativeDate, parentStr, refStr] = line.split(separator);
-    const parents = parentStr ? parentStr.split(' ').filter(p => p.length > 0) : [];
-    const refs = refStr ? refStr.split(', ').filter(r => r.length > 0) : [];
-    return { hash, shortHash, subject, author, date, relativeDate, parents, refs };
-  });
+  const lines = output
+    .trim()
+    .split('\n')
+    .filter((line) => line.length > 0)
+  return lines.map((line) => {
+    const [hash, shortHash, subject, author, date, relativeDate, parentStr, refStr] = line.split(separator)
+    const parents = parentStr ? parentStr.split(' ').filter((p) => p.length > 0) : []
+    const refs = refStr ? refStr.split(', ').filter((r) => r.length > 0) : []
+    return { hash, shortHash, subject, author, date, relativeDate, parents, refs }
+  })
 }
 
 /**
@@ -201,9 +216,9 @@ export async function getGitLog(worktreePath: string, limit: number = 20, fromBr
  * @returns Current git user name
  */
 export async function getGitUserName(worktreePath: string): Promise<string> {
-  const expandedPath = expandPath(worktreePath);
-  const output = await executeGitCommand(['config', 'user.name'], expandedPath);
-  return output.trim();
+  const expandedPath = expandPath(worktreePath)
+  const output = await executeGitCommand(['config', 'user.name'], expandedPath)
+  return output.trim()
 }
 
 /**
@@ -213,37 +228,42 @@ export async function getGitUserName(worktreePath: string): Promise<string> {
  * @param authorFilter - Optional author name to filter commits by
  * @returns Array of commit information with parent hashes and refs
  */
-export async function getGitLogGraph(worktreePath: string, limit: number = 50, authorFilter?: string): Promise<GitCommit[]> {
-  const expandedPath = expandPath(worktreePath);
-  const separator = '|||';
-  const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar${separator}%P${separator}%D`;
+export async function getGitLogGraph(
+  worktreePath: string,
+  limit: number = 50,
+  authorFilter?: string
+): Promise<GitCommit[]> {
+  const expandedPath = expandPath(worktreePath)
+  const separator = '|||'
+  const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar${separator}%P${separator}%D`
 
-  const args = ['log', '--all', `--format=${format}`, `-n`, `${limit}`];
+  const args = ['log', '--all', `--format=${format}`, `-n`, `${limit}`]
 
   if (authorFilter) {
-    args.push(`--author=${authorFilter}`);
+    args.push(`--author=${authorFilter}`)
   }
 
-  const output = await executeGitCommand(args, expandedPath);
+  const output = await executeGitCommand(args, expandedPath)
 
-  const lines = output.trim().split('\n').filter(line => line.length > 0);
-  const commits = lines.map(line => {
-    const [hash, shortHash, subject, author, date, relativeDate, parentStr, refStr] = line.split(separator);
-    const parents = parentStr ? parentStr.split(' ').filter(p => p.length > 0) : [];
-    const refs = refStr ? refStr.split(', ').filter(r => r.length > 0) : [];
-    return { hash, shortHash, subject, author, date, relativeDate, parents, refs };
-  });
+  const lines = output
+    .trim()
+    .split('\n')
+    .filter((line) => line.length > 0)
+  const commits = lines.map((line) => {
+    const [hash, shortHash, subject, author, date, relativeDate, parentStr, refStr] = line.split(separator)
+    const parents = parentStr ? parentStr.split(' ').filter((p) => p.length > 0) : []
+    const refs = refStr ? refStr.split(', ').filter((r) => r.length > 0) : []
+    return { hash, shortHash, subject, author, date, relativeDate, parents, refs }
+  })
 
   // If filtering by author, also include origin/HEAD commit for context
   if (authorFilter && commits.length > 0) {
     try {
-      const originHeadOutput = await executeGitCommand(
-        ['log', 'origin/HEAD', '-1', `--format=${format}`],
-        expandedPath
-      );
-      const originHeadLine = originHeadOutput.trim();
+      const originHeadOutput = await executeGitCommand(['log', 'origin/HEAD', '-1', `--format=${format}`], expandedPath)
+      const originHeadLine = originHeadOutput.trim()
       if (originHeadLine) {
-        const [hash, shortHash, subject, author, date, relativeDate, parentStr, refStr] = originHeadLine.split(separator);
+        const [hash, shortHash, subject, author, date, relativeDate, parentStr, refStr] =
+          originHeadLine.split(separator)
         const originHeadCommit = {
           hash,
           shortHash,
@@ -251,18 +271,18 @@ export async function getGitLogGraph(worktreePath: string, limit: number = 50, a
           author,
           date,
           relativeDate,
-          parents: parentStr ? parentStr.split(' ').filter(p => p.length > 0) : [],
-          refs: refStr ? refStr.split(', ').filter(r => r.length > 0) : []
-        };
+          parents: parentStr ? parentStr.split(' ').filter((p) => p.length > 0) : [],
+          refs: refStr ? refStr.split(', ').filter((r) => r.length > 0) : [],
+        }
         // Only add if not already in the list
-        if (!commits.some(c => c.hash === originHeadCommit.hash)) {
+        if (!commits.some((c) => c.hash === originHeadCommit.hash)) {
           // Find the right position to insert based on date
-          const originDate = new Date(originHeadCommit.date);
-          let insertIndex = commits.findIndex(c => new Date(c.date) < originDate);
+          const originDate = new Date(originHeadCommit.date)
+          let insertIndex = commits.findIndex((c) => new Date(c.date) < originDate)
           if (insertIndex === -1) {
-            commits.push(originHeadCommit);
+            commits.push(originHeadCommit)
           } else {
-            commits.splice(insertIndex, 0, originHeadCommit);
+            commits.splice(insertIndex, 0, originHeadCommit)
           }
         }
       }
@@ -271,7 +291,7 @@ export async function getGitLogGraph(worktreePath: string, limit: number = 50, a
     }
   }
 
-  return commits;
+  return commits
 }
 
 /**
@@ -281,20 +301,20 @@ export async function getGitLogGraph(worktreePath: string, limit: number = 50, a
  * @returns Array of files changed in the commit
  */
 export async function getCommitFiles(worktreePath: string, commitHash: string): Promise<CommitFile[]> {
-  const expandedPath = expandPath(worktreePath);
-  const output = await executeGitCommand(
-    ['show', '--name-status', '--format=', commitHash],
-    expandedPath
-  );
+  const expandedPath = expandPath(worktreePath)
+  const output = await executeGitCommand(['show', '--name-status', '--format=', commitHash], expandedPath)
 
-  const lines = output.trim().split('\n').filter(line => line.length > 0);
-  return lines.map(line => {
-    const [status, ...pathParts] = line.split('\t');
+  const lines = output
+    .trim()
+    .split('\n')
+    .filter((line) => line.length > 0)
+  return lines.map((line) => {
+    const [status, ...pathParts] = line.split('\t')
     return {
       path: pathParts.join('\t'),
-      status: status[0] as CommitFile['status']
-    };
-  });
+      status: status[0] as CommitFile['status'],
+    }
+  })
 }
 
 /**
@@ -305,12 +325,12 @@ export async function getCommitFiles(worktreePath: string, commitHash: string): 
  * @returns Diff output as string
  */
 export async function getCommitDiff(worktreePath: string, commitHash: string, filePath?: string): Promise<string> {
-  const expandedPath = expandPath(worktreePath);
-  const args = ['show', '--format=', commitHash];
+  const expandedPath = expandPath(worktreePath)
+  const args = ['show', '--format=', commitHash]
   if (filePath) {
-    args.push('--', filePath);
+    args.push('--', filePath)
   }
-  return executeGitCommand(args, expandedPath);
+  return executeGitCommand(args, expandedPath)
 }
 
 /**
@@ -319,29 +339,33 @@ export async function getCommitDiff(worktreePath: string, commitHash: string, fi
  * @param baseBranch - Base branch to diff against (default: origin/HEAD)
  * @returns Diff output as string
  */
-export async function getDiffAgainstBase(worktreePath: string, baseBranch: string = 'origin/HEAD', filePath?: string): Promise<string> {
-  const expandedPath = expandPath(worktreePath);
+export async function getDiffAgainstBase(
+  worktreePath: string,
+  baseBranch: string = 'origin/HEAD',
+  filePath?: string
+): Promise<string> {
+  const expandedPath = expandPath(worktreePath)
   try {
-    const mergeBase = await executeGitCommand(['merge-base', baseBranch, 'HEAD'], expandedPath);
-    const args = ['diff', mergeBase.trim(), 'HEAD'];
+    const mergeBase = await executeGitCommand(['merge-base', baseBranch, 'HEAD'], expandedPath)
+    const args = ['diff', mergeBase.trim(), 'HEAD']
     if (filePath) {
-      args.push('--', filePath);
+      args.push('--', filePath)
     }
-    return executeGitCommand(args, expandedPath);
+    return executeGitCommand(args, expandedPath)
   } catch {
     try {
-      const mergeBase = await executeGitCommand(['merge-base', 'origin/master', 'HEAD'], expandedPath);
-      const args = ['diff', mergeBase.trim(), 'HEAD'];
+      const mergeBase = await executeGitCommand(['merge-base', 'origin/master', 'HEAD'], expandedPath)
+      const args = ['diff', mergeBase.trim(), 'HEAD']
       if (filePath) {
-        args.push('--', filePath);
+        args.push('--', filePath)
       }
-      return executeGitCommand(args, expandedPath);
+      return executeGitCommand(args, expandedPath)
     } catch {
-      const args = ['diff', 'HEAD'];
+      const args = ['diff', 'HEAD']
       if (filePath) {
-        args.push('--', filePath);
+        args.push('--', filePath)
       }
-      return executeGitCommand(args, expandedPath);
+      return executeGitCommand(args, expandedPath)
     }
   }
 }
@@ -352,35 +376,44 @@ export async function getDiffAgainstBase(worktreePath: string, baseBranch: strin
  * @param baseBranch - Base branch to compare against (default: origin/HEAD)
  * @returns Array of changed files with their status
  */
-export async function getFilesChangedAgainstBase(worktreePath: string, baseBranch: string = 'origin/HEAD'): Promise<CommitFile[]> {
-  const expandedPath = expandPath(worktreePath);
+export async function getFilesChangedAgainstBase(
+  worktreePath: string,
+  baseBranch: string = 'origin/HEAD'
+): Promise<CommitFile[]> {
+  const expandedPath = expandPath(worktreePath)
   try {
-    const mergeBase = await executeGitCommand(['merge-base', baseBranch, 'HEAD'], expandedPath);
-    const output = await executeGitCommand(['diff', '--name-status', mergeBase.trim(), 'HEAD'], expandedPath);
+    const mergeBase = await executeGitCommand(['merge-base', baseBranch, 'HEAD'], expandedPath)
+    const output = await executeGitCommand(['diff', '--name-status', mergeBase.trim(), 'HEAD'], expandedPath)
 
-    const lines = output.trim().split('\n').filter(line => line.length > 0);
-    return lines.map(line => {
-      const [status, ...pathParts] = line.split('\t');
+    const lines = output
+      .trim()
+      .split('\n')
+      .filter((line) => line.length > 0)
+    return lines.map((line) => {
+      const [status, ...pathParts] = line.split('\t')
       return {
         path: pathParts.join('\t'),
-        status: status[0] as CommitFile['status']
-      };
-    });
+        status: status[0] as CommitFile['status'],
+      }
+    })
   } catch {
     try {
-      const mergeBase = await executeGitCommand(['merge-base', 'origin/master', 'HEAD'], expandedPath);
-      const output = await executeGitCommand(['diff', '--name-status', mergeBase.trim(), 'HEAD'], expandedPath);
+      const mergeBase = await executeGitCommand(['merge-base', 'origin/master', 'HEAD'], expandedPath)
+      const output = await executeGitCommand(['diff', '--name-status', mergeBase.trim(), 'HEAD'], expandedPath)
 
-      const lines = output.trim().split('\n').filter(line => line.length > 0);
-      return lines.map(line => {
-        const [status, ...pathParts] = line.split('\t');
+      const lines = output
+        .trim()
+        .split('\n')
+        .filter((line) => line.length > 0)
+      return lines.map((line) => {
+        const [status, ...pathParts] = line.split('\t')
         return {
           path: pathParts.join('\t'),
-          status: status[0] as CommitFile['status']
-        };
-      });
+          status: status[0] as CommitFile['status'],
+        }
+      })
     } catch {
-      return [];
+      return []
     }
   }
 }
@@ -392,29 +425,29 @@ export async function getFilesChangedAgainstBase(worktreePath: string, baseBranc
  * @returns Result with new worktree path and branch name
  */
 export async function addWorktree(projectPath: string, branchName: string): Promise<WorktreeAddResult> {
-  const expandedPath = expandPath(projectPath);
-  const treesDir = path.join(expandedPath, '.trees');
-  const worktreePath = path.join(treesDir, branchName);
+  const expandedPath = expandPath(projectPath)
+  const treesDir = path.join(expandedPath, '.trees')
+  const worktreePath = path.join(treesDir, branchName)
 
   if (!fs.existsSync(treesDir)) {
-    fs.mkdirSync(treesDir, { recursive: true });
+    fs.mkdirSync(treesDir, { recursive: true })
   }
 
-  let branchExists = false;
+  let branchExists = false
   try {
-    await executeGitCommand(['rev-parse', '--verify', branchName], expandedPath);
-    branchExists = true;
+    await executeGitCommand(['rev-parse', '--verify', branchName], expandedPath)
+    branchExists = true
   } catch {
-    branchExists = false;
+    branchExists = false
   }
 
   if (branchExists) {
-    await executeGitCommand(['worktree', 'add', worktreePath, branchName], expandedPath);
+    await executeGitCommand(['worktree', 'add', worktreePath, branchName], expandedPath)
   } else {
-    await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath, 'origin/HEAD'], expandedPath);
+    await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath, 'origin/HEAD'], expandedPath)
   }
 
-  return { path: worktreePath, branch: branchName };
+  return { path: worktreePath, branch: branchName }
 }
 
 /**
@@ -429,14 +462,14 @@ export async function removeWorktree(
   worktreePath: string,
   _branchName: string
 ): Promise<WorktreeRemoveResult> {
-  const expandedProjectPath = expandPath(projectPath);
-  const expandedWorktreePath = expandPath(worktreePath);
+  const expandedProjectPath = expandPath(projectPath)
+  const expandedWorktreePath = expandPath(worktreePath)
   try {
     // Remove the worktree directory only, preserve the branch
-    await executeGitCommand(['worktree', 'remove', expandedWorktreePath, '--force'], expandedProjectPath);
-    return { success: true };
+    await executeGitCommand(['worktree', 'remove', expandedWorktreePath, '--force'], expandedProjectPath)
+    return { success: true }
   } catch (error) {
-    throw new Error(`Failed to remove worktree: ${error}`);
+    throw new Error(`Failed to remove worktree: ${error}`)
   }
 }
 
@@ -446,12 +479,12 @@ export async function removeWorktree(
  * @returns True if path is a git repository
  */
 export async function isGitRepository(repoPath: string): Promise<boolean> {
-  const expandedPath = expandPath(repoPath);
+  const expandedPath = expandPath(repoPath)
   try {
-    await executeGitCommand(['rev-parse', '--git-dir'], expandedPath);
-    return true;
+    await executeGitCommand(['rev-parse', '--git-dir'], expandedPath)
+    return true
   } catch {
-    return false;
+    return false
   }
 }
 
@@ -461,9 +494,9 @@ export async function isGitRepository(repoPath: string): Promise<boolean> {
  * @returns Current branch name
  */
 export async function getCurrentBranch(worktreePath: string): Promise<string> {
-  const expandedPath = expandPath(worktreePath);
-  const output = await executeGitCommand(['rev-parse', '--abbrev-ref', 'HEAD'], expandedPath);
-  return output.trim();
+  const expandedPath = expandPath(worktreePath)
+  const output = await executeGitCommand(['rev-parse', '--abbrev-ref', 'HEAD'], expandedPath)
+  return output.trim()
 }
 
 /**
@@ -474,45 +507,45 @@ export async function getCurrentBranch(worktreePath: string): Promise<string> {
 export async function validateProjects(projectPaths: string[]): Promise<ProjectValidationResult[]> {
   const results = await Promise.allSettled(
     projectPaths.map(async (inputPath) => {
-      const projectPath = expandPath(inputPath);
+      const projectPath = expandPath(inputPath)
       try {
         // Check if directory exists by trying to access it
-        const isGitRepo = await isGitRepository(projectPath);
+        const isGitRepo = await isGitRepository(projectPath)
         if (!isGitRepo) {
           return {
             path: projectPath,
             valid: false,
-            error: 'Not a git repository'
-          } as ProjectValidationResult;
+            error: 'Not a git repository',
+          } as ProjectValidationResult
         }
 
         // Get repository name from path
-        const name = path.basename(projectPath);
+        const name = path.basename(projectPath)
 
         return {
           path: projectPath,
           name,
-          valid: true
-        } as ProjectValidationResult;
+          valid: true,
+        } as ProjectValidationResult
       } catch (error) {
         return {
           path: projectPath,
           valid: false,
-          error: `Directory not accessible: ${(error as Error).message}`
-        } as ProjectValidationResult;
+          error: `Directory not accessible: ${(error as Error).message}`,
+        } as ProjectValidationResult
       }
     })
-  );
+  )
 
   return results.map((result, index) => {
     if (result.status === 'fulfilled') {
-      return result.value;
+      return result.value
     } else {
       return {
         path: projectPaths[index],
         valid: false,
-        error: `Validation failed: ${result.reason}`
-      };
+        error: `Validation failed: ${result.reason}`,
+      }
     }
-  });
+  })
 }

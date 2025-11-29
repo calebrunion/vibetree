@@ -1,45 +1,43 @@
-import { useEffect, useRef, useState } from 'react';
-import { TerminalView } from './TerminalView';
+import { useEffect, useRef, useState } from 'react'
+import { TerminalView } from './TerminalView'
 
 interface TerminalManagerProps {
-  worktrees: Array<{ path: string; branch?: string; head: string }>;
-  selectedWorktree: string | null;
+  worktrees: Array<{ path: string; branch?: string; head: string }>
+  selectedWorktree: string | null
 }
 
 export function TerminalManager({ worktrees, selectedWorktree }: TerminalManagerProps) {
-  const [mountedTerminals, setMountedTerminals] = useState<Set<string>>(new Set());
+  const [mountedTerminals, setMountedTerminals] = useState<Set<string>>(new Set())
 
   // Track which terminals have been created
-  const createdTerminals = useRef<Set<string>>(new Set());
+  const createdTerminals = useRef<Set<string>>(new Set())
 
   useEffect(() => {
-    if (!selectedWorktree) return;
-    
+    if (!selectedWorktree) return
+
     // Mount the selected terminal if it hasn't been mounted yet
     if (!mountedTerminals.has(selectedWorktree)) {
-      setMountedTerminals(prev => new Set(prev).add(selectedWorktree));
-      createdTerminals.current.add(selectedWorktree);
+      setMountedTerminals((prev) => new Set(prev).add(selectedWorktree))
+      createdTerminals.current.add(selectedWorktree)
     }
-  }, [selectedWorktree, mountedTerminals]);
-  
+  }, [selectedWorktree, mountedTerminals])
+
   // Clean up terminals for worktrees that no longer exist
   useEffect(() => {
-    const currentWorktreePaths = new Set(worktrees.map(w => w.path));
-    const terminalsToRemove = Array.from(createdTerminals.current).filter(
-      path => !currentWorktreePaths.has(path)
-    );
-    
+    const currentWorktreePaths = new Set(worktrees.map((w) => w.path))
+    const terminalsToRemove = Array.from(createdTerminals.current).filter((path) => !currentWorktreePaths.has(path))
+
     if (terminalsToRemove.length > 0) {
-      setMountedTerminals(prev => {
-        const next = new Set(prev);
-        terminalsToRemove.forEach(path => {
-          next.delete(path);
-          createdTerminals.current.delete(path);
-        });
-        return next;
-      });
+      setMountedTerminals((prev) => {
+        const next = new Set(prev)
+        terminalsToRemove.forEach((path) => {
+          next.delete(path)
+          createdTerminals.current.delete(path)
+        })
+        return next
+      })
     }
-  }, [worktrees]);
+  }, [worktrees])
 
   if (!selectedWorktree) {
     return (
@@ -49,7 +47,7 @@ export function TerminalManager({ worktrees, selectedWorktree }: TerminalManager
           <p className="text-sm">Choose from the panel on the left</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -65,12 +63,12 @@ export function TerminalManager({ worktrees, selectedWorktree }: TerminalManager
             right: 0,
             bottom: 0,
             width: '100%',
-            height: '100%'
+            height: '100%',
           }}
         >
           <TerminalView worktreePath={worktreePath} />
         </div>
       ))}
     </div>
-  );
+  )
 }

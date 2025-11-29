@@ -137,10 +137,13 @@ export default function VoiceInputDialog({
     }
   }, [text, onSend, onEnter, onClose])
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault()
-    handleSend()
-  }, [handleSend])
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault()
+      handleSend()
+    },
+    [handleSend]
+  )
 
   if (!isOpen) return null
 

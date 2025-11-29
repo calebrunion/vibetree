@@ -1,77 +1,79 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { Terminal } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
-import { SerializeAddon } from '@xterm/addon-serialize';
-import { Unicode11Addon } from '@xterm/addon-unicode11';
-import { SearchAddon } from '@xterm/addon-search';
-import { Button } from './ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { Code2, Columns2, Rows2, X, Search, Clock } from 'lucide-react';
-import { useToast } from './ui/use-toast';
-import { escapeShellPath } from '@vibetree/core';
-import '@xterm/xterm/css/xterm.css';
-import type { TerminalSettings } from '../types/terminal-settings';
-import { SchedulerDialog, type SchedulerConfig } from './SchedulerDialog';
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { Terminal } from '@xterm/xterm'
+import { FitAddon } from '@xterm/addon-fit'
+import { WebLinksAddon } from '@xterm/addon-web-links'
+import { SerializeAddon } from '@xterm/addon-serialize'
+import { Unicode11Addon } from '@xterm/addon-unicode11'
+import { SearchAddon } from '@xterm/addon-search'
+import { Button } from './ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
+import { Code2, Columns2, Rows2, X, Search, Clock } from 'lucide-react'
+import { useToast } from './ui/use-toast'
+import { escapeShellPath } from '@vibetree/core'
+import '@xterm/xterm/css/xterm.css'
+import type { TerminalSettings } from '../types/terminal-settings'
+import { SchedulerDialog, type SchedulerConfig } from './SchedulerDialog'
 
 interface ClaudeTerminalProps {
-  worktreePath: string;
-  projectId?: string;
-  theme?: 'light' | 'dark';
-  isVisible?: boolean;
-  terminalId?: string;
-  onSplitVertical?: () => void;
-  onSplitHorizontal?: () => void;
-  onClose?: () => void;
-  canClose?: boolean;
-  onProcessIdChange?: (processId: string) => void;
+  worktreePath: string
+  projectId?: string
+  theme?: 'light' | 'dark'
+  isVisible?: boolean
+  terminalId?: string
+  onSplitVertical?: () => void
+  onSplitHorizontal?: () => void
+  onClose?: () => void
+  canClose?: boolean
+  onProcessIdChange?: (processId: string) => void
 }
 
 // Cache for terminal states per worktree
-const terminalStateCache = new Map<string, string>();
+const terminalStateCache = new Map<string, string>()
 
 // Cache for scheduler states per process ID
 interface SchedulerState {
-  config: SchedulerConfig;
-  isRunning: boolean;
-  timeoutId: NodeJS.Timeout | null;
+  config: SchedulerConfig
+  isRunning: boolean
+  timeoutId: NodeJS.Timeout | null
 }
-const schedulerStateCache = new Map<string, SchedulerState>();
+const schedulerStateCache = new Map<string, SchedulerState>()
 
 // Export the cache for external access
-export { schedulerStateCache };
+export { schedulerStateCache }
 
 // Custom event for scheduler state changes
-export const SCHEDULER_STATE_CHANGED_EVENT = 'scheduler-state-changed';
+export const SCHEDULER_STATE_CHANGED_EVENT = 'scheduler-state-changed'
 
 // Track active schedulers by worktree path
-const activeSchedulersByWorktree = new Map<string, Set<string>>();
+const activeSchedulersByWorktree = new Map<string, Set<string>>()
 
 // Export for external access
-export { activeSchedulersByWorktree };
+export { activeSchedulersByWorktree }
 
 // Helper to broadcast scheduler state changes with worktree path
 const broadcastSchedulerStateChange = (worktreePath: string, processId: string, isRunning: boolean) => {
   // Update the worktree-based tracking
   if (isRunning) {
     if (!activeSchedulersByWorktree.has(worktreePath)) {
-      activeSchedulersByWorktree.set(worktreePath, new Set());
+      activeSchedulersByWorktree.set(worktreePath, new Set())
     }
-    activeSchedulersByWorktree.get(worktreePath)!.add(processId);
+    activeSchedulersByWorktree.get(worktreePath)!.add(processId)
   } else {
-    const schedulers = activeSchedulersByWorktree.get(worktreePath);
+    const schedulers = activeSchedulersByWorktree.get(worktreePath)
     if (schedulers) {
-      schedulers.delete(processId);
+      schedulers.delete(processId)
       if (schedulers.size === 0) {
-        activeSchedulersByWorktree.delete(worktreePath);
+        activeSchedulersByWorktree.delete(worktreePath)
       }
     }
   }
 
-  window.dispatchEvent(new CustomEvent(SCHEDULER_STATE_CHANGED_EVENT, {
-    detail: { worktreePath, processId, isRunning }
-  }));
-};
+  window.dispatchEvent(
+    new CustomEvent(SCHEDULER_STATE_CHANGED_EVENT, {
+      detail: { worktreePath, processId, isRunning },
+    })
+  )
+}
 
 export function ClaudeTerminal({
   worktreePath,
@@ -82,217 +84,229 @@ export function ClaudeTerminal({
   onSplitHorizontal,
   onClose,
   canClose = false,
-  onProcessIdChange
+  onProcessIdChange,
 }: ClaudeTerminalProps) {
-  const terminalRef = useRef<HTMLDivElement>(null);
-  const [terminal, setTerminal] = useState<Terminal | null>(null);
-  const processIdRef = useRef<string>('');
-  const fitAddonRef = useRef<FitAddon | null>(null);
-  const serializeAddonRef = useRef<SerializeAddon | null>(null);
-  const searchAddonRef = useRef<SearchAddon | null>(null);
-  const removeListenersRef = useRef<Array<() => void>>([]);
-  const [detectedIDEs, setDetectedIDEs] = useState<Array<{ name: string; command: string }>>([]);
-  const [searchVisible, setSearchVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [terminalSettings, setTerminalSettings] = useState<TerminalSettings | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const { toast } = useToast();
+  const terminalRef = useRef<HTMLDivElement>(null)
+  const [terminal, setTerminal] = useState<Terminal | null>(null)
+  const processIdRef = useRef<string>('')
+  const fitAddonRef = useRef<FitAddon | null>(null)
+  const serializeAddonRef = useRef<SerializeAddon | null>(null)
+  const searchAddonRef = useRef<SearchAddon | null>(null)
+  const removeListenersRef = useRef<Array<() => void>>([])
+  const [detectedIDEs, setDetectedIDEs] = useState<Array<{ name: string; command: string }>>([])
+  const [searchVisible, setSearchVisible] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [terminalSettings, setTerminalSettings] = useState<TerminalSettings | null>(null)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const { toast } = useToast()
 
   // Scheduler state - only UI state in component, actual scheduler state in cache
-  const [schedulerDialogOpen, setSchedulerDialogOpen] = useState(false);
+  const [schedulerDialogOpen, setSchedulerDialogOpen] = useState(false)
   // Force re-render when scheduler state changes
-  const [, setSchedulerUpdateTrigger] = useState(0);
-  const commandInProgressRef = useRef(false);
+  const [, setSchedulerUpdateTrigger] = useState(0)
+  const commandInProgressRef = useRef(false)
   // AbortController to cancel pending scheduler promises on unmount
-  const schedulerAbortControllerRef = useRef<AbortController>(new AbortController());
+  const schedulerAbortControllerRef = useRef<AbortController>(new AbortController())
 
   // Helper functions to work with scheduler cache
   const getSchedulerState = useCallback(() => {
-    if (!processIdRef.current) return null;
-    return schedulerStateCache.get(processIdRef.current) || null;
-  }, []);
+    if (!processIdRef.current) return null
+    return schedulerStateCache.get(processIdRef.current) || null
+  }, [])
 
-  const updateSchedulerState = useCallback((update: Partial<SchedulerState> | null) => {
-    if (!processIdRef.current) return;
+  const updateSchedulerState = useCallback(
+    (update: Partial<SchedulerState> | null) => {
+      if (!processIdRef.current) return
 
-    const isRunning = update?.isRunning ?? false;
+      const isRunning = update?.isRunning ?? false
 
-    if (update === null) {
-      schedulerStateCache.delete(processIdRef.current);
-    } else {
-      const current = schedulerStateCache.get(processIdRef.current);
-      schedulerStateCache.set(processIdRef.current, {
-        ...current,
-        ...update
-      } as SchedulerState);
-    }
-    // Trigger re-render
-    setSchedulerUpdateTrigger(prev => prev + 1);
-    // Broadcast change for external listeners (e.g., WorktreePanel)
-    broadcastSchedulerStateChange(worktreePath, processIdRef.current, isRunning);
-  }, [worktreePath]);
+      if (update === null) {
+        schedulerStateCache.delete(processIdRef.current)
+      } else {
+        const current = schedulerStateCache.get(processIdRef.current)
+        schedulerStateCache.set(processIdRef.current, {
+          ...current,
+          ...update,
+        } as SchedulerState)
+      }
+      // Trigger re-render
+      setSchedulerUpdateTrigger((prev) => prev + 1)
+      // Broadcast change for external listeners (e.g., WorktreePanel)
+      broadcastSchedulerStateChange(worktreePath, processIdRef.current, isRunning)
+    },
+    [worktreePath]
+  )
 
   // Search functionality
   const handleSearch = useCallback((query: string, direction: 'next' | 'previous' = 'next') => {
-    if (!searchAddonRef.current || !query) return;
+    if (!searchAddonRef.current || !query) return
 
     if (direction === 'next') {
-      searchAddonRef.current.findNext(query);
+      searchAddonRef.current.findNext(query)
     } else {
-      searchAddonRef.current.findPrevious(query);
+      searchAddonRef.current.findPrevious(query)
     }
-  }, []);
+  }, [])
 
-  const handleSearchInputChange = useCallback((value: string) => {
-    setSearchQuery(value);
-    if (value) {
-      handleSearch(value);
-    }
-  }, [handleSearch]);
+  const handleSearchInputChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value)
+      if (value) {
+        handleSearch(value)
+      }
+    },
+    [handleSearch]
+  )
 
   // Scheduler functionality
   const stopScheduler = useCallback(async () => {
-    const schedulerState = getSchedulerState();
+    const schedulerState = getSchedulerState()
     if (schedulerState?.timeoutId) {
-      clearTimeout(schedulerState.timeoutId);
+      clearTimeout(schedulerState.timeoutId)
     }
 
     // Wait for any in-progress command to complete naturally instead of cancelling it
     // This prevents partial commands from appearing in the terminal
     while (commandInProgressRef.current) {
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50))
     }
 
     // Additional small delay to ensure the shell has processed the ENTER key
     // and the command output has been fully rendered in the terminal
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // Clear from cache when explicitly stopped
-    updateSchedulerState(null);
-  }, [getSchedulerState, updateSchedulerState]);
+    updateSchedulerState(null)
+  }, [getSchedulerState, updateSchedulerState])
 
-  const sendScheduledCommand = useCallback((command: string, delayMs: number): Promise<boolean> => {
-    if (!processIdRef.current || !terminal) return Promise.resolve(false);
+  const sendScheduledCommand = useCallback(
+    (command: string, delayMs: number): Promise<boolean> => {
+      if (!processIdRef.current || !terminal) return Promise.resolve(false)
 
-    // Prevent overlapping command executions by checking if one is already in progress
-    if (commandInProgressRef.current) {
-      console.warn('Command already in progress, skipping overlapping execution');
-      return Promise.resolve(false);
-    }
+      // Prevent overlapping command executions by checking if one is already in progress
+      if (commandInProgressRef.current) {
+        console.warn('Command already in progress, skipping overlapping execution')
+        return Promise.resolve(false)
+      }
 
-    commandInProgressRef.current = true;
+      commandInProgressRef.current = true
 
-    // Simulate typing through xterm terminal instance
-    // This ensures the input goes through the same path as real user typing,
-    // which is critical for interactive apps like Claude Code that process
-    // input character-by-character in raw terminal mode
+      // Simulate typing through xterm terminal instance
+      // This ensures the input goes through the same path as real user typing,
+      // which is critical for interactive apps like Claude Code that process
+      // input character-by-character in raw terminal mode
 
-    return new Promise<boolean>((resolve) => {
-      // Type each character with a small delay to simulate realistic typing
-      let charIndex = 0;
-      const typeNextChar = () => {
-        if (charIndex < command.length) {
-          const char = command[charIndex];
-          // Send to PTY
-          window.electronAPI.shell.write(processIdRef.current, char);
-          charIndex++;
-          setTimeout(typeNextChar, 10); // 10ms between characters
-        } else {
-          // After all characters, wait before sending ENTER key (\r)
-          // Use min(delayMs/2, 1000) to ensure we don't wait too long for short intervals
-          // but also don't exceed 1 second for long intervals
-          const enterKeyDelay = Math.min(delayMs / 2, 1000);
-          setTimeout(() => {
-            window.electronAPI.shell.write(processIdRef.current, '\r');
-            commandInProgressRef.current = false;
-            resolve(true);
-          }, enterKeyDelay);
-        }
-      };
-
-      typeNextChar();
-    });
-  }, [terminal]);
-
-  const startScheduler = useCallback(async (config: SchedulerConfig) => {
-    // Stop any existing scheduler
-    await stopScheduler();
-
-    if (config.repeat) {
-      // For repeat mode, use chained setTimeout to ensure each command completes
-      // before the next one starts. This prevents overlapping executions that
-      // cause gibberish input, especially after machine sleep/wake.
-      const scheduleNext = async (): Promise<void> => {
-        // Check if component unmounted (abort signal)
-        if (schedulerAbortControllerRef.current.signal.aborted) {
-          updateSchedulerState(null);
-          return;
+      return new Promise<boolean>((resolve) => {
+        // Type each character with a small delay to simulate realistic typing
+        let charIndex = 0
+        const typeNextChar = () => {
+          if (charIndex < command.length) {
+            const char = command[charIndex]
+            // Send to PTY
+            window.electronAPI.shell.write(processIdRef.current, char)
+            charIndex++
+            setTimeout(typeNextChar, 10) // 10ms between characters
+          } else {
+            // After all characters, wait before sending ENTER key (\r)
+            // Use min(delayMs/2, 1000) to ensure we don't wait too long for short intervals
+            // but also don't exceed 1 second for long intervals
+            const enterKeyDelay = Math.min(delayMs / 2, 1000)
+            setTimeout(() => {
+              window.electronAPI.shell.write(processIdRef.current, '\r')
+              commandInProgressRef.current = false
+              resolve(true)
+            }, enterKeyDelay)
+          }
         }
 
-        // Wait for the delay interval
-        await new Promise<void>(resolve => {
-          const timeoutId = setTimeout(resolve, config.delayMs);
-          // Update cache with timeout ID
-          updateSchedulerState({
-            config,
-            isRunning: true,
-            timeoutId
-          });
-        });
+        typeNextChar()
+      })
+    },
+    [terminal]
+  )
 
-        // Check again after delay - component may have unmounted during wait
-        if (schedulerAbortControllerRef.current.signal.aborted) {
-          updateSchedulerState(null);
-          return;
+  const startScheduler = useCallback(
+    async (config: SchedulerConfig) => {
+      // Stop any existing scheduler
+      await stopScheduler()
+
+      if (config.repeat) {
+        // For repeat mode, use chained setTimeout to ensure each command completes
+        // before the next one starts. This prevents overlapping executions that
+        // cause gibberish input, especially after machine sleep/wake.
+        const scheduleNext = async (): Promise<void> => {
+          // Check if component unmounted (abort signal)
+          if (schedulerAbortControllerRef.current.signal.aborted) {
+            updateSchedulerState(null)
+            return
+          }
+
+          // Wait for the delay interval
+          await new Promise<void>((resolve) => {
+            const timeoutId = setTimeout(resolve, config.delayMs)
+            // Update cache with timeout ID
+            updateSchedulerState({
+              config,
+              isRunning: true,
+              timeoutId,
+            })
+          })
+
+          // Check again after delay - component may have unmounted during wait
+          if (schedulerAbortControllerRef.current.signal.aborted) {
+            updateSchedulerState(null)
+            return
+          }
+
+          // Check if scheduler is still running before executing the command
+          // This prevents race conditions where stopScheduler() is called during the delay
+          const stateBeforeCommand = getSchedulerState()
+          if (!stateBeforeCommand?.isRunning) {
+            // Scheduler was stopped during the delay, clean up
+            updateSchedulerState(null)
+            return
+          }
+
+          // Execute the command and wait for it to complete
+          await sendScheduledCommand(config.command, config.delayMs)
+
+          // Check if scheduler is still running after command execution
+          const currentState = getSchedulerState()
+          if (currentState?.isRunning) {
+            // Recursively schedule next execution
+            // This intentionally creates a promise chain that continues until stopped
+            return scheduleNext()
+          } else {
+            // For one-time mode or if stopped, clean up
+            updateSchedulerState(null)
+          }
         }
 
-        // Check if scheduler is still running before executing the command
-        // This prevents race conditions where stopScheduler() is called during the delay
-        const stateBeforeCommand = getSchedulerState();
-        if (!stateBeforeCommand?.isRunning) {
-          // Scheduler was stopped during the delay, clean up
-          updateSchedulerState(null);
-          return;
-        }
+        // Start the chain and store the promise to allow proper cleanup
+        void scheduleNext()
+      } else {
+        // For one-time mode, use setTimeout
+        const timeoutId = setTimeout(async () => {
+          await sendScheduledCommand(config.command, config.delayMs)
+          updateSchedulerState(null)
+        }, config.delayMs)
 
-        // Execute the command and wait for it to complete
-        await sendScheduledCommand(config.command, config.delayMs);
+        // Update cache with new state
+        updateSchedulerState({
+          config,
+          isRunning: true,
+          timeoutId,
+        })
+      }
 
-        // Check if scheduler is still running after command execution
-        const currentState = getSchedulerState();
-        if (currentState?.isRunning) {
-          // Recursively schedule next execution
-          // This intentionally creates a promise chain that continues until stopped
-          return scheduleNext();
-        } else {
-          // For one-time mode or if stopped, clean up
-          updateSchedulerState(null);
-        }
-      };
-
-      // Start the chain and store the promise to allow proper cleanup
-      void scheduleNext();
-    } else {
-      // For one-time mode, use setTimeout
-      const timeoutId = setTimeout(async () => {
-        await sendScheduledCommand(config.command, config.delayMs);
-        updateSchedulerState(null);
-      }, config.delayMs);
-
-      // Update cache with new state
-      updateSchedulerState({
-        config,
-        isRunning: true,
-        timeoutId
-      });
-    }
-
-    setSchedulerDialogOpen(false);
-  }, [stopScheduler, sendScheduledCommand, getSchedulerState, updateSchedulerState]);
+      setSchedulerDialogOpen(false)
+    },
+    [stopScheduler, sendScheduledCommand, getSchedulerState, updateSchedulerState]
+  )
 
   const handleSchedulerStop = useCallback(async () => {
-    await stopScheduler();
-  }, [stopScheduler]);
+    await stopScheduler()
+  }, [stopScheduler])
 
   // Reset AbortController on mount and setup window unload cleanup
   // This ensures:
@@ -301,44 +315,44 @@ export function ClaudeTerminal({
   useEffect(() => {
     // Reset AbortController on each mount to handle project switches
     // Without this reset, the aborted state persists when remounting the same component
-    schedulerAbortControllerRef.current = new AbortController();
+    schedulerAbortControllerRef.current = new AbortController()
 
     // Setup cleanup for window close/Playwright teardown
     const handleUnload = () => {
-      schedulerAbortControllerRef.current.abort();
-    };
+      schedulerAbortControllerRef.current.abort()
+    }
 
-    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('beforeunload', handleUnload)
 
     return () => {
-      window.removeEventListener('beforeunload', handleUnload);
-    };
-  }, []);
+      window.removeEventListener('beforeunload', handleUnload)
+    }
+  }, [])
 
   // Load terminal settings and listen for changes
   useEffect(() => {
     // Load initial settings
-    window.electronAPI.terminalSettings.get().then(setTerminalSettings);
+    window.electronAPI.terminalSettings.get().then(setTerminalSettings)
 
     // Listen for settings changes
     const unsubscribe = window.electronAPI.terminalSettings.onChange((newSettings) => {
-      setTerminalSettings(newSettings);
-    });
+      setTerminalSettings(newSettings)
+    })
 
     return () => {
-      unsubscribe();
-    };
-  }, []);
+      unsubscribe()
+    }
+  }, [])
 
   // Create terminal with initial settings
   useEffect(() => {
-    if (!terminalRef.current) return;
+    if (!terminalRef.current) return
 
     // Patch window.open to handle xterm-addon-web-links default behavior
     // The default handler calls window.open() without URL, then sets location.href
     // This causes issues in Electron because setWindowOpenHandler doesn't get the URL
-    const originalWindowOpen = window.open;
-    const patchedWindowOpen = function(this: Window, ...args: unknown[]): Window | null {
+    const originalWindowOpen = window.open
+    const patchedWindowOpen = function (this: Window, ...args: unknown[]): Window | null {
       // If called without URL (xterm's pattern), return a fake window that captures href assignment
       if (args.length === 0 || args[0] === '' || args[0] === 'about:blank' || args[0] === undefined) {
         const fakeWindow = {
@@ -347,18 +361,20 @@ export function ClaudeTerminal({
             set href(url: string) {
               // Open the URL in external browser
               window.electronAPI.shell.openExternal(url).catch((error: Error) => {
-                console.error('Failed to open external link:', url, error);
-              });
+                console.error('Failed to open external link:', url, error)
+              })
             },
-            get href() { return ''; }
-          }
-        };
-        return fakeWindow as unknown as Window;
+            get href() {
+              return ''
+            },
+          },
+        }
+        return fakeWindow as unknown as Window
       }
       // Otherwise, use original behavior
-      return originalWindowOpen.apply(this, args as Parameters<typeof originalWindowOpen>);
-    };
-    window.open = patchedWindowOpen.bind(window);
+      return originalWindowOpen.apply(this, args as Parameters<typeof originalWindowOpen>)
+    }
+    window.open = patchedWindowOpen.bind(window)
 
     // If we don't have settings yet, load defaults
     const settings = terminalSettings || {
@@ -366,8 +382,8 @@ export function ClaudeTerminal({
       fontSize: 14,
       cursorBlink: true,
       scrollback: 10000,
-      tabStopWidth: 4
-    };
+      tabStopWidth: 4,
+    }
 
     // Create terminal instance with theme-aware colors
     const getTerminalTheme = (currentTheme: 'light' | 'dark') => {
@@ -393,8 +409,8 @@ export function ClaudeTerminal({
           brightBlue: '#3b8eea',
           brightMagenta: '#d670d6',
           brightCyan: '#29b8db',
-          brightWhite: '#e5e5e5'
-        };
+          brightWhite: '#e5e5e5',
+        }
       } else {
         return {
           background: '#000000',
@@ -417,10 +433,10 @@ export function ClaudeTerminal({
           brightBlue: '#3b8eea',
           brightMagenta: '#d670d6',
           brightCyan: '#29b8db',
-          brightWhite: '#e5e5e5'
-        };
+          brightWhite: '#e5e5e5',
+        }
       }
-    };
+    }
 
     const term = new Terminal({
       theme: getTerminalTheme(theme),
@@ -436,239 +452,237 @@ export function ClaudeTerminal({
       // Allow proposed API for Unicode11 addon
       allowProposedApi: true,
       // Enable Option key as Meta on macOS
-      macOptionIsMeta: true
-    });
+      macOptionIsMeta: true,
+    })
 
     // Add addons
-    const fitAddon = new FitAddon();
-    fitAddonRef.current = fitAddon;
-    
+    const fitAddon = new FitAddon()
+    fitAddonRef.current = fitAddon
+
     // Configure WebLinksAddon with custom handler for opening links
     // We must provide a custom handler because the default behavior calls window.open()
     // without the URL, which causes Electron to open about:blank
     const webLinksAddon = new WebLinksAddon((_event, uri) => {
       // Validate that the URI is a valid URL with a recognized protocol
       // This prevents trying to open terminal output that looks like URLs but aren't
-      const validProtocols = ['http:', 'https:', 'ftp:', 'ftps:', 'file:', 'mailto:', 'tel:'];
+      const validProtocols = ['http:', 'https:', 'ftp:', 'ftps:', 'file:', 'mailto:', 'tel:']
       try {
-        const parsedUrl = new URL(uri);
+        const parsedUrl = new URL(uri)
         if (!validProtocols.includes(parsedUrl.protocol)) {
-          console.warn('Ignoring link with unrecognized protocol:', uri);
-          return;
+          console.warn('Ignoring link with unrecognized protocol:', uri)
+          return
         }
       } catch (error) {
         // URI is not a valid URL, ignore it
-        console.warn('Ignoring invalid URL:', uri);
-        return;
+        console.warn('Ignoring invalid URL:', uri)
+        return
       }
 
       // Open in default system browser using Electron's shell.openExternal
       window.electronAPI.shell.openExternal(uri).catch((error) => {
-        console.error('Failed to open external link:', uri, error);
-      });
-    });
-    term.loadAddon(webLinksAddon);
-    
-    const serializeAddon = new SerializeAddon();
-    serializeAddonRef.current = serializeAddon;
-    term.loadAddon(serializeAddon);
-    
-    const unicode11Addon = new Unicode11Addon();
-    term.loadAddon(unicode11Addon);
+        console.error('Failed to open external link:', uri, error)
+      })
+    })
+    term.loadAddon(webLinksAddon)
 
-    const searchAddon = new SearchAddon();
-    searchAddonRef.current = searchAddon;
-    term.loadAddon(searchAddon);
+    const serializeAddon = new SerializeAddon()
+    serializeAddonRef.current = serializeAddon
+    term.loadAddon(serializeAddon)
+
+    const unicode11Addon = new Unicode11Addon()
+    term.loadAddon(unicode11Addon)
+
+    const searchAddon = new SearchAddon()
+    searchAddonRef.current = searchAddon
+    term.loadAddon(searchAddon)
 
     // Open terminal in container
-    term.open(terminalRef.current);
-    
+    term.open(terminalRef.current)
+
     // Load fit addon after terminal is opened
-    term.loadAddon(fitAddon);
-    
+    term.loadAddon(fitAddon)
+
     // Activate unicode addon
-    unicode11Addon.activate(term);
-    
+    unicode11Addon.activate(term)
+
     // Fit and focus after a small delay to ensure proper rendering
     setTimeout(() => {
       try {
         // Ensure the terminal container has dimensions before fitting
         if (terminalRef.current && terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
-          fitAddon.fit();
+          fitAddon.fit()
         }
-        term.focus();
+        term.focus()
       } catch (err) {
-        console.error('Error during initial fit:', err);
+        console.error('Error during initial fit:', err)
         // Try to focus without fit
-        term.focus();
+        term.focus()
       }
-    }, 100);
+    }, 100)
 
-    setTerminal(term);
+    setTerminal(term)
 
     // Handle bell character - play sound when bell is triggered
     const bellDisposable = term.onBell(() => {
-      console.log('Bell triggered in ClaudeTerminal!');
+      console.log('Bell triggered in ClaudeTerminal!')
       // Create an audio element and play the bell sound
-      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhCSuBzvLZijYIG2m98OGiUSATVqzn77FgGwc4k9n1znksBSh+zPLaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSN3yfDTgDAJInfN9NuLOgoUYrfp56ZSFApGn+DyvmwhCSuBzvLZijYIG2m98OGiUSATVqzn77FgGwc4k9n1znksBSh+zPLaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQ==');
-      audio.volume = 0.5; // Set volume to 50%
-      console.log('Playing bell sound at 50% volume...');
-      audio.play()
+      const audio = new Audio(
+        'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhCSuBzvLZijYIG2m98OGiUSATVqzn77FgGwc4k9n1znksBSh+zPLaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSN3yfDTgDAJInfN9NuLOgoUYrfp56ZSFApGn+DyvmwhCSuBzvLZijYIG2m98OGiUSATVqzn77FgGwc4k9n1znksBSh+zPLaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQU2ktXwy3YqBSh+zPDaizsIGWi58OKjTQ8NTqbi78BkHQ=='
+      )
+      audio.volume = 0.5 // Set volume to 50%
+      console.log('Playing bell sound at 50% volume...')
+      audio
+        .play()
         .then(() => {
-          console.log('Bell sound played successfully');
+          console.log('Bell sound played successfully')
         })
-        .catch(err => {
-          console.error('Bell sound playback failed:', err);
-        });
-    });
+        .catch((err) => {
+          console.error('Bell sound playback failed:', err)
+        })
+    })
 
     // Handle keyboard shortcuts for search
     const keyDisposable = term.onKey((e) => {
-      const { domEvent } = e;
+      const { domEvent } = e
       // Ctrl+F or Cmd+F to toggle search
       if ((domEvent.ctrlKey || domEvent.metaKey) && domEvent.key === 'f') {
-        domEvent.preventDefault();
-        setSearchVisible(!searchVisible);
+        domEvent.preventDefault()
+        setSearchVisible(!searchVisible)
       }
       // Escape to close search
       if (domEvent.key === 'Escape' && searchVisible) {
-        setSearchVisible(false);
-        setSearchQuery('');
-        term.focus();
+        setSearchVisible(false)
+        setSearchQuery('')
+        term.focus()
       }
-    });
+    })
 
     // Handle resize (both window resize and container resize)
     const handleResize = () => {
       // Only fit if the terminal container has dimensions
       if (terminalRef.current && terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
         try {
-          fitAddon.fit();
+          fitAddon.fit()
           // Resize the PTY to match terminal dimensions
           if (processIdRef.current) {
-            window.electronAPI.shell.resize(
-              processIdRef.current, 
-              term.cols, 
-              term.rows
-            );
+            window.electronAPI.shell.resize(processIdRef.current, term.cols, term.rows)
           }
         } catch (err) {
-          console.error('Error during resize fit:', err);
+          console.error('Error during resize fit:', err)
         }
       }
-    };
+    }
 
     // Listen to window resize
-    window.addEventListener('resize', handleResize);
-    
+    window.addEventListener('resize', handleResize)
+
     // Create ResizeObserver to watch for container size changes (e.g., when splitting terminals)
     const resizeObserver = new ResizeObserver(() => {
       // Debounce resize to avoid excessive calls
-      clearTimeout((window as unknown as { resizeDebounceTimer?: NodeJS.Timeout }).resizeDebounceTimer);
-      (window as unknown as { resizeDebounceTimer?: NodeJS.Timeout }).resizeDebounceTimer = setTimeout(() => {
-        handleResize();
-      }, 100);
-    });
-    
+      clearTimeout((window as unknown as { resizeDebounceTimer?: NodeJS.Timeout }).resizeDebounceTimer)
+      ;(window as unknown as { resizeDebounceTimer?: NodeJS.Timeout }).resizeDebounceTimer = setTimeout(() => {
+        handleResize()
+      }, 100)
+    })
+
     // Observe the terminal container
     if (terminalRef.current) {
-      resizeObserver.observe(terminalRef.current);
+      resizeObserver.observe(terminalRef.current)
     }
 
     return () => {
-      console.log(`[ClaudeTerminal] Cleanup for: ${worktreePath}`);
-      window.removeEventListener('resize', handleResize);
-      resizeObserver.disconnect();
+      console.log(`[ClaudeTerminal] Cleanup for: ${worktreePath}`)
+      window.removeEventListener('resize', handleResize)
+      resizeObserver.disconnect()
       // Restore original window.open
-      window.open = originalWindowOpen;
+      window.open = originalWindowOpen
       // Clean up listeners
-      removeListenersRef.current.forEach(remove => remove());
-      removeListenersRef.current = [];
-      bellDisposable.dispose();
-      keyDisposable.dispose();
-      term.dispose();
-    };
-  }, []); // Empty dependency array - terminal only initializes once
+      removeListenersRef.current.forEach((remove) => remove())
+      removeListenersRef.current = []
+      bellDisposable.dispose()
+      keyDisposable.dispose()
+      term.dispose()
+    }
+  }, []) // Empty dependency array - terminal only initializes once
 
   // Save terminal state before unmounting or changing worktree
   useEffect(() => {
     return () => {
       if (terminal && serializeAddonRef.current && processIdRef.current) {
         // Save the current terminal state
-        const serializedState = serializeAddonRef.current.serialize();
-        terminalStateCache.set(processIdRef.current, serializedState);
+        const serializedState = serializeAddonRef.current.serialize()
+        terminalStateCache.set(processIdRef.current, serializedState)
       }
-    };
-  }, [terminal, worktreePath]);
-
+    }
+  }, [terminal, worktreePath])
 
   // Track process ID in state for proper effect dependencies
-  const [currentProcessId, setCurrentProcessId] = useState<string>('');
-  
+  const [currentProcessId, setCurrentProcessId] = useState<string>('')
+
   // Notify parent about process ID changes
   useEffect(() => {
     if (currentProcessId && onProcessIdChange) {
-      onProcessIdChange(currentProcessId);
+      onProcessIdChange(currentProcessId)
     }
-  }, [currentProcessId, onProcessIdChange]);
+  }, [currentProcessId, onProcessIdChange])
 
   // Terminal cleanup is now handled by TerminalManager when closing
   // This component no longer handles PTY termination directly
 
   // Auto-start shell when worktree changes
   useEffect(() => {
-    if (!terminal || !worktreePath) return;
+    if (!terminal || !worktreePath) return
 
     // Clean up old listeners first
-    removeListenersRef.current.forEach(remove => remove());
-    removeListenersRef.current = [];
+    removeListenersRef.current.forEach((remove) => remove())
+    removeListenersRef.current = []
 
     const startShell = async () => {
       try {
         // Get current terminal dimensions
-        const cols = terminal.cols;
-        const rows = terminal.rows;
-        
-        const result = await window.electronAPI.shell.start(worktreePath, cols, rows, false, terminalId);
-        
+        const cols = terminal.cols
+        const rows = terminal.rows
+
+        const result = await window.electronAPI.shell.start(worktreePath, cols, rows, false, terminalId)
+
         if (!result.success) {
-          terminal.writeln(`\r\nError: ${result.error || 'Failed to start shell'}\r\n`);
-          return;
+          terminal.writeln(`\r\nError: ${result.error || 'Failed to start shell'}\r\n`)
+          return
         }
 
-        processIdRef.current = result.processId!;
-        setCurrentProcessId(result.processId!);
-        console.log(`Shell started: ${result.processId}, isNew: ${result.isNew}, worktree: ${worktreePath}`);
+        processIdRef.current = result.processId!
+        setCurrentProcessId(result.processId!)
+        console.log(`Shell started: ${result.processId}, isNew: ${result.isNew}, worktree: ${worktreePath}`)
 
         // Scheduler state is already in cache and will be read when needed
         // No need to restore to component state - we read directly from cache
-        const cachedScheduler = schedulerStateCache.get(result.processId!);
+        const cachedScheduler = schedulerStateCache.get(result.processId!)
         if (cachedScheduler && cachedScheduler.isRunning) {
-          console.log(`Scheduler already running for process ${result.processId}`);
+          console.log(`Scheduler already running for process ${result.processId}`)
           // Trigger a re-render to show scheduler UI
-          setSchedulerUpdateTrigger(prev => prev + 1);
+          setSchedulerUpdateTrigger((prev) => prev + 1)
         }
 
         // Handle terminal state
         if (result.isNew) {
           // Clear terminal for new shells
-          terminal.clear();
+          terminal.clear()
         } else {
           // Restore cached state for existing shells
-          const cachedState = terminalStateCache.get(result.processId!);
-          terminal.clear();
-          
+          const cachedState = terminalStateCache.get(result.processId!)
+          terminal.clear()
+
           // Use setTimeout to ensure terminal is ready
           setTimeout(() => {
             if (cachedState) {
-              terminal.write(cachedState);
+              terminal.write(cachedState)
             }
-          }, 50);
+          }, 50)
         }
-        
+
         // Focus terminal
-        terminal.focus();
-        
+        terminal.focus()
+
         // Set initial PTY size
         if (fitAddonRef.current && terminalRef.current) {
           // Give the terminal time to render before fitting
@@ -676,106 +690,93 @@ export function ClaudeTerminal({
             try {
               // Ensure the terminal container has dimensions
               if (terminalRef.current && terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
-                fitAddonRef.current!.fit();
-                window.electronAPI.shell.resize(
-                  result.processId!,
-                  terminal.cols,
-                  terminal.rows
-                );
+                fitAddonRef.current!.fit()
+                window.electronAPI.shell.resize(result.processId!, terminal.cols, terminal.rows)
               } else {
                 // Use default dimensions if container not ready
-                window.electronAPI.shell.resize(
-                  result.processId!,
-                  80,
-                  24
-                );
+                window.electronAPI.shell.resize(result.processId!, 80, 24)
               }
             } catch (err) {
-              console.error('Error during PTY resize fit:', err);
+              console.error('Error during PTY resize fit:', err)
               // Still try to resize with default cols/rows
-              window.electronAPI.shell.resize(
-                result.processId!,
-                80,
-                24
-              );
+              window.electronAPI.shell.resize(result.processId!, 80, 24)
             }
-          }, 100);
+          }, 100)
         }
 
         // Handle terminal input - simply pass it to the PTY
         const disposable = terminal.onData((data) => {
           if (processIdRef.current) {
-            window.electronAPI.shell.write(processIdRef.current, data);
+            window.electronAPI.shell.write(processIdRef.current, data)
           }
-        });
+        })
 
         // Set up output listener - simply pass data to terminal
         const removeOutputListener = window.electronAPI.shell.onOutput(result.processId!, (data) => {
-          terminal.write(data);
-        });
+          terminal.write(data)
+        })
 
         // Set up exit listener
         const removeExitListener = window.electronAPI.shell.onExit(result.processId!, (code) => {
-          terminal.writeln(`\r\n[Shell exited with code ${code}]`);
-          const exitedProcessId = processIdRef.current;
-          processIdRef.current = '';
+          terminal.writeln(`\r\n[Shell exited with code ${code}]`)
+          const exitedProcessId = processIdRef.current
+          processIdRef.current = ''
 
           // Clean up scheduler state when PTY exits
           if (exitedProcessId) {
-            const cachedScheduler = schedulerStateCache.get(exitedProcessId);
+            const cachedScheduler = schedulerStateCache.get(exitedProcessId)
             if (cachedScheduler?.timeoutId) {
-              clearTimeout(cachedScheduler.timeoutId);
+              clearTimeout(cachedScheduler.timeoutId)
             }
-            schedulerStateCache.delete(exitedProcessId);
+            schedulerStateCache.delete(exitedProcessId)
             // Broadcast the change (scheduler is no longer running)
-            broadcastSchedulerStateChange(worktreePath, exitedProcessId, false);
+            broadcastSchedulerStateChange(worktreePath, exitedProcessId, false)
           }
-        });
+        })
 
         // Periodically save terminal state
         const saveInterval = setInterval(() => {
           if (serializeAddonRef.current && processIdRef.current) {
-            const serializedState = serializeAddonRef.current.serialize();
-            terminalStateCache.set(processIdRef.current, serializedState);
+            const serializedState = serializeAddonRef.current.serialize()
+            terminalStateCache.set(processIdRef.current, serializedState)
           }
-        }, 5000); // Save every 5 seconds
+        }, 5000) // Save every 5 seconds
 
         // Store listeners for cleanup
         removeListenersRef.current = [
           () => disposable.dispose(),
           removeOutputListener,
           removeExitListener,
-          () => clearInterval(saveInterval)
-        ];
-
+          () => clearInterval(saveInterval),
+        ]
       } catch (error) {
-        terminal.writeln(`\r\nError starting shell: ${error}\r\n`);
+        terminal.writeln(`\r\nError starting shell: ${error}\r\n`)
       }
-    };
+    }
 
-    startShell();
+    startShell()
 
     return () => {
       // Save state before cleaning up
       if (serializeAddonRef.current && processIdRef.current) {
-        const serializedState = serializeAddonRef.current.serialize();
-        terminalStateCache.set(processIdRef.current, serializedState);
+        const serializedState = serializeAddonRef.current.serialize()
+        terminalStateCache.set(processIdRef.current, serializedState)
       }
-      
+
       // Clean up listeners when worktree changes
-      removeListenersRef.current.forEach(remove => remove());
-      removeListenersRef.current = [];
-    };
-  }, [terminal, worktreePath]);
+      removeListenersRef.current.forEach((remove) => remove())
+      removeListenersRef.current = []
+    }
+  }, [terminal, worktreePath])
 
   // Detect available IDEs
   useEffect(() => {
-    window.electronAPI.ide.detect().then(setDetectedIDEs);
-  }, []);
+    window.electronAPI.ide.detect().then(setDetectedIDEs)
+  }, [])
 
   // Update terminal options when settings or theme changes
   useEffect(() => {
-    if (!terminal) return;
+    if (!terminal) return
 
     const getTerminalTheme = (currentTheme: 'light' | 'dark') => {
       if (currentTheme === 'light') {
@@ -784,177 +785,168 @@ export function ClaudeTerminal({
           foreground: '#000000',
           cursor: '#000000',
           cursorAccent: '#ffffff',
-          selectionBackground: '#b5b5b5'
-        };
+          selectionBackground: '#b5b5b5',
+        }
       } else {
         return {
           background: '#000000',
           foreground: '#ffffff',
           cursor: '#ffffff',
           cursorAccent: '#000000',
-          selectionBackground: '#4a4a4a'
-        };
+          selectionBackground: '#4a4a4a',
+        }
       }
-    };
+    }
 
     // Update theme
-    terminal.options.theme = getTerminalTheme(theme);
+    terminal.options.theme = getTerminalTheme(theme)
 
     // Update font settings if available
     if (terminalSettings) {
-      terminal.options.fontFamily = terminalSettings.fontFamily;
-      terminal.options.fontSize = terminalSettings.fontSize;
-      terminal.options.cursorBlink = terminalSettings.cursorBlink;
-      terminal.options.scrollback = terminalSettings.scrollback;
-      terminal.options.tabStopWidth = terminalSettings.tabStopWidth;
+      terminal.options.fontFamily = terminalSettings.fontFamily
+      terminal.options.fontSize = terminalSettings.fontSize
+      terminal.options.cursorBlink = terminalSettings.cursorBlink
+      terminal.options.scrollback = terminalSettings.scrollback
+      terminal.options.tabStopWidth = terminalSettings.tabStopWidth
     }
-  }, [terminal, theme, terminalSettings]);
+  }, [terminal, theme, terminalSettings])
 
   // Handle visibility changes - focus terminal when it becomes visible
   useEffect(() => {
-    if (!terminal || !isVisible) return;
+    if (!terminal || !isVisible) return
 
-    console.log(`[ClaudeTerminal] Terminal visibility changed for ${worktreePath}: ${isVisible}`);
-    
+    console.log(`[ClaudeTerminal] Terminal visibility changed for ${worktreePath}: ${isVisible}`)
+
     // Immediate resize attempt
     if (fitAddonRef.current && terminalRef.current) {
       try {
         if (terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
-          fitAddonRef.current.fit();
+          fitAddonRef.current.fit()
           // Also resize the PTY to match the new terminal dimensions
           if (processIdRef.current) {
-            window.electronAPI.shell.resize(
-              processIdRef.current,
-              terminal.cols,
-              terminal.rows
-            );
+            window.electronAPI.shell.resize(processIdRef.current, terminal.cols, terminal.rows)
           }
         }
       } catch (err) {
-        console.error('Error fitting terminal on visibility change (immediate):', err);
+        console.error('Error fitting terminal on visibility change (immediate):', err)
       }
     }
-    
+
     // Also do it after a small delay to ensure DOM is fully ready
     const focusTimeout = setTimeout(() => {
-      terminal.focus();
-      
+      terminal.focus()
+
       // Retry resize to ensure proper rendering
       if (fitAddonRef.current && terminalRef.current) {
         try {
           if (terminalRef.current.offsetWidth > 0 && terminalRef.current.offsetHeight > 0) {
-            fitAddonRef.current.fit();
+            fitAddonRef.current.fit()
             // Also resize the PTY to match the new terminal dimensions
             if (processIdRef.current) {
-              window.electronAPI.shell.resize(
-                processIdRef.current,
-                terminal.cols,
-                terminal.rows
-              );
+              window.electronAPI.shell.resize(processIdRef.current, terminal.cols, terminal.rows)
             }
           }
         } catch (err) {
-          console.error('Error fitting terminal on visibility change (delayed):', err);
+          console.error('Error fitting terminal on visibility change (delayed):', err)
         }
       }
-    }, 100);
+    }, 100)
 
-    return () => clearTimeout(focusTimeout);
-  }, [terminal, isVisible]);
+    return () => clearTimeout(focusTimeout)
+  }, [terminal, isVisible])
 
   const handleOpenInIDE = async (ideName: string) => {
     try {
-      const result = await window.electronAPI.ide.open(ideName, worktreePath);
+      const result = await window.electronAPI.ide.open(ideName, worktreePath)
       if (!result.success) {
         toast({
-          title: "Error",
-          description: result.error || "Failed to open IDE",
-          variant: "destructive",
-        });
+          title: 'Error',
+          description: result.error || 'Failed to open IDE',
+          variant: 'destructive',
+        })
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to open IDE",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: 'Failed to open IDE',
+        variant: 'destructive',
+      })
     }
-  };
+  }
 
   /**
    * Handle drag enter event
    */
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
+    e.preventDefault()
+    e.stopPropagation()
+  }, [])
 
   /**
    * Handle drag over event
    */
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = 'copy';
-    setIsDragOver(true);
-  }, []);
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'copy'
+    setIsDragOver(true)
+  }, [])
 
   /**
    * Handle drag leave event
    */
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
     // Check if we're actually leaving the terminal container
-    const rect = terminalRef.current?.getBoundingClientRect();
-    if (rect && (e.clientX < rect.left || e.clientX > rect.right ||
-                 e.clientY < rect.top || e.clientY > rect.bottom)) {
-      setIsDragOver(false);
+    const rect = terminalRef.current?.getBoundingClientRect()
+    if (rect && (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom)) {
+      setIsDragOver(false)
     }
-  }, []);
+  }, [])
 
   /**
    * Handle drop event
    */
   const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
 
     if (!processIdRef.current) {
-      return;
+      return
     }
 
     // Get the dropped files
-    const files = e.dataTransfer.files;
+    const files = e.dataTransfer.files
     if (files.length === 0) {
-      return;
+      return
     }
 
     // Build the escaped paths
-    const paths: string[] = [];
+    const paths: string[] = []
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+      const file = files[i]
 
       // In Electron 32+, we need to use webUtils.getPathForFile() to get the path
       try {
-        const path = window.electronAPI.utils.getPathForFile(file);
+        const path = window.electronAPI.utils.getPathForFile(file)
         if (path) {
-          const escapedPath = escapeShellPath(path);
-          paths.push(escapedPath);
+          const escapedPath = escapeShellPath(path)
+          paths.push(escapedPath)
         }
       } catch (error) {
-        console.error(`Error getting path for file:`, error);
+        console.error(`Error getting path for file:`, error)
       }
     }
 
     if (paths.length > 0) {
       // Insert the paths at current cursor position
-      const pathString = paths.join(' ');
-      window.electronAPI.shell.write(processIdRef.current, pathString);
+      const pathString = paths.join(' ')
+      window.electronAPI.shell.write(processIdRef.current, pathString)
     }
-  }, []);
+  }, [])
 
   return (
     <div className="claude-terminal-root flex-1 flex flex-col h-full overflow-hidden">
@@ -983,22 +975,12 @@ export function ClaudeTerminal({
             <Search className="h-4 w-4" />
           </Button>
           {onSplitVertical && (
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={onSplitVertical}
-              title="Split Terminal Vertically"
-            >
+            <Button size="icon" variant="ghost" onClick={onSplitVertical} title="Split Terminal Vertically">
               <Columns2 className="h-4 w-4" />
             </Button>
           )}
           {onSplitHorizontal && (
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={onSplitHorizontal}
-              title="Split Terminal Horizontally"
-            >
+            <Button size="icon" variant="ghost" onClick={onSplitHorizontal} title="Split Terminal Horizontally">
               <Rows2 className="h-4 w-4" />
             </Button>
           )}
@@ -1007,15 +989,15 @@ export function ClaudeTerminal({
               size="icon"
               variant="ghost"
               onClick={canClose ? onClose : undefined}
-              title={canClose ? "Close Terminal" : "Cannot close last terminal"}
+              title={canClose ? 'Close Terminal' : 'Cannot close last terminal'}
               disabled={!canClose}
-              className={!canClose ? "opacity-50 cursor-not-allowed" : ""}
+              className={!canClose ? 'opacity-50 cursor-not-allowed' : ''}
             >
               <X className="h-4 w-4" />
             </Button>
           )}
-          {detectedIDEs.length > 0 && (
-            detectedIDEs.length === 1 ? (
+          {detectedIDEs.length > 0 &&
+            (detectedIDEs.length === 1 ? (
               <Button
                 size="icon"
                 variant="ghost"
@@ -1033,17 +1015,13 @@ export function ClaudeTerminal({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   {detectedIDEs.map((ide) => (
-                    <DropdownMenuItem
-                      key={ide.name}
-                      onClick={() => handleOpenInIDE(ide.name)}
-                    >
+                    <DropdownMenuItem key={ide.name} onClick={() => handleOpenInIDE(ide.name)}>
                       Open in {ide.name}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-            )
-          )}
+            ))}
         </div>
       </div>
 
@@ -1059,12 +1037,12 @@ export function ClaudeTerminal({
             autoFocus
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSearch(searchQuery, e.shiftKey ? 'previous' : 'next');
+                e.preventDefault()
+                handleSearch(searchQuery, e.shiftKey ? 'previous' : 'next')
               } else if (e.key === 'Escape') {
-                setSearchVisible(false);
-                setSearchQuery('');
-                terminal?.focus();
+                setSearchVisible(false)
+                setSearchQuery('')
+                terminal?.focus()
               }
             }}
           />
@@ -1090,9 +1068,9 @@ export function ClaudeTerminal({
             size="sm"
             variant="outline"
             onClick={() => {
-              setSearchVisible(false);
-              setSearchQuery('');
-              terminal?.focus();
+              setSearchVisible(false)
+              setSearchQuery('')
+              terminal?.focus()
             }}
             title="Close search (Escape)"
           >
@@ -1112,11 +1090,13 @@ export function ClaudeTerminal({
         style={{
           minHeight: '100px',
           position: 'relative',
-          ...(isDragOver ? {
-            outline: '2px dashed #007acc',
-            outlineOffset: '-2px',
-            backgroundColor: 'rgba(0, 122, 204, 0.05)'
-          } : {})
+          ...(isDragOver
+            ? {
+                outline: '2px dashed #007acc',
+                outlineOffset: '-2px',
+                backgroundColor: 'rgba(0, 122, 204, 0.05)',
+              }
+            : {}),
         }}
       />
 
@@ -1130,5 +1110,5 @@ export function ClaudeTerminal({
         currentConfig={getSchedulerState()?.config || null}
       />
     </div>
-  );
+  )
 }

@@ -1,14 +1,14 @@
 // Export terminal component
-export { Terminal } from './components/Terminal';
-export type { TerminalProps, TerminalConfig } from './components/Terminal';
+export { Terminal } from './components/Terminal'
+export type { TerminalProps, TerminalConfig } from './components/Terminal'
 
 // Export tabs component
-export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/Tabs';
-export type { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } from './components/Tabs';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/Tabs'
+export type { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } from './components/Tabs'
 
 // Export confirm dialog component
-export { ConfirmDialog } from './components/ConfirmDialog';
-export type { ConfirmDialogProps } from './components/ConfirmDialog';
+export { ConfirmDialog } from './components/ConfirmDialog'
+export type { ConfirmDialogProps } from './components/ConfirmDialog'
 
 // Future exports for other shared components
 // export { WorktreeList } from './components/WorktreeList';

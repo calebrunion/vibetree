@@ -7,9 +7,7 @@ export default function ReconnectingModal() {
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         <div className="text-center">
           <h3 className="text-lg font-semibold">Reconnecting</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Connection lost. Attempting to reconnect...
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">Connection lost. Attempting to reconnect...</p>
         </div>
       </div>
     </div>

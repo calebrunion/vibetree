@@ -1,20 +1,20 @@
-import { app, dialog, BrowserWindow } from 'electron';
+import { app, dialog, BrowserWindow } from 'electron'
 
 export interface QuitManagerOptions {
-  enableDialog?: boolean;
-  onQuitConfirmed?: () => void | Promise<void>;
-  onQuitCancelled?: () => void;
+  enableDialog?: boolean
+  onQuitConfirmed?: () => void | Promise<void>
+  onQuitCancelled?: () => void
 }
 
 export class QuitManager {
-  private isQuitting = false;
-  public options: QuitManagerOptions;
+  private isQuitting = false
+  public options: QuitManagerOptions
 
   constructor(options: QuitManagerOptions = {}) {
     this.options = {
       enableDialog: true,
-      ...options
-    };
+      ...options,
+    }
   }
 
   /**
@@ -25,30 +25,30 @@ export class QuitManager {
     if (mainWindow) {
       mainWindow.on('close', (event) => {
         if (!this.isQuitting && this.options.enableDialog) {
-          event.preventDefault();
-          this.showQuitConfirmation(mainWindow);
+          event.preventDefault()
+          this.showQuitConfirmation(mainWindow)
         }
-      });
+      })
     }
 
     // Handle before-quit event
     app.on('before-quit', (event) => {
       if (!this.isQuitting && this.options.enableDialog) {
-        event.preventDefault();
-        this.showQuitConfirmation(mainWindow);
+        event.preventDefault()
+        this.showQuitConfirmation(mainWindow)
       }
-    });
+    })
 
     // Handle window-all-closed event
     app.on('window-all-closed', () => {
       if (process.platform !== 'darwin') {
         if (!this.isQuitting && this.options.enableDialog) {
-          this.showQuitConfirmation(mainWindow);
+          this.showQuitConfirmation(mainWindow)
         } else if (!this.options.enableDialog) {
-          app.quit();
+          app.quit()
         }
       }
-    });
+    })
   }
 
   /**
@@ -57,8 +57,8 @@ export class QuitManager {
   showQuitConfirmation(mainWindow: BrowserWindow | null): boolean {
     // If dialog is disabled, quit immediately
     if (!this.options.enableDialog) {
-      this.confirmQuit();
-      return true;
+      this.confirmQuit()
+      return true
     }
 
     const dialogOptions = {
@@ -69,18 +69,18 @@ export class QuitManager {
       title: 'Quit VibeTree?',
       message: 'Quit VibeTree?',
       detail: 'All sessions will be closed.',
-    };
+    }
 
     const choice = mainWindow
       ? dialog.showMessageBoxSync(mainWindow, dialogOptions)
-      : dialog.showMessageBoxSync(dialogOptions);
+      : dialog.showMessageBoxSync(dialogOptions)
 
     if (choice === 1) {
-      this.confirmQuit();
-      return true;
+      this.confirmQuit()
+      return true
     } else {
-      this.cancelQuit();
-      return false;
+      this.cancelQuit()
+      return false
     }
   }
 
@@ -88,20 +88,20 @@ export class QuitManager {
    * Confirm quit and exit the application
    */
   async confirmQuit() {
-    this.isQuitting = true;
+    this.isQuitting = true
     if (this.options.onQuitConfirmed) {
-      await this.options.onQuitConfirmed();
+      await this.options.onQuitConfirmed()
     }
-    app.quit();
+    app.quit()
   }
 
   /**
    * Cancel quit operation
    */
   cancelQuit() {
-    this.isQuitting = false;
+    this.isQuitting = false
     if (this.options.onQuitCancelled) {
-      this.options.onQuitCancelled();
+      this.options.onQuitCancelled()
     }
   }
 
@@ -109,26 +109,26 @@ export class QuitManager {
    * Force quit without confirmation
    */
   forceQuit() {
-    this.isQuitting = true;
-    app.exit(0);
+    this.isQuitting = true
+    app.exit(0)
   }
 
   /**
    * Get whether the app is in the process of quitting
    */
   getIsQuitting(): boolean {
-    return this.isQuitting;
+    return this.isQuitting
   }
 
   /**
    * Set whether dialog is enabled (useful for testing)
    */
   setDialogEnabled(enabled: boolean) {
-    this.options.enableDialog = enabled;
+    this.options.enableDialog = enabled
   }
 }
 
 // Export a default instance that can be used throughout the app
 export const quitManager = new QuitManager({
-  enableDialog: process.env.DISABLE_QUIT_DIALOG !== 'true'
-});
+  enableDialog: process.env.DISABLE_QUIT_DIALOG !== 'true',
+})

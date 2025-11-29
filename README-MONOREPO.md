@@ -16,10 +16,12 @@ vibetree/
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js >= 18.0.0
 - pnpm >= 8.0.0
 
 ### Installation
+
 ```bash
 # Install dependencies for all packages
 pnpm install
@@ -28,11 +30,13 @@ pnpm install
 ### Development
 
 #### Run all services (desktop, server, web)
+
 ```bash
 pnpm dev
 ```
 
 #### Run specific services
+
 ```bash
 # Desktop app only
 pnpm dev:desktop
@@ -57,20 +61,26 @@ pnpm package:desktop
 ## Package Details
 
 ### @vibetree/core
+
 Shared TypeScript types and interfaces used across all packages:
+
 - Communication adapter interfaces (IPC/WebSocket abstraction)
 - Common types (Worktree, GitStatus, ShellSession, etc.)
 - Business logic that can be shared
 
 ### @vibetree/desktop
+
 The original Electron desktop application with:
+
 - Native terminal integration via node-pty
 - Direct git operations
 - IPC communication
 - IDE integration (VS Code, Cursor)
 
 ### @vibetree/server
+
 Backend service that enables web/mobile access:
+
 - Express + WebSocket server
 - Terminal session management
 - Git operations API
@@ -78,7 +88,9 @@ Backend service that enables web/mobile access:
 - JWT-based authentication
 
 ### @vibetree/web
+
 Mobile-friendly Progressive Web App:
+
 - Touch-optimized terminal interface
 - WebSocket communication with server
 - Responsive design for mobile devices
@@ -87,11 +99,13 @@ Mobile-friendly Progressive Web App:
 ## Communication Architecture
 
 ### Desktop App
+
 ```
 Desktop UI <-> IPC <-> Electron Main Process <-> Native APIs (git, pty, fs)
 ```
 
 ### Web/Mobile App
+
 ```
 Web UI <-> WebSocket <-> Server <-> Native APIs (git, pty, fs)
 ```

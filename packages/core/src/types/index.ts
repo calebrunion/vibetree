@@ -1,85 +1,85 @@
 export interface Worktree {
-  path: string;
-  branch?: string;  // Optional - can be undefined for detached HEAD
-  head: string;
+  path: string
+  branch?: string // Optional - can be undefined for detached HEAD
+  head: string
 }
 
 export interface GitStatus {
-  path: string;
-  status: string;
-  staged: boolean;
-  modified: boolean;
+  path: string
+  status: string
+  staged: boolean
+  modified: boolean
 }
 
 export interface GitCommit {
-  hash: string;
-  shortHash: string;
-  subject: string;
-  author: string;
-  date: string;
-  relativeDate: string;
-  parents?: string[];
-  refs?: string[];
+  hash: string
+  shortHash: string
+  subject: string
+  author: string
+  date: string
+  relativeDate: string
+  parents?: string[]
+  refs?: string[]
 }
 
 export interface CommitFile {
-  path: string;
-  status: 'A' | 'M' | 'D' | 'R' | 'C' | 'T' | 'U' | 'X';
+  path: string
+  status: 'A' | 'M' | 'D' | 'R' | 'C' | 'T' | 'U' | 'X'
 }
 
 export interface ShellSession {
-  processId: string;
-  worktreePath: string;
-  isNew: boolean;
+  processId: string
+  worktreePath: string
+  isNew: boolean
 }
 
 export interface Project {
-  id: string;
-  name: string;
-  path: string;
-  worktrees: Worktree[];
-  selectedWorktree: string | null;
+  id: string
+  name: string
+  path: string
+  worktrees: Worktree[]
+  selectedWorktree: string | null
 }
 
 export interface IDE {
-  name: string;
-  command: string;
+  name: string
+  command: string
 }
 
 export interface ShellStartResult {
-  success: boolean;
-  processId?: string;
-  isNew?: boolean;
-  error?: string;
+  success: boolean
+  processId?: string
+  isNew?: boolean
+  error?: string
 }
 
 export interface ShellWriteResult {
-  success: boolean;
-  error?: string;
+  success: boolean
+  error?: string
 }
 
 export interface ShellResizeResult {
-  success: boolean;
-  error?: string;
+  success: boolean
+  error?: string
 }
 
 export interface WorktreeAddResult {
-  path: string;
-  branch: string;
+  path: string
+  branch: string
 }
 
 export interface WorktreeRemoveResult {
-  success: boolean;
-  warning?: string;
+  success: boolean
+  warning?: string
 }
 
 export interface ProjectValidationResult {
-  path: string;
-  name?: string;
-  valid: boolean;
-  error?: string;
+  path: string
+  name?: string
+  valid: boolean
+  error?: string
 }
 
 export interface ProjectSettings {
-  startupCommands?: string[];
+  startupCommands?: string[]
 }

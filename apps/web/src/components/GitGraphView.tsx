@@ -1,78 +1,82 @@
-import { useCallback, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { RefreshCw, Users, User } from 'lucide-react';
-import GitGraph from './GitGraph';
-import { useWebSocket } from '../hooks/useWebSocket';
-import type { GitCommit } from '@vibetree/core';
+import { useCallback, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
+import { RefreshCw, Users, User } from 'lucide-react'
+import GitGraph from './GitGraph'
+import { useWebSocket } from '../hooks/useWebSocket'
+import type { GitCommit } from '@vibetree/core'
 
 interface GitGraphViewProps {
-  worktreePath: string;
-  theme?: 'light' | 'dark';
+  worktreePath: string
+  theme?: 'light' | 'dark'
 }
 
 export interface GitGraphViewRef {
-  refresh: () => void;
+  refresh: () => void
 }
 
 export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(function GitGraphView(
   { worktreePath, theme = 'dark' },
   ref
 ) {
-  const [commits, setCommits] = useState<GitCommit[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showAllAuthors, setShowAllAuthors] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
-  const { getAdapter } = useWebSocket();
+  const [commits, setCommits] = useState<GitCommit[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showAllAuthors, setShowAllAuthors] = useState(false)
+  const [userName, setUserName] = useState<string | null>(null)
+  const { getAdapter } = useWebSocket()
 
   useEffect(() => {
     const fetchUserName = async () => {
-      const adapter = getAdapter();
-      if (!adapter || !('getGitUserName' in adapter)) return;
+      const adapter = getAdapter()
+      if (!adapter || !('getGitUserName' in adapter)) return
       try {
-        const name = await (adapter as any).getGitUserName(worktreePath);
-        setUserName(name);
+        const name = await (adapter as any).getGitUserName(worktreePath)
+        setUserName(name)
       } catch (err) {
-        console.error('Failed to get git user name:', err);
+        console.error('Failed to get git user name:', err)
       }
-    };
-    fetchUserName();
-  }, [worktreePath, getAdapter]);
+    }
+    fetchUserName()
+  }, [worktreePath, getAdapter])
 
   const loadGitLog = useCallback(async () => {
-    const adapter = getAdapter();
-    if (!adapter || !('getGitLogGraph' in adapter)) return;
+    const adapter = getAdapter()
+    if (!adapter || !('getGitLogGraph' in adapter)) return
 
     try {
-      setLoading(true);
-      setError(null);
-      const authorFilter = showAllAuthors ? undefined : userName;
-      const gitCommits = await (adapter as any).getGitLogGraph(worktreePath, 100, authorFilter);
-      setCommits(gitCommits);
+      setLoading(true)
+      setError(null)
+      const authorFilter = showAllAuthors ? undefined : userName
+      const gitCommits = await (adapter as any).getGitLogGraph(worktreePath, 100, authorFilter)
+      setCommits(gitCommits)
     } catch (err) {
-      console.error('Failed to load git log:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load git log');
-      setCommits([]);
+      console.error('Failed to load git log:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load git log')
+      setCommits([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [worktreePath, getAdapter, showAllAuthors, userName]);
+  }, [worktreePath, getAdapter, showAllAuthors, userName])
 
   useEffect(() => {
     if (worktreePath) {
-      loadGitLog();
+      loadGitLog()
     }
-  }, [worktreePath, loadGitLog]);
+  }, [worktreePath, loadGitLog])
 
-  useImperativeHandle(ref, () => ({
-    refresh: loadGitLog
-  }), [loadGitLog]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      refresh: loadGitLog,
+    }),
+    [loadGitLog]
+  )
 
   if (loading && commits.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
         <RefreshCw className="h-5 w-5 animate-spin" />
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -86,7 +90,7 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
           Retry
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -95,11 +99,9 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
         <button
           onClick={() => setShowAllAuthors(!showAllAuthors)}
           className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
-            showAllAuthors
-              ? "bg-muted text-muted-foreground"
-              : "bg-primary text-primary-foreground"
+            showAllAuthors ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground'
           }`}
-          title={showAllAuthors ? "Showing all authors" : `Showing commits by ${userName || 'you'}`}
+          title={showAllAuthors ? 'Showing all authors' : `Showing commits by ${userName || 'you'}`}
         >
           {showAllAuthors ? (
             <>
@@ -113,19 +115,17 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
             </>
           )}
         </button>
-        {userName && !showAllAuthors && (
-          <span className="text-xs text-muted-foreground">{userName}</span>
-        )}
+        {userName && !showAllAuthors && <span className="text-xs text-muted-foreground">{userName}</span>}
       </div>
       <div className="flex-1 overflow-hidden">
         <GitGraph
           commits={commits}
           theme={theme}
           onCommitClick={(commit) => {
-            console.log('Clicked commit:', commit);
+            console.log('Clicked commit:', commit)
           }}
         />
       </div>
     </div>
-  );
-});
+  )
+})

@@ -30,7 +30,9 @@
     "docker:dev": "docker run -p 3000:3000 -p 3002:3002 --rm --name vibetree-dev vibetree-webapp",
     "docker:compose": "docker-compose up",
     "docker:compose:build": "docker-compose up --build",
-    "docker:compose:down": "docker-compose down"
+    "docker:compose:down": "docker-compose down",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "keywords": [
     "electron",
