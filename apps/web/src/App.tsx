@@ -188,9 +188,23 @@ function App() {
 
       if (e.metaKey && !e.altKey && !e.shiftKey && !e.ctrlKey) {
         const num = parseInt(e.key, 10)
-        if (num >= 1 && num <= 5 && projects[num - 1]) {
-          e.preventDefault()
-          setActiveProject(projects[num - 1].id)
+        const activeProject = projects.find((p) => p.id === activeProjectId)
+        if (num >= 1 && num <= 9 && activeProject) {
+          const sortedWorktrees = [...activeProject.worktrees].sort((a, b) => {
+            const getBranchName = (wt: typeof a) => {
+              if (!wt.branch) return wt.head.substring(0, 8)
+              return wt.branch.replace('refs/heads/', '')
+            }
+            const branchA = getBranchName(a)
+            const branchB = getBranchName(b)
+            if (branchA === 'main' || branchA === 'master') return -1
+            if (branchB === 'main' || branchB === 'master') return 1
+            return branchA.localeCompare(branchB)
+          })
+          if (sortedWorktrees[num - 1]) {
+            e.preventDefault()
+            setSelectedWorktree(activeProject.id, sortedWorktrees[num - 1].path)
+          }
         }
 
         if (e.key === 'n' && activeProjectId) {
@@ -202,12 +216,17 @@ function App() {
           e.preventDefault()
           setShowProjectSelector(true)
         }
+
+        if (e.key === 'g' && activeProject?.selectedWorktree) {
+          e.preventDefault()
+          setSelectedTab(activeProject.id, activeProject.selectedWorktree, 'graph')
+        }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [cycleProject, projects, setActiveProject, activeProjectId, setShowAddWorktreeDialog])
+  }, [cycleProject, projects, activeProjectId, setSelectedWorktree, setShowAddWorktreeDialog, setSelectedTab])
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark'
