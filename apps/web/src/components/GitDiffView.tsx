@@ -512,27 +512,25 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
         `}>
           {/* Mobile back button and file name */}
           {selectedFile && (
-            <div className="md:hidden p-2 border-b bg-muted/30 flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setSelectedFile(null);
-                  setDiffText('');
-                  if (selectedSection === 'commit') {
-                    setSelectedCommit(null);
-                  }
-                  setSelectedSection('current');
-                }}
-                className="p-1 hover:bg-accent rounded"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
+            <button
+              onClick={() => {
+                setSelectedFile(null);
+                setDiffText('');
+                if (selectedSection === 'commit') {
+                  setSelectedCommit(null);
+                }
+                setSelectedSection('current');
+              }}
+              className="md:hidden p-2 border-b bg-muted/30 flex items-center gap-2 w-full text-left hover:bg-muted/50 transition-colors"
+            >
+              <ChevronLeft className="h-5 w-5 flex-shrink-0" />
               <span className="text-sm font-medium truncate">
                 {selectedFile}
               </span>
-              <span className="ml-auto text-xs text-muted-foreground">
+              <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">
                 {selectedSection === 'all' ? 'vs origin' : selectedSection === 'commit' ? `commit ${selectedCommit?.shortHash}` : 'current'}
               </span>
-            </div>
+            </button>
           )}
 
           {error ? (
