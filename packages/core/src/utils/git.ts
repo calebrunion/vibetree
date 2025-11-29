@@ -168,7 +168,7 @@ export async function getGitDiffUntracked(worktreePath: string, filePath: string
 export async function getGitLog(worktreePath: string, limit: number = 20, fromBranchBase: boolean = true): Promise<GitCommit[]> {
   const expandedPath = expandPath(worktreePath);
   const separator = '|||';
-  const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar`;
+  const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar${separator}%P${separator}%D`;
 
   let revRange = '';
   if (fromBranchBase) {
@@ -188,9 +188,90 @@ export async function getGitLog(worktreePath: string, limit: number = 20, fromBr
 
   const lines = output.trim().split('\n').filter(line => line.length > 0);
   return lines.map(line => {
-    const [hash, shortHash, subject, author, date, relativeDate] = line.split(separator);
-    return { hash, shortHash, subject, author, date, relativeDate };
+    const [hash, shortHash, subject, author, date, relativeDate, parentStr, refStr] = line.split(separator);
+    const parents = parentStr ? parentStr.split(' ').filter(p => p.length > 0) : [];
+    const refs = refStr ? refStr.split(', ').filter(r => r.length > 0) : [];
+    return { hash, shortHash, subject, author, date, relativeDate, parents, refs };
   });
+}
+
+/**
+ * Get the current git user name
+ * @param worktreePath - Path to the git worktree
+ * @returns Current git user name
+ */
+export async function getGitUserName(worktreePath: string): Promise<string> {
+  const expandedPath = expandPath(worktreePath);
+  const output = await executeGitCommand(['config', 'user.name'], expandedPath);
+  return output.trim();
+}
+
+/**
+ * Get git commit log for graph visualization (all branches)
+ * @param worktreePath - Path to the git worktree
+ * @param limit - Maximum number of commits to return (default 50)
+ * @param authorFilter - Optional author name to filter commits by
+ * @returns Array of commit information with parent hashes and refs
+ */
+export async function getGitLogGraph(worktreePath: string, limit: number = 50, authorFilter?: string): Promise<GitCommit[]> {
+  const expandedPath = expandPath(worktreePath);
+  const separator = '|||';
+  const format = `%H${separator}%h${separator}%s${separator}%an${separator}%ai${separator}%ar${separator}%P${separator}%D`;
+
+  const args = ['log', '--all', `--format=${format}`, `-n`, `${limit}`];
+
+  if (authorFilter) {
+    args.push(`--author=${authorFilter}`);
+  }
+
+  const output = await executeGitCommand(args, expandedPath);
+
+  const lines = output.trim().split('\n').filter(line => line.length > 0);
+  const commits = lines.map(line => {
+    const [hash, shortHash, subject, author, date, relativeDate, parentStr, refStr] = line.split(separator);
+    const parents = parentStr ? parentStr.split(' ').filter(p => p.length > 0) : [];
+    const refs = refStr ? refStr.split(', ').filter(r => r.length > 0) : [];
+    return { hash, shortHash, subject, author, date, relativeDate, parents, refs };
+  });
+
+  // If filtering by author, also include origin/HEAD commit for context
+  if (authorFilter && commits.length > 0) {
+    try {
+      const originHeadOutput = await executeGitCommand(
+        ['log', 'origin/HEAD', '-1', `--format=${format}`],
+        expandedPath
+      );
+      const originHeadLine = originHeadOutput.trim();
+      if (originHeadLine) {
+        const [hash, shortHash, subject, author, date, relativeDate, parentStr, refStr] = originHeadLine.split(separator);
+        const originHeadCommit = {
+          hash,
+          shortHash,
+          subject,
+          author,
+          date,
+          relativeDate,
+          parents: parentStr ? parentStr.split(' ').filter(p => p.length > 0) : [],
+          refs: refStr ? refStr.split(', ').filter(r => r.length > 0) : []
+        };
+        // Only add if not already in the list
+        if (!commits.some(c => c.hash === originHeadCommit.hash)) {
+          // Find the right position to insert based on date
+          const originDate = new Date(originHeadCommit.date);
+          let insertIndex = commits.findIndex(c => new Date(c.date) < originDate);
+          if (insertIndex === -1) {
+            commits.push(originHeadCommit);
+          } else {
+            commits.splice(insertIndex, 0, originHeadCommit);
+          }
+        }
+      }
+    } catch {
+      // origin/HEAD may not exist, ignore
+    }
+  }
+
+  return commits;
 }
 
 /**

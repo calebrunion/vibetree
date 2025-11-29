@@ -4,6 +4,7 @@ import {
   CheckCircle,
   Columns2,
   GitBranch,
+  GitCommitHorizontal,
   Maximize2,
   Minimize2,
   Moon,
@@ -19,6 +20,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
+import { GitGraphView, GitGraphViewRef } from './components/GitGraphView'
 import MobileTerminalToolbar from './components/MobileTerminalToolbar'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
@@ -65,6 +67,7 @@ function App() {
   const [deletingWorktree, setDeletingWorktree] = useState(false)
   const [showMobileSettingsModal, setShowMobileSettingsModal] = useState(false)
   const gitDiffRef = useRef<GitDiffViewRef>(null)
+  const gitGraphRef = useRef<GitGraphViewRef>(null)
 
   // const activeProject = getActiveProject();
 
@@ -288,7 +291,7 @@ function App() {
     return project.worktrees.find((wt) => wt.path === project.selectedWorktree)
   }
 
-  const getCurrentTab = (project: (typeof projects)[0]): 'terminal' | 'changes' => {
+  const getCurrentTab = (project: (typeof projects)[0]): 'terminal' | 'changes' | 'graph' => {
     if (!project.selectedWorktree) return 'terminal'
     return project.selectedTabs?.[project.selectedWorktree] || 'terminal'
   }
@@ -475,6 +478,17 @@ function App() {
                           </span>
                         )}
                       </button>
+                      <button
+                        className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
+                          getCurrentTab(project) === 'graph'
+                            ? 'bg-accent text-accent-foreground border-border shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
+                        }`}
+                        onClick={() => setSelectedTab(project.id, project.selectedWorktree!, 'graph')}
+                      >
+                        <GitCommitHorizontal className="h-3.5 w-3.5" />
+                        Graph
+                      </button>
                     </div>
                     {getCurrentTab(project) === 'terminal' ? (
                       <div className="flex items-center gap-1">
@@ -519,7 +533,13 @@ function App() {
                     ) : (
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleRefreshChanges(project)}
+                          onClick={() => {
+                            if (getCurrentTab(project) === 'graph') {
+                              gitGraphRef.current?.refresh()
+                            } else {
+                              handleRefreshChanges(project)
+                            }
+                          }}
                           className="p-1.5 hover:bg-accent rounded transition-colors border border-border"
                           title="Refresh"
                         >
@@ -574,6 +594,15 @@ function App() {
                         worktreePath={project.selectedWorktree}
                         theme={theme}
                         onFileCountChange={setChangedFilesCount}
+                      />
+                    </div>
+
+                    {/* Git Graph View */}
+                    <div className={`absolute inset-0 ${getCurrentTab(project) === 'graph' ? 'block' : 'hidden'}`}>
+                      <GitGraphView
+                        ref={gitGraphRef}
+                        worktreePath={project.selectedWorktree}
+                        theme={theme}
                       />
                     </div>
                   </div>

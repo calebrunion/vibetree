@@ -8,7 +8,7 @@ interface Project {
   name: string;
   worktrees: Worktree[];
   selectedWorktree: string | null;
-  selectedTabs: Record<string, 'terminal' | 'changes'>; // worktreePath -> tab
+  selectedTabs: Record<string, 'terminal' | 'changes' | 'graph'>; // worktreePath -> tab
   isTerminalSplit: boolean;
   isTerminalFullscreen: boolean;
 }
@@ -46,7 +46,7 @@ interface AppState {
   setActiveProject: (id: string) => void;
   updateProjectWorktrees: (id: string, worktrees: Worktree[]) => void;
   setSelectedWorktree: (projectId: string, worktreePath: string | null) => void;
-  setSelectedTab: (projectId: string, worktreePath: string, tab: 'terminal' | 'changes') => void;
+  setSelectedTab: (projectId: string, worktreePath: string, tab: 'terminal' | 'changes' | 'graph') => void;
   getProject: (id: string) => Project | undefined;
   getActiveProject: () => Project | undefined;
   addTerminalSession: (worktreePath: string, sessionId: string) => void;
@@ -184,7 +184,7 @@ export const useAppStore = create<AppState>()(
     }));
   },
 
-  setSelectedTab: (projectId: string, worktreePath: string, tab: 'terminal' | 'changes') => {
+  setSelectedTab: (projectId: string, worktreePath: string, tab: 'terminal' | 'changes' | 'graph') => {
     set((state) => ({
       projects: state.projects.map(project =>
         project.id === projectId

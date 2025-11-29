@@ -189,6 +189,16 @@ export class WebSocketAdapter extends BaseAdapter {
     return result.commits;
   }
 
+  async getGitLogGraph(worktreePath: string, limit?: number, author?: string): Promise<GitCommit[]> {
+    const result = await this.sendMessage<{ commits: GitCommit[] }>('git:logGraph', { worktreePath, limit, author });
+    return result.commits;
+  }
+
+  async getGitUserName(worktreePath: string): Promise<string> {
+    const result = await this.sendMessage<{ userName: string }>('git:userName', { worktreePath });
+    return result.userName;
+  }
+
   async getCommitFiles(worktreePath: string, commitHash: string): Promise<CommitFile[]> {
     const result = await this.sendMessage<{ files: CommitFile[] }>('git:commit:files', { worktreePath, commitHash });
     return result.files;

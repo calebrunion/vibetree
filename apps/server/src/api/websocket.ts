@@ -8,6 +8,8 @@ import {
   getGitDiffStaged,
   getGitDiffUntracked,
   getGitLog,
+  getGitLogGraph,
+  getGitUserName,
   getCommitFiles,
   getCommitDiff,
   getDiffAgainstBase,
@@ -360,6 +362,46 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
               ws.send(JSON.stringify({
                 type: 'git:log:response',
                 payload: { commits },
+                id: message.id
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                payload: { error: (error as Error).message },
+                id: message.id
+              }));
+            }
+            break;
+          }
+
+          case 'git:logGraph': {
+            try {
+              const commits = await getGitLogGraph(
+                message.payload.worktreePath,
+                message.payload.limit,
+                message.payload.author
+              );
+              ws.send(JSON.stringify({
+                type: 'git:logGraph:response',
+                payload: { commits },
+                id: message.id
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({
+                type: 'error',
+                payload: { error: (error as Error).message },
+                id: message.id
+              }));
+            }
+            break;
+          }
+
+          case 'git:userName': {
+            try {
+              const userName = await getGitUserName(message.payload.worktreePath);
+              ws.send(JSON.stringify({
+                type: 'git:userName:response',
+                payload: { userName },
                 id: message.id
               }));
             } catch (error) {

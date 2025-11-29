@@ -18,6 +18,8 @@ export interface GitCommit {
   author: string;
   date: string;
   relativeDate: string;
+  parents?: string[];
+  refs?: string[];
 }
 
 export interface CommitFile {
