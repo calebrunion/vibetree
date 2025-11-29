@@ -108,6 +108,7 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
 
   return (
     <div className={`h-full overflow-hidden bg-background flex flex-col ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+      {isFullscreen && <div className="h-[38px] flex-shrink-0" />}
       {isFullscreen && onExitFullscreen && (
         <button
           onClick={onExitFullscreen}

@@ -267,6 +267,18 @@ function App() {
           toggleTerminalSplit(activeProject.id)
         }
 
+        if (e.key === 'f' && activeProject?.selectedWorktree) {
+          e.preventDefault()
+          const currentTab = getCurrentTab(activeProject)
+          if (currentTab === 'terminal') {
+            toggleTerminalFullscreen(activeProject.id)
+          } else if (currentTab === 'changes') {
+            toggleDiffFullscreen(activeProject.id)
+          } else if (currentTab === 'graph') {
+            toggleGraphFullscreen(activeProject.id)
+          }
+        }
+
         // Vim-style navigation: Cmd+H/L for projects, Cmd+J/K for worktrees
         if (e.key === 'h') {
           e.preventDefault()
@@ -329,6 +341,9 @@ function App() {
     setShowAddWorktreeDialog,
     setSelectedTab,
     toggleTerminalSplit,
+    toggleTerminalFullscreen,
+    toggleDiffFullscreen,
+    toggleGraphFullscreen,
     toggleSidebarCollapsed,
   ])
 

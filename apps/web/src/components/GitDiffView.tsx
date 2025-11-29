@@ -414,6 +414,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
 
   return (
     <div className={`flex-1 flex flex-col h-full ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''}`}>
+      {isFullscreen && <div className="h-[38px] flex-shrink-0" />}
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* File List - Full width on mobile, fixed width on desktop */}
         <div

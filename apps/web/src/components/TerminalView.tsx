@@ -509,8 +509,9 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
 
   return (
     <div className={`flex flex-col w-full h-full ${isFullscreen ? 'fixed inset-0 z-50 bg-background' : ''}`}>
+      {isFullscreen && <div className="h-[38px] flex-shrink-0" />}
       {isFullscreen && activeProject && (
-        <div className="fixed top-4 right-4 z-[51] flex items-center gap-1">
+        <div className="fixed top-[46px] right-4 z-[51] flex items-center gap-1">
           <button
             onClick={() => toggleTerminalSplit(activeProject.id)}
             className="p-2 bg-accent hover:bg-accent/80 text-foreground rounded-md shadow-lg transition-colors"
