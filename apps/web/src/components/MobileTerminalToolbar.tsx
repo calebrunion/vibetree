@@ -7,6 +7,7 @@ import {
   Clipboard,
   CornerDownLeft,
   Delete,
+  Eraser,
   GitCommit,
   SquarePen,
 } from 'lucide-react'
@@ -104,11 +105,24 @@ export default function MobileTerminalToolbar() {
       <div className="overflow-x-auto scrollbar-hide bg-background py-2 px-2">
         <div className="flex items-center gap-1">
           <button
+            onClick={() => sendKey(KEYS.CTRL_C)}
+            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400 flex-shrink-0 mr-2"
+          >
+            ^C
+          </button>
+          <button
             onClick={launchClaude}
             className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
             title="Launch Claude"
           >
             <Bot className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendTextToTerminal('/clear')}
+            className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            title="Clear"
+          >
+            <SquarePen className="h-4 w-4" />
           </button>
           <button
             onClick={() => sendTextToTerminal('commit')}
@@ -118,11 +132,35 @@ export default function MobileTerminalToolbar() {
             <GitCommit className="h-5 w-5" />
           </button>
           <button
-            onClick={() => sendTextToTerminal('/clear')}
+            onClick={() => sendTextToTerminal('clear\n')}
             className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0 mr-2"
-            title="Clear"
+            title="Clear Terminal"
           >
-            <SquarePen className="h-4 w-4" />
+            <Eraser className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.ARROW_LEFT)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.ARROW_DOWN)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+          >
+            <ArrowDown className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.ARROW_UP)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+          >
+            <ArrowUp className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.ARROW_RIGHT)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0 mr-2"
+          >
+            <ArrowRight className="h-5 w-5" />
           </button>
           <button
             onClick={() => sendKey(KEYS.SHIFT_TAB)}
@@ -156,36 +194,6 @@ export default function MobileTerminalToolbar() {
             title="Backspace"
           >
             <Delete className="h-5 w-5 -ml-px" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.ARROW_LEFT)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0 ml-2"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.ARROW_DOWN)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
-          >
-            <ArrowDown className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.ARROW_UP)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
-          >
-            <ArrowUp className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.ARROW_RIGHT)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
-          >
-            <ArrowRight className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.CTRL_C)}
-            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400 flex-shrink-0 ml-2"
-          >
-            ^C
           </button>
         </div>
       </div>
