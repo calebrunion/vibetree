@@ -1,6 +1,6 @@
 import { GitBranch, Plus, Sliders } from 'lucide-react'
 import type { Worktree } from '@vibetree/core'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAppStore } from '../store'
 
@@ -22,6 +22,19 @@ export function MobileWorktreeTabs({
   const { getAdapter } = useWebSocket()
   const setShowAddWorktreeDialog = useAppStore((state) => state.setShowAddWorktreeDialog)
   const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set())
+  const selectedButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      if (selectedButtonRef.current) {
+        selectedButtonRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        })
+      }
+    })
+  }, [selectedWorktree, worktrees])
 
   useEffect(() => {
     const fetchChanges = async () => {
@@ -93,6 +106,7 @@ export function MobileWorktreeTabs({
           return (
             <button
               key={worktree.path}
+              ref={isSelected ? selectedButtonRef : null}
               onClick={() => onSelectWorktree(worktree.path)}
               className={`
                 flex flex-col items-start justify-center h-12 px-3 rounded-md whitespace-nowrap transition-colors border
