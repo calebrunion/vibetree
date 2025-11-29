@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bot, Clipboard, CornerDownLeft, GitCommit, MessageSquare, SquarePen } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bot, Clipboard, CornerDownLeft, GitCommit, SquarePen } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -20,6 +20,7 @@ export default function MobileTerminalToolbar() {
   const { getActiveProject, terminalSessions } = useAppStore()
   const { getAdapter } = useWebSocket()
   const [isVoiceDialogOpen, setIsVoiceDialogOpen] = useState(false)
+  const [inputText, setInputText] = useState('')
 
   const sendKey = useCallback(async (key: string) => {
     const activeProject = getActiveProject()
@@ -85,12 +86,6 @@ export default function MobileTerminalToolbar() {
       <div className="overflow-x-auto scrollbar-hide bg-background py-2 px-2">
         <div className="flex items-center gap-1">
           <button
-            onClick={() => sendKey(KEYS.ESC)}
-            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0 mr-2"
-          >
-            ESC
-          </button>
-          <button
             onClick={launchClaude}
             className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
             title="Launch Claude"
@@ -106,7 +101,7 @@ export default function MobileTerminalToolbar() {
           </button>
           <button
             onClick={() => sendTextToTerminal('/clear')}
-            className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0 mr-2"
             title="Clear"
           >
             <SquarePen className="h-4 w-4" />
@@ -138,6 +133,30 @@ export default function MobileTerminalToolbar() {
             <Clipboard className="h-4 w-4" />
           </button>
           <button
+            onClick={() => sendKey(KEYS.ARROW_LEFT)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0 ml-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.ARROW_DOWN)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+          >
+            <ArrowDown className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.ARROW_UP)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+          >
+            <ArrowUp className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.ARROW_RIGHT)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+          >
+            <ArrowRight className="h-5 w-5" />
+          </button>
+          <button
             onClick={() => sendKey(KEYS.CTRL_C)}
             className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400 flex-shrink-0 ml-2"
           >
@@ -146,44 +165,24 @@ export default function MobileTerminalToolbar() {
         </div>
       </div>
 
-      <div className="flex items-start justify-between px-2 pt-4 pb-0">
+      <div className="flex items-start justify-between gap-3 px-2 pt-1 pb-3">
         <button
-          onClick={() => setIsVoiceDialogOpen(true)}
-          className="h-11 w-20 rounded-md border border-border bg-muted active:scale-95 transition-transform flex items-center justify-center"
-          title="Open voice input"
-          aria-label="Open voice input"
+          onClick={() => sendKey(KEYS.ESC)}
+          className="h-14 w-20 rounded-md border border-border bg-muted active:scale-95 transition-transform flex items-center justify-center text-sm font-medium"
         >
-          <MessageSquare className="h-6 w-6" />
+          ESC
         </button>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => sendKey(KEYS.ARROW_LEFT)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.ARROW_DOWN)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
-          >
-            <ArrowDown className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.ARROW_UP)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
-          >
-            <ArrowUp className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.ARROW_RIGHT)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
-          >
-            <ArrowRight className="h-5 w-5" />
-          </button>
-        </div>
+        <input
+          type="text"
+          value={inputText}
+          readOnly
+          onClick={() => setIsVoiceDialogOpen(true)}
+          placeholder="Type or speak..."
+          className="h-14 flex-1 px-3 text-sm bg-muted border border-border rounded-md text-left truncate cursor-pointer"
+        />
         <button
           onClick={() => sendKey(KEYS.ENTER)}
-          className="h-11 w-20 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          className="h-14 w-20 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
           title="Send Enter"
           aria-label="Send Enter"
         >
@@ -196,6 +195,8 @@ export default function MobileTerminalToolbar() {
         onClose={() => setIsVoiceDialogOpen(false)}
         onSend={sendTextToTerminal}
         onEnter={() => sendKey(KEYS.ENTER)}
+        text={inputText}
+        setText={setInputText}
       />
     </div>
   )

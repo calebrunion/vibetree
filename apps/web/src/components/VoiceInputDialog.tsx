@@ -48,13 +48,16 @@ export default function VoiceInputDialog({
   onClose,
   onSend,
   onEnter,
+  text,
+  setText,
 }: {
   isOpen: boolean
   onClose: () => void
   onSend: (text: string) => void
   onEnter: () => void
+  text: string
+  setText: React.Dispatch<React.SetStateAction<string>>
 }) {
-  const [text, setText] = useState('')
   const [isListening, setIsListening] = useState(false)
   const [isVoiceSupported, setIsVoiceSupported] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
