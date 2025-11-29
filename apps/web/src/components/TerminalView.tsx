@@ -472,7 +472,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
       )}
       {/* Terminal Container */}
       <div className={`flex-1 flex min-h-0 ${isSplit ? 'flex-col md:flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
-        <div className={`${isSplit ? 'h-1/2 md:h-full w-full md:w-1/2 border-b md:border-b-0 md:border-r' : 'w-full'} h-full`}>
+        <div className={isSplit ? 'h-1/2 md:h-full w-full md:w-1/2 border-b md:border-b-0 md:border-r' : 'w-full h-full'}>
           {sessionId && (
             <Terminal
               id={sessionId}
