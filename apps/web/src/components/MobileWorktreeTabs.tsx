@@ -95,7 +95,7 @@ export function MobileWorktreeTabs({
               key={worktree.path}
               onClick={() => onSelectWorktree(worktree.path)}
               className={`
-                flex flex-col items-start px-3 py-1.5 rounded-md whitespace-nowrap transition-colors border
+                flex flex-col items-start justify-center h-12 px-3 rounded-md whitespace-nowrap transition-colors border
                 ${
                   isSelected
                     ? 'bg-accent text-accent-foreground border-border shadow-sm'
