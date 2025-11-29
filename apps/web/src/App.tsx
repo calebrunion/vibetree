@@ -454,7 +454,7 @@ function App() {
           </TabsList>
           <button
             onClick={() => setShowAddProjectModal(true)}
-            className="h-full w-8 p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 border border-border app-region-no-drag"
+            className="h-[30px] w-[30px] p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 border border-border app-region-no-drag"
             aria-label="Add project"
           >
             <Plus className="h-4 w-4" />
