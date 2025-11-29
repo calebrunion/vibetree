@@ -1,20 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="64" fill="#18181b"/>
-  <g fill="#f97316">
-    <circle cx="256" cy="140" r="40"/>
-    <circle cx="160" cy="260" r="32"/>
-    <circle cx="352" cy="260" r="32"/>
-    <circle cx="120" cy="380" r="28"/>
-    <circle cx="200" cy="380" r="28"/>
-    <circle cx="312" cy="380" r="28"/>
-    <circle cx="392" cy="380" r="28"/>
-  </g>
-  <g stroke="#f97316" stroke-width="8" fill="none">
-    <line x1="256" y1="180" x2="160" y2="228"/>
-    <line x1="256" y1="180" x2="352" y2="228"/>
-    <line x1="160" y1="292" x2="120" y2="352"/>
-    <line x1="160" y1="292" x2="200" y2="352"/>
-    <line x1="352" y1="292" x2="312" y2="352"/>
-    <line x1="352" y1="292" x2="392" y2="352"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#161b22"/>
+      <stop offset="100%" style="stop-color:#0d1117"/>
+    </linearGradient>
+
+    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3fb950"/>
+      <stop offset="50%" style="stop-color:#79c0ff"/>
+      <stop offset="100%" style="stop-color:#a371f7"/>
+    </linearGradient>
+
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="18" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="url(#bgGrad)"/>
+
+  <!-- Chevron as git tree -->
+  <path d="M165 145 L347 256 L165 367"
+        stroke="url(#lineGrad)"
+        stroke-width="40"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+        filter="url(#glow)"/>
+
+  <!-- Commit nodes -->
+  <circle cx="165" cy="145" r="28" fill="#3fb950" filter="url(#glow)"/>
+  <circle cx="347" cy="256" r="28" fill="#79c0ff" filter="url(#glow)"/>
+  <circle cx="165" cy="367" r="28" fill="#a371f7" filter="url(#glow)"/>
 </svg>
