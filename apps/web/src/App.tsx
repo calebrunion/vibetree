@@ -291,6 +291,19 @@ function App() {
     return project.selectedTabs?.[project.selectedWorktree] || 'terminal'
   }
 
+  const handleRefreshChanges = async (project: (typeof projects)[0]) => {
+    gitDiffRef.current?.refresh()
+    const adapter = getAdapter()
+    if (adapter && connected) {
+      try {
+        const trees = await adapter.listWorktrees(project.path)
+        updateProjectWorktrees(project.id, trees)
+      } catch (error) {
+        console.error('Failed to refresh worktrees:', error)
+      }
+    }
+  }
+
   // Show login page if not authenticated and not loading
   if (!authLoading && !isAuthenticated) {
     return <LoginPage />
@@ -443,7 +456,7 @@ function App() {
                           if (getCurrentTab(project) !== 'changes') {
                             setSelectedTab(project.id, project.selectedWorktree!, 'changes')
                           }
-                          gitDiffRef.current?.refresh()
+                          handleRefreshChanges(project)
                         }}
                       >
                         <GitBranch className="h-3.5 w-3.5" />
@@ -504,7 +517,7 @@ function App() {
                     ) : (
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => gitDiffRef.current?.refresh()}
+                          onClick={() => handleRefreshChanges(project)}
                           className="p-1.5 hover:bg-accent rounded transition-colors border border-border"
                           title="Refresh"
                         >
