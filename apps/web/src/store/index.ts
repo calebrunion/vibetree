@@ -17,6 +17,7 @@ interface AppState {
   // Connection state
   connected: boolean;
   connecting: boolean;
+  reconnecting: boolean;
   error: string | null;
   
   // Project state
@@ -37,6 +38,7 @@ interface AppState {
   // Actions
   setConnected: (connected: boolean) => void;
   setConnecting: (connecting: boolean) => void;
+  setReconnecting: (reconnecting: boolean) => void;
   setError: (error: string | null) => void;
   addProject: (path: string) => string;
   addProjects: (paths: string[]) => string[];
@@ -67,6 +69,7 @@ export const useAppStore = create<AppState>()(
   // Initial state
   connected: false,
   connecting: false,
+  reconnecting: false,
   error: null,
   projects: [],
   activeProjectId: null,
@@ -79,6 +82,7 @@ export const useAppStore = create<AppState>()(
   // Actions
   setConnected: (connected) => set({ connected }),
   setConnecting: (connecting) => set({ connecting }),
+  setReconnecting: (reconnecting) => set({ reconnecting }),
   setError: (error) => set({ error }),
   
   addProject: (path: string) => {

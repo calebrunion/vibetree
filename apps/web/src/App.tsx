@@ -17,14 +17,15 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConnectionStatus } from './components/ConnectionStatus'
+import { FloatingAddWorktree } from './components/FloatingAddWorktree'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
 import MobileTerminalToolbar from './components/MobileTerminalToolbar'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
+import ReconnectingModal from './components/ReconnectingModal'
 import StartupScriptModal from './components/StartupScriptModal'
 import { TerminalManager } from './components/TerminalManager'
 import { WorktreePanel } from './components/WorktreePanel'
-import { FloatingAddWorktree } from './components/FloatingAddWorktree'
 import { useKeepAwake } from './hooks/useKeepAwake'
 import { useWebSocket } from './hooks/useWebSocket'
 import { autoLoadProjects, validateProjectPaths } from './services/projectValidation'
@@ -45,6 +46,7 @@ function App() {
     theme,
     setTheme,
     connected,
+    reconnecting,
     toggleTerminalSplit,
     toggleTerminalFullscreen,
     setShowAddWorktreeDialog,
@@ -624,6 +626,9 @@ function App() {
           onClose={() => setShowMobileSettingsModal(false)}
         />
       )}
+
+      {/* Reconnecting Modal */}
+      {reconnecting && <ReconnectingModal />}
     </div>
   )
 }
