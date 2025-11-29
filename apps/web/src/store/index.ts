@@ -34,6 +34,7 @@ interface AppState {
 
   // UI state
   showAddWorktreeDialog: boolean
+  sidebarCollapsed: boolean
 
   // Actions
   setConnected: (connected: boolean) => void
@@ -58,6 +59,8 @@ interface AppState {
   shouldRunStartup: (worktreePath: string) => boolean
   setTheme: (theme: 'light' | 'dark') => void
   setShowAddWorktreeDialog: (show: boolean) => void
+  setSidebarCollapsed: (collapsed: boolean) => void
+  toggleSidebarCollapsed: () => void
   toggleTerminalSplit: (projectId: string) => void
   toggleTerminalFullscreen: (projectId: string) => void
   setTerminalSplit: (projectId: string, isSplit: boolean) => void
@@ -78,6 +81,7 @@ export const useAppStore = create<AppState>()(
       pendingStartupWorktrees: new Set(),
       theme: 'light',
       showAddWorktreeDialog: false,
+      sidebarCollapsed: false,
 
       // Actions
       setConnected: (connected) => set({ connected }),
@@ -245,6 +249,8 @@ export const useAppStore = create<AppState>()(
 
       setTheme: (theme) => set({ theme }),
       setShowAddWorktreeDialog: (show) => set({ showAddWorktreeDialog: show }),
+      setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+      toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
       toggleTerminalSplit: (projectId: string) => {
         set((state) => ({
@@ -276,6 +282,7 @@ export const useAppStore = create<AppState>()(
         projects: state.projects,
         activeProjectId: state.activeProjectId,
         theme: state.theme,
+        sidebarCollapsed: state.sidebarCollapsed,
       }),
     }
   )

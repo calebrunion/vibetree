@@ -1,4 +1,4 @@
-import { GitBranch, Plus, Sliders } from 'lucide-react'
+import { GitBranch, PanelLeftOpen, Plus, RefreshCw, Sliders } from 'lucide-react'
 import type { Worktree } from '@vibetree/core'
 import { useState, useEffect, useRef } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -10,6 +10,9 @@ interface MobileWorktreeTabsProps {
   onSelectWorktree: (path: string) => void
   projectPath: string
   onOpenSettings?: () => void
+  onRefresh?: () => void
+  showOnDesktop?: boolean
+  onExpandSidebar?: () => void
 }
 
 export function MobileWorktreeTabs({
@@ -18,6 +21,9 @@ export function MobileWorktreeTabs({
   onSelectWorktree,
   projectPath,
   onOpenSettings,
+  onRefresh,
+  showOnDesktop = false,
+  onExpandSidebar,
 }: MobileWorktreeTabsProps) {
   const { getAdapter } = useWebSocket()
   const setShowAddWorktreeDialog = useAppStore((state) => state.setShowAddWorktreeDialog)
@@ -79,10 +85,20 @@ export function MobileWorktreeTabs({
 
   return (
     <div
-      className="md:hidden overflow-x-auto flex-shrink-0 max-w-full"
+      className={`${showOnDesktop ? '' : 'md:hidden'} overflow-x-auto flex-shrink-0 max-w-full`}
       style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
       <div className="inline-flex items-center gap-1 px-2 pt-4">
+        {onExpandSidebar && (
+          <button
+            onClick={onExpandSidebar}
+            className="hidden md:flex items-center justify-center size-12 flex-shrink-0 rounded-md transition-colors border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            aria-label="Expand sidebar"
+            title="Expand sidebar"
+          >
+            <PanelLeftOpen className="h-5 w-5" />
+          </button>
+        )}
         {onOpenSettings && (
           <button
             onClick={onOpenSettings}
@@ -91,6 +107,16 @@ export function MobileWorktreeTabs({
             title="Project settings"
           >
             <Sliders className="h-5 w-5" />
+          </button>
+        )}
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            className="flex items-center justify-center size-12 flex-shrink-0 rounded-md transition-colors border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            aria-label="Refresh worktrees"
+            title="Refresh worktrees"
+          >
+            <RefreshCw className="h-5 w-5" />
           </button>
         )}
         {sortedWorktrees.map((worktree) => {

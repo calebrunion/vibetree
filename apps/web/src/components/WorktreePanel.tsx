@@ -1,4 +1,4 @@
-import { GitBranch, Plus, RefreshCw, Sliders, Trash2 } from 'lucide-react'
+import { GitBranch, PanelLeftClose, Plus, RefreshCw, Sliders, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAppStore } from '../store'
@@ -22,6 +22,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
     connected,
     showAddWorktreeDialog,
     setShowAddWorktreeDialog,
+    toggleSidebarCollapsed,
   } = useAppStore()
 
   const { getAdapter } = useWebSocket()
@@ -294,12 +295,22 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                   </div>
                 )
               })}
+            {/* Add Worktree Button - inline at bottom of list */}
+            <button
+              onClick={() => setShowAddWorktreeDialog(true)}
+              disabled={!connected}
+              className="w-full flex items-center justify-center p-3 rounded-md mb-1 transition-colors border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 disabled:opacity-50"
+              aria-label="Add worktree"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="text-sm">New worktree</span>
+            </button>
           </div>
         )}
       </div>
 
       {/* Floating Settings Button - Left */}
-      <div className="absolute bottom-4 left-4 hidden md:flex">
+      <div className="absolute bottom-4 left-4 hidden md:flex gap-2">
         <button
           onClick={() => setShowSettingsModal(true)}
           disabled={!connected}
@@ -308,10 +319,6 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
         >
           <Sliders className="h-4 w-4" />
         </button>
-      </div>
-
-      {/* Floating Action Buttons - Right */}
-      <div className="absolute bottom-4 right-4 hidden md:flex gap-2">
         <button
           onClick={handleRefresh}
           disabled={!connected || loading}
@@ -320,13 +327,16 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
+      </div>
+
+      {/* Floating Action Buttons - Right */}
+      <div className="absolute bottom-4 right-4 hidden md:flex gap-2">
         <button
-          onClick={() => setShowAddWorktreeDialog(true)}
-          disabled={!connected}
-          className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent disabled:opacity-50 transition-colors"
-          title="Create new worktree"
+          onClick={toggleSidebarCollapsed}
+          className="p-2 bg-background border border-border rounded-md shadow-md hover:bg-accent transition-colors"
+          title="Collapse sidebar"
         >
-          <Plus className="h-4 w-4" />
+          <PanelLeftClose className="h-4 w-4" />
         </button>
       </div>
 

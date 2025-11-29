@@ -52,6 +52,8 @@ function App() {
     toggleTerminalSplit,
     toggleTerminalFullscreen,
     setShowAddWorktreeDialog,
+    sidebarCollapsed,
+    toggleSidebarCollapsed,
   } = useAppStore()
   const { connect, getAdapter } = useWebSocket()
   const { request: requestKeepAwake } = useKeepAwake()
@@ -434,10 +436,11 @@ function App() {
         {projects.map((project) => (
           <TabsContent key={project.id} value={project.id} className="flex-1 m-0 h-0" forceMount>
             <div className="flex h-full overflow-hidden">
-              {/* Worktree Panel - Always visible on desktop, conditional on mobile */}
+              {/* Worktree Panel - Always visible on desktop (unless collapsed), conditional on mobile */}
               <div
                 className={`
-                ${project.selectedWorktree ? 'hidden md:flex' : 'flex'} 
+                ${project.selectedWorktree ? 'hidden' : 'flex'}
+                ${!sidebarCollapsed ? 'md:flex' : 'md:hidden'}
                 w-full md:w-80 border-r flex-shrink-0
               `}
               >
@@ -447,13 +450,16 @@ function App() {
               {/* Main Content Area with Tabs - Only shown when worktree is selected */}
               {project.selectedWorktree ? (
                 <div className="flex-1 flex flex-col h-full min-w-0">
-                  {/* Mobile Worktree Tabs */}
+                  {/* Mobile Worktree Tabs (also shown on desktop when sidebar is collapsed) */}
                   <MobileWorktreeTabs
                     worktrees={project.worktrees}
                     selectedWorktree={project.selectedWorktree}
                     onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
                     projectPath={project.path}
                     onOpenSettings={() => setShowMobileSettingsModal(true)}
+                    onRefresh={() => handleRefreshChanges(project)}
+                    showOnDesktop={sidebarCollapsed}
+                    onExpandSidebar={sidebarCollapsed ? toggleSidebarCollapsed : undefined}
                   />
 
                   {/* Tab Navigation */}
@@ -624,10 +630,28 @@ function App() {
                 </div>
               ) : (
                 /* Empty state when no worktree selected */
-                <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground">
-                  <div className="text-center">
+                <div
+                  className={`${sidebarCollapsed ? 'flex' : 'hidden md:flex'} flex-1 flex-col items-center justify-center text-muted-foreground`}
+                >
+                  {sidebarCollapsed && (
+                    <div className="w-full">
+                      <MobileWorktreeTabs
+                        worktrees={project.worktrees}
+                        selectedWorktree={project.selectedWorktree}
+                        onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
+                        projectPath={project.path}
+                        onOpenSettings={() => setShowMobileSettingsModal(true)}
+                        onRefresh={() => handleRefreshChanges(project)}
+                        showOnDesktop={true}
+                        onExpandSidebar={toggleSidebarCollapsed}
+                      />
+                    </div>
+                  )}
+                  <div className="text-center flex-1 flex flex-col items-center justify-center">
                     <p className="text-lg mb-2">Select a worktree to start</p>
-                    <p className="text-sm">Choose from the panel on the left</p>
+                    <p className="text-sm">
+                      {sidebarCollapsed ? 'Choose from the tabs above' : 'Choose from the panel on the left'}
+                    </p>
                   </div>
                 </div>
               )}
