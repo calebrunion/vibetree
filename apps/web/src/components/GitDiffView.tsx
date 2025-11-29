@@ -343,7 +343,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
         {/* File List - Full width on mobile, fixed width on desktop */}
         <div className={`
           ${selectedFile ? 'hidden md:flex' : 'flex'}
-          w-full md:w-80 border-r flex-col min-w-0
+          w-full md:w-80 md:border-r flex-col min-w-0
         `}>
           <div className="flex-1 overflow-auto">
             {/* Current Section - only show if dirty working directory */}
