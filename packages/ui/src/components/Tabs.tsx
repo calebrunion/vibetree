@@ -64,9 +64,10 @@ const TabsTrigger: React.FC<TabsTriggerProps> = ({ value, className = '', childr
   return (
     <button
       className={`inline-flex items-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
-        isActive ? 'bg-background text-foreground shadow-sm' : 'hover:bg-accent hover:text-accent-foreground'
+        isActive ? 'bg-muted text-foreground shadow-sm' : 'hover:bg-accent hover:text-accent-foreground'
       } ${className}`}
       onClick={handleClick}
+      data-state={isActive ? 'active' : 'inactive'}
     >
       {children}
     </button>
