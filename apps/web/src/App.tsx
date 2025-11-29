@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import AddProjectModal from './components/AddProjectModal'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
 import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
@@ -58,6 +59,7 @@ function App() {
   const { connect, getAdapter } = useWebSocket()
   const { request: requestKeepAwake } = useKeepAwake()
   const [showProjectSelector, setShowProjectSelector] = useState(false)
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false)
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
@@ -216,7 +218,7 @@ function App() {
 
         if (e.key === 't') {
           e.preventDefault()
-          setShowProjectSelector(true)
+          setShowAddProjectModal(true)
         }
 
         if (e.key === 'g' && activeProject?.selectedWorktree) {
@@ -243,6 +245,21 @@ function App() {
       setShowProjectSelector(false)
     } else {
       console.error('Invalid project path:', results[0]?.error)
+    }
+  }
+
+  const handleAddProject = async (path: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const results = await validateProjectPaths([path])
+      if (results.length > 0 && results[0].valid) {
+        addProject(results[0].path)
+        return { success: true }
+      } else {
+        const errorMessage = results[0]?.error || 'Project not found or is not a valid git repository'
+        return { success: false, error: errorMessage }
+      }
+    } catch {
+      return { success: false, error: 'Failed to validate project path' }
     }
   }
 
@@ -425,7 +442,7 @@ function App() {
             ))}
           </TabsList>
           <button
-            onClick={() => setShowProjectSelector(true)}
+            onClick={() => setShowAddProjectModal(true)}
             className="h-8 w-8 p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 ml-auto border border-border"
             aria-label="Add project"
           >
@@ -688,6 +705,13 @@ function App() {
 
       {/* Reconnecting Modal */}
       {reconnecting && <ReconnectingModal />}
+
+      {/* Add Project Modal */}
+      <AddProjectModal
+        open={showAddProjectModal}
+        onAddProject={handleAddProject}
+        onClose={() => setShowAddProjectModal(false)}
+      />
     </div>
   )
 }
