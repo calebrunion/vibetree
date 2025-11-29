@@ -50,7 +50,8 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedSection, setSelectedSection] = useState<'current' | 'commit' | 'all'>('current');
   const [selectedCommit, setSelectedCommit] = useState<GitCommitType | null>(null);
-  const [commitFiles, setCommitFiles] = useState<CommitFile[]>([]);
+  const [commitFilesMap, setCommitFilesMap] = useState<Record<string, CommitFile[]>>({});
+  const [expandedCommits, setExpandedCommits] = useState<Set<string>>(new Set());
   const [diffText, setDiffText] = useState<string>('');
   const [allChangesFiles, setAllChangesFiles] = useState<CommitFile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -121,27 +122,39 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     }
   }, [worktreePath, getAdapter]);
 
-  const loadCommitFiles = useCallback(async (commit: GitCommitType) => {
+  const toggleCommitExpanded = useCallback(async (commit: GitCommitType) => {
     const adapter = getAdapter();
     if (!adapter || !('getCommitFiles' in adapter)) return;
+
+    const isExpanded = expandedCommits.has(commit.hash);
+
+    if (isExpanded) {
+      setExpandedCommits(prev => {
+        const next = new Set(prev);
+        next.delete(commit.hash);
+        return next;
+      });
+      return;
+    }
+
+    setExpandedCommits(prev => new Set(prev).add(commit.hash));
+
+    if (commitFilesMap[commit.hash]) {
+      return;
+    }
 
     try {
       setLoading(true);
       setError(null);
-      setSelectedCommit(commit);
-      setSelectedFile(null);
-      setDiffText('');
 
       const files = await (adapter as any).getCommitFiles(worktreePath, commit.hash);
-      setCommitFiles(files);
-      setSelectedSection('commit');
+      setCommitFilesMap(prev => ({ ...prev, [commit.hash]: files }));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load commit files');
-      setCommitFiles([]);
     } finally {
       setLoading(false);
     }
-  }, [worktreePath, getAdapter]);
+  }, [worktreePath, getAdapter, expandedCommits, commitFilesMap]);
 
   const loadCommitDiff = useCallback(async (commitHash: string, filePath?: string) => {
     const adapter = getAdapter();
@@ -251,8 +264,10 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     }
   };
 
-  const handleCommitFileClick = (file: CommitFile) => {
+  const handleCommitFileClick = (commit: GitCommitType, file: CommitFile) => {
     setSelectedFile(file.path);
+    setSelectedCommit(commit);
+    setSelectedSection('commit');
   };
 
   const handleCurrentFileClick = (file: GitFile) => {
@@ -385,50 +400,59 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                     <p className="text-xs text-muted-foreground text-center py-2">No commits</p>
                   ) : (
                     <div className="space-y-1">
-                      {commits.map((commit) => (
-                        <div key={commit.hash}>
-                          <div
-                            className={`p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
-                              selectedCommit?.hash === commit.hash ? 'bg-muted' : ''
-                            }`}
-                            onClick={() => loadCommitFiles(commit)}
-                          >
-                            <div className="flex items-start gap-2">
-                              <GitCommit className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm truncate" title={commit.subject}>
-                                  {commit.subject}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  <span className="font-mono">{commit.shortHash}</span>
-                                  <span className="mx-1">·</span>
-                                  <span>{commit.author}</span>
-                                  <span className="mx-1">·</span>
-                                  <span>{commit.relativeDate}</span>
-                                </p>
+                      {commits.map((commit) => {
+                        const isExpanded = expandedCommits.has(commit.hash);
+                        const files = commitFilesMap[commit.hash] || [];
+                        return (
+                          <div key={commit.hash}>
+                            <div
+                              className={`p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
+                                selectedCommit?.hash === commit.hash ? 'bg-muted' : ''
+                              }`}
+                              onClick={() => toggleCommitExpanded(commit)}
+                            >
+                              <div className="flex items-start gap-2">
+                                {isExpanded ? (
+                                  <ChevronDown className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                )}
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm truncate" title={commit.subject}>
+                                    {commit.subject}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <GitCommit className="h-3 w-3" />
+                                    <span className="font-mono">{commit.shortHash}</span>
+                                    <span className="mx-1">·</span>
+                                    <span>{commit.author}</span>
+                                    <span className="mx-1">·</span>
+                                    <span>{commit.relativeDate}</span>
+                                  </p>
+                                </div>
                               </div>
                             </div>
+                            {isExpanded && files.length > 0 && (
+                              <div className="ml-6 mt-1 space-y-1">
+                                {files.map((file) => (
+                                  <div
+                                    key={file.path}
+                                    className={`flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
+                                      selectedFile === file.path && selectedSection === 'commit' && selectedCommit?.hash === commit.hash ? 'bg-muted' : ''
+                                    }`}
+                                    onClick={() => handleCommitFileClick(commit, file)}
+                                  >
+                                    {getCommitFileStatusIcon(file.status)}
+                                    <span className="text-xs truncate flex-1" title={file.path}>
+                                      {file.path}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          {selectedCommit?.hash === commit.hash && commitFiles.length > 0 && (
-                            <div className="ml-6 mt-1 space-y-1">
-                              {commitFiles.map((file) => (
-                                <div
-                                  key={file.path}
-                                  className={`flex items-center gap-2 p-1.5 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
-                                    selectedFile === file.path && selectedSection === 'commit' ? 'bg-muted' : ''
-                                  }`}
-                                  onClick={() => handleCommitFileClick(file)}
-                                >
-                                  {getCommitFileStatusIcon(file.status)}
-                                  <span className="text-xs truncate flex-1" title={file.path}>
-                                    {file.path}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -451,7 +475,6 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                   setDiffText('');
                   if (selectedSection === 'commit') {
                     setSelectedCommit(null);
-                    setCommitFiles([]);
                   }
                   setSelectedSection('current');
                 }}
