@@ -184,7 +184,7 @@ export default function MobileTerminalToolbar() {
         </div>
       </div>
 
-      <div className="flex items-start justify-between gap-3 px-2 pt-1 pb-3">
+      <div className="flex items-start justify-between gap-2 px-2 pt-1 pb-3">
         <button
           onClick={() => sendKey(KEYS.ESC)}
           className="h-14 w-20 rounded-md border border-border bg-muted active:scale-95 transition-transform flex items-center justify-center text-sm font-medium"
@@ -197,7 +197,7 @@ export default function MobileTerminalToolbar() {
           readOnly
           onClick={() => setIsVoiceDialogOpen(true)}
           placeholder="Type or speak..."
-          className="h-14 flex-1 px-3 text-sm bg-muted border border-border rounded-md text-left truncate cursor-pointer"
+          className="h-14 flex-1 px-3 text-sm bg-muted border border-border rounded-md text-left truncate cursor-pointer active:scale-95 transition-transform"
         />
         <button
           onClick={() => sendKey(KEYS.ENTER)}
