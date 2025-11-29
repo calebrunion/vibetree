@@ -57,6 +57,8 @@ export default defineConfig({
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
+        // @ts-expect-error - display_override is valid but not in vite-plugin-pwa types
+        display_override: ['window-controls-overlay'],
         orientation: 'any',
         start_url: '/',
         scope: '/',

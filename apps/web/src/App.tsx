@@ -370,12 +370,12 @@ function App() {
     return (
       <div className="h-full flex flex-col bg-background">
         {/* Header */}
-        <header className="h-14 border-b flex items-center justify-between px-4 flex-shrink-0">
+        <header className="h-14 border-b flex items-center justify-between px-4 flex-shrink-0 titlebar-area titlebar-area-inset">
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold">VibeTree</h1>
             <span className="text-xs text-muted-foreground hidden sm:inline">Web Terminal</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 app-region-no-drag">
             <button
               onClick={toggleTheme}
               className="p-2 hover:bg-accent rounded-md transition-colors"
@@ -434,17 +434,17 @@ function App() {
 
       {/* Project Tabs and Content */}
       <Tabs value={activeProjectId || ''} onValueChange={setActiveProject} className="flex-1 flex flex-col">
-        <div className="flex items-center gap-2 h-10 overflow-hidden bg-muted">
-          <TabsList className="h-full bg-transparent p-0 rounded-none gap-1 min-w-0 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-2 h-10 overflow-hidden bg-muted titlebar-area titlebar-area-inset">
+          <TabsList className="h-full bg-transparent p-0 rounded-none gap-1 min-w-0 overflow-x-auto scrollbar-hide app-region-no-drag">
             {projects.map((project) => (
               <TabsTrigger
                 key={project.id}
                 value={project.id}
-                className="relative pr-8 h-full min-w-[100px] lg:min-w-[150px] border border-border rounded-md"
+                className="relative pr-8 h-full min-w-[100px] lg:min-w-[150px] border border-border rounded-md app-region-no-drag"
               >
                 {project.name}
                 <span
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 p-0.5 hover:bg-muted rounded cursor-pointer inline-flex items-center justify-center"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 p-0.5 hover:bg-muted rounded cursor-pointer inline-flex items-center justify-center app-region-no-drag"
                   onClick={(e) => handleCloseProject(e, project.id)}
                 >
                   <X className="h-3 w-3" />
@@ -454,7 +454,7 @@ function App() {
           </TabsList>
           <button
             onClick={() => setShowAddProjectModal(true)}
-            className="h-8 w-8 p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 ml-auto mr-2 border border-border"
+            className="h-8 w-8 p-0 hover:bg-accent rounded transition-colors inline-flex items-center justify-center flex-shrink-0 ml-auto mr-2 border border-border app-region-no-drag"
             aria-label="Add project"
           >
             <Plus className="h-4 w-4" />
