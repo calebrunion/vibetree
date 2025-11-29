@@ -516,11 +516,20 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                 }
                 setSelectedSection('current');
               }}
-              className="md:hidden p-2 border-b bg-muted/30 flex items-center gap-2 w-full text-left hover:bg-muted/50 transition-colors"
+              className="md:hidden pl-1 pr-2 py-2 border-b bg-muted/30 flex items-center gap-2 w-full text-left hover:bg-muted/50 transition-colors"
             >
               <ChevronLeft className="h-5 w-5 flex-shrink-0" />
               <span className="text-sm font-medium truncate">
-                {selectedFile}
+                {(() => {
+                  const lastSlash = selectedFile.lastIndexOf('/');
+                  if (lastSlash === -1) return selectedFile;
+                  return (
+                    <>
+                      <span className="opacity-50">{selectedFile.substring(0, lastSlash + 1)}</span>
+                      {selectedFile.substring(lastSlash + 1)}
+                    </>
+                  );
+                })()}
               </span>
               <span className="ml-auto text-xs text-muted-foreground flex-shrink-0 flex items-center gap-1">
                 {selectedSection === 'all' && 'vs origin'}
