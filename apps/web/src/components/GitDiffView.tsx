@@ -456,11 +456,6 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                               onClick={() => toggleCommitExpanded(commit)}
                             >
                               <div className="flex items-start gap-2">
-                                {isExpanded ? (
-                                  <ChevronDown className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                ) : (
-                                  <ChevronRight className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                                )}
                                 <div className="min-w-0 flex-1">
                                   <p className="text-sm truncate" title={commit.subject}>
                                     {commit.subject}
@@ -477,7 +472,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                               </div>
                             </div>
                             {isExpanded && files.length > 0 && (
-                              <div className="ml-6 mt-1 space-y-1">
+                              <div className="ml-2 mt-1 space-y-1">
                                 {files.map((file) => (
                                   <div
                                     key={file.path}
@@ -527,8 +522,15 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
               <span className="text-sm font-medium truncate">
                 {selectedFile}
               </span>
-              <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">
-                {selectedSection === 'all' ? 'vs origin' : selectedSection === 'commit' ? `commit ${selectedCommit?.shortHash}` : 'current'}
+              <span className="ml-auto text-xs text-muted-foreground flex-shrink-0 flex items-center gap-1">
+                {selectedSection === 'all' && 'vs origin'}
+                {selectedSection === 'commit' && (
+                  <>
+                    <GitCommit className="h-3 w-3" />
+                    {selectedCommit?.shortHash}
+                  </>
+                )}
+                {selectedSection === 'current' && 'current'}
               </span>
             </button>
           )}
