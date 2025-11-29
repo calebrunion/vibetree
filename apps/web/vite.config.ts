@@ -54,8 +54,8 @@ export default defineConfig({
         name: 'VibeTree',
         short_name: 'VibeTree',
         description: 'Code with AI in parallel git worktrees',
-        theme_color: '#000000',
-        background_color: '#000000',
+        theme_color: '#1a1a1a',
+        background_color: '#1a1a1a',
         display: 'standalone',
         // @ts-expect-error - display_override is valid but not in vite-plugin-pwa types
         display_override: ['window-controls-overlay'],
