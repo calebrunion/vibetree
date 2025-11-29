@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bot, Clipboard, CornerDownLeft, GitCommit, SquarePen } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Bot, Clipboard, CornerDownLeft, Delete, GitCommit, SquarePen } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -14,6 +14,7 @@ const KEYS = {
   SHIFT_TAB: '\x1b[Z',
   CTRL_C: '\x03',
   ENTER: '\r',
+  BACKSPACE: '\x7f',
 }
 
 export default function MobileTerminalToolbar() {
@@ -131,6 +132,13 @@ export default function MobileTerminalToolbar() {
             title="Paste"
           >
             <Clipboard className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.BACKSPACE)}
+            className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            title="Backspace"
+          >
+            <Delete className="h-5 w-5 -ml-px" />
           </button>
           <button
             onClick={() => sendKey(KEYS.ARROW_LEFT)}
