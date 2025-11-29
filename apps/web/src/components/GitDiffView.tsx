@@ -299,6 +299,44 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     }
   };
 
+  const getCurrentFileColors = (file: GitFile) => {
+    if (file.staged && file.modified) return { dir: 'text-amber-500/50', file: 'text-amber-500' };
+    if (file.staged) return { dir: 'text-green-500/50', file: 'text-green-500' };
+    const char = file.status[1];
+    switch (char) {
+      case 'M': return { dir: 'text-amber-500/50', file: 'text-amber-500' };
+      case 'D': return { dir: 'text-red-500/50', file: 'text-red-500' };
+      case '?': return { dir: 'text-green-500/50', file: 'text-green-500' };
+      default: return { dir: 'text-gray-400/50', file: 'text-gray-400' };
+    }
+  };
+
+  const getCommitFileColors = (status: CommitFile['status']) => {
+    switch (status) {
+      case 'M': return { dir: 'text-amber-500/50', file: 'text-amber-500' };
+      case 'A': return { dir: 'text-green-500/50', file: 'text-green-500' };
+      case 'D': return { dir: 'text-red-500/50', file: 'text-red-500' };
+      case 'R': return { dir: 'text-yellow-500/50', file: 'text-yellow-500' };
+      case 'C': return { dir: 'text-cyan-500/50', file: 'text-cyan-500' };
+      default: return { dir: 'text-gray-400/50', file: 'text-gray-400' };
+    }
+  };
+
+  const renderFilePath = (path: string, colors: { dir: string; file: string }) => {
+    const lastSlash = path.lastIndexOf('/');
+    if (lastSlash === -1) {
+      return <span className={colors.file}>{path}</span>;
+    }
+    const dirPath = path.substring(0, lastSlash + 1);
+    const fileName = path.substring(lastSlash + 1);
+    return (
+      <>
+        <span className={colors.dir}>{dirPath}</span>
+        <span className={colors.file}>{fileName}</span>
+      </>
+    );
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full">
       <div className="flex-1 flex min-h-0 overflow-hidden">
@@ -336,7 +374,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                         >
                           {getCurrentFileStatusIcon(file)}
                           <span className="text-sm truncate flex-1 text-left" title={file.path}>
-                            {file.path}
+                            {renderFilePath(file.path, getCurrentFileColors(file))}
                           </span>
                         </div>
                       ))}
@@ -376,7 +414,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                         >
                           {getCommitFileStatusIcon(file.status)}
                           <span className="text-sm truncate flex-1 text-left" title={file.path}>
-                            {file.path}
+                            {renderFilePath(file.path, getCommitFileColors(file.status))}
                           </span>
                         </div>
                       ))}
@@ -450,7 +488,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                                   >
                                     {getCommitFileStatusIcon(file.status)}
                                     <span className="text-xs truncate flex-1" title={file.path}>
-                                      {file.path}
+                                      {renderFilePath(file.path, getCommitFileColors(file.status))}
                                     </span>
                                   </div>
                                 ))}
