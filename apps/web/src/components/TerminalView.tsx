@@ -52,6 +52,11 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     // Check if we already have a session for this worktree
     const existingSessionId = terminalSessions.get(selectedWorktree);
     if (existingSessionId) {
+      // Skip if listeners already set up (prevents duplicate listeners from store updates)
+      if (cleanupRef.current.length > 0) {
+        return;
+      }
+
       // Set up event listeners for existing session
       const unsubscribeOutput = adapter.onShellOutput(existingSessionId, (data) => {
         if (terminalRef.current) {
@@ -71,7 +76,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
 
       cleanupRef.current = [unsubscribeOutput, unsubscribeExit];
       setSessionId(existingSessionId);
-      
+
       // Restore terminal state for existing session (like desktop app)
       console.log('🔄 Reconnecting to existing session - restoring state');
       console.log('📊 Session cache status:', {
@@ -145,7 +150,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
           
           setSessionId(actualSessionId);
           addTerminalSession(selectedWorktree, actualSessionId);
-          
+
           console.log(`Shell started: ${actualSessionId}, isNew: ${result.isNew}, worktree: ${selectedWorktree}`);
           console.log('📊 Terminal cache status:', {
             sessionId: actualSessionId,
