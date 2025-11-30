@@ -117,18 +117,16 @@ export function MobileWorktreeTabs({
   if (worktrees.length === 0) return null
 
   const sortedWorktrees = [...worktrees].sort((a, b) => {
+    // HEAD/main worktree always first
+    if (a.path === projectPath) return -1
+    if (b.path === projectPath) return 1
+
     const getBranchName = (wt: Worktree) => {
       if (!wt.branch) return wt.head.substring(0, 8)
       return wt.branch.replace('refs/heads/', '')
     }
 
-    const branchA = getBranchName(a)
-    const branchB = getBranchName(b)
-
-    if (branchA === 'main' || branchA === 'master') return -1
-    if (branchB === 'main' || branchB === 'master') return 1
-
-    return branchA.localeCompare(branchB)
+    return getBranchName(a).localeCompare(getBranchName(b))
   })
 
   return (
