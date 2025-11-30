@@ -181,7 +181,7 @@ export default function VoiceInputDialog({
               onSend('/clear\n')
               onClose()
             }}
-            className="flex-1 h-10 rounded-lg border border-border bg-muted active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
+            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
           >
             <SquarePen className="h-4 w-4" />
             New Chat
@@ -190,14 +190,14 @@ export default function VoiceInputDialog({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onTouchEnd={() => {
-              onSend('commit\n')
+              onSend('commit these changes\n')
               onClose()
             }}
             onClick={() => {
-              onSend('commit\n')
+              onSend('commit these changes\n')
               onClose()
             }}
-            className="flex-1 h-10 rounded-lg border border-border bg-muted active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
+            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
           >
             <GitCommit className="h-4 w-4" />
             Commit
@@ -209,7 +209,7 @@ export default function VoiceInputDialog({
             onClick={() => setText('')}
             className="h-10 w-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
           >
-            <X className="h-5 w-5" />
+            <X className={`h-5 w-5 ${text.trim() ? 'text-white' : ''}`} />
           </button>
         </div>
 
