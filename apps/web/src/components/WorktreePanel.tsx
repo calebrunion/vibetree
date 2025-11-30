@@ -267,10 +267,10 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                     {canDelete && (
                       <button
                         onClick={(e) => handleDeleteWorktree(worktree.path, worktree.branch!, e)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50"
                         title="Delete worktree"
                       >
-                        <Trash2 className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+                        <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
                       </button>
                     )}
                   </div>

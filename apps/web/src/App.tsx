@@ -604,6 +604,7 @@ function App() {
                     onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
                     projectPath={project.path}
                     showOnDesktop={sidebarCollapsed}
+                    onWorktreesChanged={() => handleRefreshChanges(project)}
                   />
 
                   {/* Tab Navigation */}
@@ -817,6 +818,7 @@ function App() {
                         onSelectWorktree={(path) => setSelectedWorktree(project.id, path)}
                         projectPath={project.path}
                         showOnDesktop={true}
+                        onWorktreesChanged={() => handleRefreshChanges(project)}
                       />
                     </div>
                   )}
