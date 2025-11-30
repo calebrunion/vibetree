@@ -505,7 +505,7 @@ function App() {
               <TabsTrigger
                 key={project.id}
                 value={project.id}
-                className="project-tab group/tab relative pl-4 pr-9 h-[34px] min-w-[100px] md:min-w-[140px] max-w-[240px] rounded-t-xl text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:border data-[state=active]:border-border/50 data-[state=active]:border-b-0 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 data-[state=active]:hover:!bg-background app-region-no-drag"
+                className="project-tab group/tab relative pl-4 pr-9 h-[34px] min-w-[100px] md:min-w-[140px] max-w-[240px] rounded-t-xl text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 data-[state=active]:hover:!bg-background app-region-no-drag"
               >
                 <span className="truncate">{project.name}</span>
                 <span
