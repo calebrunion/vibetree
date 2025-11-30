@@ -165,3 +165,12 @@ button:hover + button .tab-divider-left {
 button:has(+ button:hover) .tab-divider-right {
   opacity: 0;
 }
+
+/* Inactive tab hover state - Chrome style */
+.project-tab[data-state='inactive']:hover {
+  background-color: #d4d4d8 !important;
+}
+
+.dark .project-tab[data-state='inactive']:hover {
+  background-color: #0d0d0d !important;
+}
