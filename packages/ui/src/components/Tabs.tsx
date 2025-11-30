@@ -46,11 +46,12 @@ const TabsList: React.FC<TabsListProps> = ({ className = '', children }) => {
 interface TabsTriggerProps {
   value: string
   className?: string
+  style?: React.CSSProperties
   children: React.ReactNode
   onClick?: (e: React.MouseEvent) => void
 }
 
-const TabsTrigger: React.FC<TabsTriggerProps> = ({ value, className = '', children, onClick }) => {
+const TabsTrigger: React.FC<TabsTriggerProps> = ({ value, className = '', style, children, onClick }) => {
   const { value: activeValue, onValueChange } = useTabsContext()
   const isActive = activeValue === value
 
@@ -64,6 +65,7 @@ const TabsTrigger: React.FC<TabsTriggerProps> = ({ value, className = '', childr
       className={`inline-flex items-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
         isActive ? 'bg-muted text-foreground shadow-sm' : 'hover:bg-accent hover:text-accent-foreground'
       } ${className}`}
+      style={style}
       onClick={handleClick}
       data-state={isActive ? 'active' : 'inactive'}
     >

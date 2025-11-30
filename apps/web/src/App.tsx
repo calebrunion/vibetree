@@ -505,18 +505,14 @@ function App() {
               <TabsTrigger
                 key={project.id}
                 value={project.id}
-                className="group/tab relative pl-4 pr-9 h-[34px] min-w-[100px] md:min-w-[140px] max-w-[240px] border-0 text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 hover:bg-accent data-[state=active]:hover:bg-background app-region-no-drag"
-                style={{
-                  clipPath:
-                    'polygon(0% 100%, 0% 25%, 1% 16%, 3% 9%, 6% 4%, 10% 1%, 15% 0%, 85% 0%, 90% 1%, 94% 4%, 97% 9%, 99% 16%, 100% 25%, 100% 100%)',
-                }}
+                className="group/tab relative pl-4 pr-9 h-[34px] min-w-[100px] md:min-w-[140px] max-w-[240px] rounded-t-xl text-[13px] bg-muted/50 text-muted-foreground transition-colors duration-100 data-[state=active]:border data-[state=active]:border-border/50 data-[state=active]:border-b-0 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 hover:bg-accent data-[state=active]:hover:bg-background app-region-no-drag"
               >
                 <span className="truncate">{project.name}</span>
                 <span
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-[18px] w-[18px] opacity-0 group-hover/tab:opacity-100 data-[state=active]:opacity-100 hover:bg-accent rounded-full cursor-pointer inline-flex items-center justify-center app-region-no-drag transition-opacity"
+                  className="group/close absolute right-3 top-1/2 -translate-y-1/2 h-[18px] w-[18px] opacity-0 group-hover/tab:opacity-100 data-[state=active]:opacity-100 bg-muted hover:bg-accent border border-border/50 rounded-md cursor-pointer inline-flex items-center justify-center app-region-no-drag transition-opacity"
                   onClick={(e) => handleCloseProject(e, project.id)}
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3 w-3 text-muted-foreground group-hover/close:text-foreground transition-colors" />
                 </span>
                 {index === 0 && project.id !== activeProjectId && (
                   <span className="absolute -left-px top-1/2 -translate-y-1/2 w-0.5 h-4 bg-border z-20 transition-opacity group-hover/tab:opacity-0 tab-divider-left" />
@@ -546,7 +542,7 @@ function App() {
                 className={`
                 ${project.selectedWorktree ? 'hidden' : 'flex'}
                 ${!sidebarCollapsed ? 'md:flex' : 'md:hidden'}
-                w-full md:w-80 border-r flex-shrink-0
+                w-full md:w-80 md:border-r flex-shrink-0
               `}
               >
                 <WorktreePanel projectId={project.id} />
