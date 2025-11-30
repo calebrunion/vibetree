@@ -323,6 +323,27 @@ export const Terminal: React.FC<TerminalProps> = ({
       }
     })
 
+    // Handle Cmd+hjkl as vim-style arrow keys
+    term.attachCustomKeyEventHandler((e) => {
+      if (e.metaKey && !e.altKey && !e.ctrlKey && e.type === 'keydown') {
+        const arrowMap: Record<string, string> = {
+          h: '\x1b[D', // Left
+          j: '\x1b[B', // Down
+          k: '\x1b[A', // Up
+          l: '\x1b[C', // Right
+        }
+        const arrowSeq = arrowMap[e.key.toLowerCase()]
+        if (arrowSeq) {
+          e.preventDefault()
+          if (onData) {
+            onData(arrowSeq)
+          }
+          return false
+        }
+      }
+      return true
+    })
+
     // Handle keyboard shortcuts for search
     const keyDisposable = term.onKey((e) => {
       const { key, domEvent } = e
