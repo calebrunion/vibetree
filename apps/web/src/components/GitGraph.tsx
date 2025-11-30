@@ -44,6 +44,11 @@ function getBranchNames(refs: string[] | undefined): string[] {
   return branchNames.slice(0, 2)
 }
 
+function isCurrentHead(refs: string[] | undefined): boolean {
+  if (!refs || refs.length === 0) return false
+  return refs.some((ref) => ref.startsWith('HEAD -> '))
+}
+
 interface GraphNode {
   commit: GitCommit
   column: number
@@ -214,10 +219,23 @@ export default function GitGraph({ commits, onCommitClick, theme = 'dark', isFul
   const isDragging = useRef(false)
   const startX = useRef(0)
   const startWidth = useRef(0)
+  const currentHeadRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     setGraphWidth(isFullscreen ? 100 : 60)
   }, [isFullscreen])
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      if (currentHeadRef.current) {
+        currentHeadRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest',
+        })
+      }
+    })
+  }, [commits])
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -303,12 +321,16 @@ export default function GitGraph({ commits, onCommitClick, theme = 'dark', isFul
         <div className="flex-1 min-w-0 overflow-x-auto md:overflow-x-visible">
           {nodes.map((node) => {
             const branchNames = getBranchNames(node.commit.refs)
+            const isHead = isCurrentHead(node.commit.refs)
             return (
               <button
                 key={node.commit.hash}
+                ref={isHead ? currentHeadRef : null}
                 type="button"
                 onClick={() => onCommitClick?.(node.commit)}
-                className="w-full md:w-full min-w-max md:min-w-0 flex items-center gap-2 px-2 pr-4 text-left cursor-pointer"
+                className={`w-full md:w-full min-w-max md:min-w-0 flex items-center gap-2 px-2 pr-4 text-left cursor-pointer ${
+                  isHead ? 'bg-primary/10 border-l-2 border-primary' : ''
+                }`}
                 style={{ height: ROW_HEIGHT }}
               >
                 {branchNames.length > 0 && (
