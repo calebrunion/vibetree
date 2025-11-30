@@ -16,6 +16,7 @@ import {
   getFilesChangedAgainstBase,
   addWorktree,
   removeWorktree,
+  discardFileChanges,
   getStartupCommands,
   readProjectSettings,
   writeProjectSettings,
@@ -546,6 +547,32 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
                 JSON.stringify({
                   type: 'git:files:base:response',
                   payload: { files },
+                  id: message.id,
+                })
+              )
+            } catch (error) {
+              ws.send(
+                JSON.stringify({
+                  type: 'error',
+                  payload: { error: (error as Error).message },
+                  id: message.id,
+                })
+              )
+            }
+            break
+          }
+
+          case 'git:discard': {
+            try {
+              const result = await discardFileChanges(
+                message.payload.worktreePath,
+                message.payload.filePath,
+                message.payload.status
+              )
+              ws.send(
+                JSON.stringify({
+                  type: 'git:discard:response',
+                  payload: result,
                   id: message.id,
                 })
               )

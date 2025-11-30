@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useImperativeHandle, forwardRef, Component, ReactNode } from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, Minimize2, RefreshCw } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, Minimize2, RefreshCw, Undo2 } from 'lucide-react'
+import { ConfirmDialog } from '@buddy/ui'
 import { DiffView, DiffModeEnum } from '@git-diff-view/react'
 import '@git-diff-view/react/styles/diff-view.css'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -62,6 +63,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [currentCollapsed, setCurrentCollapsed] = useState(false)
   const [historyCollapsed, setHistoryCollapsed] = useState(false)
   const [isWideScreen, setIsWideScreen] = useState(false)
+  const [discardConfirm, setDiscardConfirm] = useState<GitFile | null>(null)
 
   const { getAdapter } = useWebSocket()
 
@@ -329,6 +331,26 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     setSelectedCommit(null)
   }
 
+  const handleDiscardFile = async (file: GitFile) => {
+    const adapter = getAdapter()
+    if (!adapter || !('discardFileChanges' in adapter)) return
+
+    try {
+      setLoading(true)
+      await (adapter as any).discardFileChanges(worktreePath, file.path, file.status)
+      setDiscardConfirm(null)
+      if (selectedFile === file.path) {
+        setSelectedFile(null)
+        setDiffText('')
+      }
+      loadGitStatus()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to discard changes')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const getCurrentFileStatusIcon = (file: GitFile) => {
     const baseClass = 'px-2 py-1 rounded text-sm font-semibold inline-flex items-center justify-center min-w-[28px]'
     if (file.staged && file.modified) {
@@ -447,14 +469,24 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                       {files.map((file) => (
                         <div
                           key={`current-${file.path}`}
-                          className={`flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
+                          className={`group flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
                             selectedFile === file.path && selectedSection === 'current' ? 'bg-muted' : ''
                           }`}
                           onClick={() => handleCurrentFileClick(file)}
                           title={file.path}
                         >
                           {getCurrentFileStatusIcon(file)}
-                          {renderFilePath(file.path, getCurrentFileColors(file))}
+                          <div className="flex-1 min-w-0">{renderFilePath(file.path, getCurrentFileColors(file))}</div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setDiscardConfirm(file)
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                            title="Discard changes"
+                          >
+                            <Undo2 className="h-4 w-4" />
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -697,6 +729,16 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
           )}
         </div>
       </div>
+      <ConfirmDialog
+        open={!!discardConfirm}
+        title="Discard Changes?"
+        description={`Are you sure you want to discard all changes to "${discardConfirm?.path.split('/').pop()}"? This action cannot be undone.`}
+        confirmLabel="Discard"
+        cancelLabel="Cancel"
+        variant="destructive"
+        onConfirm={() => discardConfirm && handleDiscardFile(discardConfirm)}
+        onCancel={() => setDiscardConfirm(null)}
+      />
     </div>
   )
 })

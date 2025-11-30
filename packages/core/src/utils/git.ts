@@ -474,6 +474,56 @@ export async function removeWorktree(
 }
 
 /**
+ * Discard changes for a specific file
+ * For tracked files: runs `git checkout -- <file>`
+ * For untracked files: deletes the file
+ * For staged files: unstages first, then discards
+ * @param worktreePath - Path to the git worktree
+ * @param filePath - Path to the file to discard
+ * @param status - Git status of the file (e.g., "M ", " M", "??", "A ")
+ * @returns Success status
+ */
+export async function discardFileChanges(
+  worktreePath: string,
+  filePath: string,
+  status: string
+): Promise<{ success: boolean }> {
+  const expandedPath = expandPath(worktreePath)
+  const fullFilePath = path.join(expandedPath, filePath)
+
+  const isUntracked = status === '??'
+  const isStaged = status[0] !== ' ' && status[0] !== '?'
+  const isModified = status[1] !== ' ' && status[1] !== '?'
+  const isNewFile = status[0] === 'A'
+
+  if (isUntracked) {
+    if (fs.existsSync(fullFilePath)) {
+      const stat = fs.statSync(fullFilePath)
+      if (stat.isDirectory()) {
+        fs.rmSync(fullFilePath, { recursive: true })
+      } else {
+        fs.unlinkSync(fullFilePath)
+      }
+    }
+    return { success: true }
+  }
+
+  if (isStaged) {
+    await executeGitCommand(['reset', 'HEAD', '--', filePath], expandedPath)
+  }
+
+  if (isNewFile && !isModified) {
+    if (fs.existsSync(fullFilePath)) {
+      fs.unlinkSync(fullFilePath)
+    }
+    return { success: true }
+  }
+
+  await executeGitCommand(['checkout', '--', filePath], expandedPath)
+  return { success: true }
+}
+
+/**
  * Check if a path is a git repository
  * @param path - Path to check
  * @returns True if path is a git repository
