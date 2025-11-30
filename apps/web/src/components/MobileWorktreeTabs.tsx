@@ -154,7 +154,7 @@ export function MobileWorktreeTabs({
                 onClick={() => onSelectWorktree(worktree.path)}
                 className={`
                   flex flex-col items-start justify-center h-12 px-3 rounded-md whitespace-nowrap transition-colors border
-                  ${canDelete ? 'pr-8' : ''}
+                  ${canDelete ? 'pr-12' : ''}
                   ${
                     isSelected
                       ? 'bg-accent text-accent-foreground border-border shadow-sm'
@@ -175,7 +175,7 @@ export function MobileWorktreeTabs({
                 <button
                   onClick={(e) => handleDeleteWorktree(worktree.path, worktree.branch!, e)}
                   disabled={deletingPath === worktree.path}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 disabled:opacity-100"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 disabled:opacity-100"
                   title="Delete worktree"
                 >
                   {deletingPath === worktree.path ? (
