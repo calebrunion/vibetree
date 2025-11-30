@@ -134,7 +134,7 @@ export function MobileWorktreeTabs({
       className={`${showOnDesktop ? '' : 'md:hidden'} overflow-x-auto flex-shrink-0 max-w-full`}
       style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
     >
-      <div className="inline-flex items-center gap-1 px-2 pt-2">
+      <div className="inline-flex items-center gap-1 px-1 pt-2 md:px-2">
         {sortedWorktrees.map((worktree) => {
           const branchName = worktree.branch
             ? worktree.branch.replace('refs/heads/', '')
