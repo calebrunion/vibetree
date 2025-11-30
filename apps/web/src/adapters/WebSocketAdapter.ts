@@ -233,6 +233,10 @@ export class WebSocketAdapter extends BaseAdapter {
     return this.sendMessage('git:discard', { worktreePath, filePath, status })
   }
 
+  async discardAllChanges(worktreePath: string): Promise<{ success: boolean }> {
+    return this.sendMessage('git:discardAll', { worktreePath })
+  }
+
   async addWorktree(projectPath: string, branchName: string): Promise<WorktreeAddResult> {
     return this.sendMessage('git:worktree:add', { projectPath, branchName })
   }

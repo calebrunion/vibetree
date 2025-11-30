@@ -17,6 +17,7 @@ import {
   addWorktree,
   removeWorktree,
   discardFileChanges,
+  discardAllChanges,
   getStartupCommands,
   readProjectSettings,
   writeProjectSettings,
@@ -572,6 +573,28 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
               ws.send(
                 JSON.stringify({
                   type: 'git:discard:response',
+                  payload: result,
+                  id: message.id,
+                })
+              )
+            } catch (error) {
+              ws.send(
+                JSON.stringify({
+                  type: 'error',
+                  payload: { error: (error as Error).message },
+                  id: message.id,
+                })
+              )
+            }
+            break
+          }
+
+          case 'git:discardAll': {
+            try {
+              const result = await discardAllChanges(message.payload.worktreePath)
+              ws.send(
+                JSON.stringify({
+                  type: 'git:discardAll:response',
                   payload: result,
                   id: message.id,
                 })

@@ -1,4 +1,4 @@
-import { GitBranch, Loader2, Plus, Trash2 } from 'lucide-react'
+import { GitBranch, Loader2, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAppStore } from '../store'
@@ -30,6 +30,8 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
   const [deleteConfirmWorktree, setDeleteConfirmWorktree] = useState<{ path: string; branch: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deletingPath, setDeletingPath] = useState<string | null>(null)
+  const [discardConfirmWorktree, setDiscardConfirmWorktree] = useState<{ path: string; branch: string } | null>(null)
+  const [discardingPath, setDiscardingPath] = useState<string | null>(null)
 
   const project = getProject(projectId)
   const adapter = getAdapter() // Get adapter once per render
@@ -139,6 +141,30 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
       setDeleting(false)
       setDeletingPath(null)
       setDeleteConfirmWorktree(null)
+    }
+  }
+
+  const handleDiscardChanges = (worktreePath: string, branch: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setDiscardConfirmWorktree({ path: worktreePath, branch })
+  }
+
+  const performDiscard = async (worktreePath: string) => {
+    const adapter = getAdapter()
+    if (!adapter || !connected || !project) return
+
+    setDiscardingPath(worktreePath)
+    try {
+      await adapter.discardAllChanges(worktreePath)
+      console.log('✅ Discarded all changes for:', worktreePath)
+
+      // Refresh worktree changes status
+      await fetchWorktreeChanges(project.worktrees)
+    } catch (error) {
+      console.error('❌ Failed to discard changes:', error)
+    } finally {
+      setDiscardingPath(null)
+      setDiscardConfirmWorktree(null)
     }
   }
 
@@ -269,6 +295,20 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                         </div>
                       </div>
                     </button>
+                    {hasChanges && (
+                      <button
+                        onClick={(e) => handleDiscardChanges(worktree.path, worktree.branch || '', e)}
+                        disabled={discardingPath === worktree.path}
+                        className={`absolute top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded-md transition-opacity bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 disabled:cursor-not-allowed ${discardingPath === worktree.path ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} ${canDelete ? 'right-10' : 'right-2'}`}
+                        title="Discard all changes"
+                      >
+                        {discardingPath === worktree.path ? (
+                          <Loader2 className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400 animate-spin" />
+                        ) : (
+                          <RotateCcw className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
+                        )}
+                      </button>
+                    )}
                     {canDelete && (
                       <button
                         onClick={(e) => handleDeleteWorktree(worktree.path, worktree.branch!, e)}
@@ -382,6 +422,40 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                   className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
                 >
                   {deleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Discard Changes Confirmation Dialog */}
+      {discardConfirmWorktree && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background border rounded-lg shadow-lg w-full max-w-md">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-2 text-yellow-600 dark:text-yellow-400">Discard All Changes?</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                This will permanently discard all uncommitted changes in this worktree. This action cannot be undone.
+              </p>
+              <p className="text-sm font-medium mb-4 p-2 bg-muted rounded">
+                {discardConfirmWorktree.branch.replace('refs/heads/', '') || 'Detached HEAD'}
+              </p>
+
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  onClick={() => setDiscardConfirmWorktree(null)}
+                  disabled={discardingPath !== null}
+                  className="px-4 py-2 text-sm border border-border rounded-md hover:bg-accent disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => performDiscard(discardConfirmWorktree.path)}
+                  disabled={discardingPath !== null}
+                  className="px-4 py-2 text-sm bg-yellow-600 text-white rounded-md hover:bg-yellow-700 disabled:opacity-50"
+                >
+                  {discardingPath !== null ? 'Discarding...' : 'Discard Changes'}
                 </button>
               </div>
             </div>

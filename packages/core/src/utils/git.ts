@@ -524,6 +524,27 @@ export async function discardFileChanges(
 }
 
 /**
+ * Discard all changes in a worktree (reset to HEAD)
+ * This will:
+ * - Unstage all staged changes
+ * - Discard all modified files
+ * - Remove all untracked files and directories
+ * @param worktreePath - Path to the git worktree
+ * @returns Success status
+ */
+export async function discardAllChanges(worktreePath: string): Promise<{ success: boolean }> {
+  const expandedPath = expandPath(worktreePath)
+
+  // Reset staged changes and restore working directory to HEAD
+  await executeGitCommand(['reset', '--hard', 'HEAD'], expandedPath)
+
+  // Remove untracked files and directories
+  await executeGitCommand(['clean', '-fd'], expandedPath)
+
+  return { success: true }
+}
+
+/**
  * Check if a path is a git repository
  * @param path - Path to check
  * @returns True if path is a git repository
