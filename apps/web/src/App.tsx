@@ -498,7 +498,7 @@ function App() {
             </button>
           )}
           <div
-            className="flex-1 overflow-x-auto min-w-0 ml-2 md:ml-14 scrollbar-hide"
+            className="flex-1 overflow-x-auto min-w-0 ml-1 md:ml-14 scrollbar-hide"
             style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <TabsList className="h-auto bg-transparent p-0 rounded-none gap-0 min-w-0 app-region-no-drag items-end !justify-start">
@@ -529,7 +529,7 @@ function App() {
           </div>
           <button
             onClick={() => setShowAddProjectModal(true)}
-            className="group size-[28px] p-0 hover:bg-accent rounded-full transition-colors inline-flex items-center justify-center app-region-no-drag self-center ml-1 flex-shrink-0"
+            className="group size-[28px] p-0 hover:bg-accent rounded-full transition-colors inline-flex items-center justify-center app-region-no-drag self-center ml-1 mr-1 flex-shrink-0"
             aria-label="Add project"
           >
             <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
