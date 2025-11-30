@@ -474,52 +474,67 @@ function App() {
 
       {/* Project Tabs and Content */}
       <Tabs value={activeProjectId || ''} onValueChange={setActiveProject} className="flex-1 flex flex-col">
-        <div className="flex items-end overflow-hidden bg-[#1a1a1a] titlebar-area titlebar-area-inset px-1 gap-0.5">
+        <div
+          className="flex items-end justify-start overflow-x-auto bg-secondary titlebar-area titlebar-area-inset pl-4 md:pl-6 pr-2 pt-2 scrollbar-hide"
+          style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           <button
             onClick={toggleSidebarCollapsed}
-            className="group hidden md:inline-flex size-[30px] p-0 hover:bg-white/10 rounded-md transition-colors items-center justify-center flex-shrink-0 app-region-no-drag self-center"
+            className="group hidden md:inline-flex size-[30px] p-0 hover:bg-accent rounded-full transition-colors items-center justify-center app-region-no-drag self-center mr-1"
             aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {sidebarCollapsed ? (
-              <PanelLeftOpen className="h-4 w-4 text-gray-400 group-hover:text-white" />
+              <PanelLeftOpen className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
             ) : (
-              <PanelLeftClose className="h-4 w-4 text-gray-400 group-hover:text-white" />
+              <PanelLeftClose className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
             )}
           </button>
           {activeProject && (
             <button
               onClick={() => setShowMobileSettingsModal(true)}
-              className="group size-[30px] p-0 hover:bg-white/10 rounded-md transition-colors inline-flex items-center justify-center flex-shrink-0 app-region-no-drag self-center"
+              className="group size-[30px] p-0 hover:bg-accent rounded-full transition-colors inline-flex items-center justify-center app-region-no-drag self-center ml-1 md:ml-0"
               aria-label="Project settings"
               title="Project settings"
             >
-              <Sliders className="h-4 w-4 text-gray-400 group-hover:text-white" />
+              <Sliders className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
             </button>
           )}
-          <TabsList className="h-full bg-transparent p-0 rounded-none gap-0.5 min-w-0 overflow-x-auto scrollbar-hide app-region-no-drag items-end">
-            {projects.map((project) => (
+          <TabsList className="h-auto bg-transparent p-0 ml-2 md:ml-14 rounded-none gap-0 min-w-0 app-region-no-drag items-end !justify-start">
+            {projects.map((project, index) => (
               <TabsTrigger
                 key={project.id}
                 value={project.id}
-                className="relative pr-8 h-full min-w-[100px] lg:min-w-[150px] rounded-t-lg rounded-b-none border-0 bg-white/10 text-gray-300 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none hover:bg-white/20 app-region-no-drag"
+                className="group/tab relative pl-4 pr-9 h-[34px] min-w-[100px] md:min-w-[140px] max-w-[240px] border-0 text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 hover:bg-accent data-[state=active]:hover:bg-background app-region-no-drag"
+                style={{
+                  clipPath:
+                    'polygon(0% 100%, 0% 25%, 1% 16%, 3% 9%, 6% 4%, 10% 1%, 15% 0%, 85% 0%, 90% 1%, 94% 4%, 97% 9%, 99% 16%, 100% 25%, 100% 100%)',
+                }}
               >
-                {project.name}
+                <span className="truncate">{project.name}</span>
                 <span
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 p-0.5 hover:bg-muted/50 rounded cursor-pointer inline-flex items-center justify-center app-region-no-drag"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-[18px] w-[18px] opacity-0 group-hover/tab:opacity-100 data-[state=active]:opacity-100 hover:bg-accent rounded-full cursor-pointer inline-flex items-center justify-center app-region-no-drag transition-opacity"
                   onClick={(e) => handleCloseProject(e, project.id)}
                 >
                   <X className="h-3 w-3" />
                 </span>
+                {index === 0 && project.id !== activeProjectId && (
+                  <span className="absolute -left-px top-1/2 -translate-y-1/2 w-0.5 h-4 bg-border z-20 transition-opacity group-hover/tab:opacity-0 tab-divider-left" />
+                )}
+                {index < projects.length - 1 &&
+                  project.id !== activeProjectId &&
+                  projects[index + 1].id !== activeProjectId && (
+                    <span className="absolute -right-px top-1/2 -translate-y-1/2 w-0.5 h-4 bg-border z-20 transition-opacity group-hover/tab:opacity-0 tab-divider-right" />
+                  )}
               </TabsTrigger>
             ))}
           </TabsList>
           <button
             onClick={() => setShowAddProjectModal(true)}
-            className="group size-[30px] p-0 hover:bg-white/10 rounded-md transition-colors inline-flex items-center justify-center flex-shrink-0 app-region-no-drag self-center"
+            className="group size-[28px] p-0 hover:bg-accent rounded-full transition-colors inline-flex items-center justify-center app-region-no-drag self-center ml-1"
             aria-label="Add project"
           >
-            <Plus className="h-4 w-4 text-gray-400 group-hover:text-white" />
+            <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
           </button>
         </div>
 

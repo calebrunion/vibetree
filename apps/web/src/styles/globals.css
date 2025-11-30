@@ -156,3 +156,12 @@ html::before {
   -webkit-app-region: no-drag;
   app-region: no-drag;
 }
+
+/* Hide tab dividers when adjacent tabs are hovered */
+button:hover + button .tab-divider-left {
+  opacity: 0;
+}
+
+button:has(+ button:hover) .tab-divider-right {
+  opacity: 0;
+}
