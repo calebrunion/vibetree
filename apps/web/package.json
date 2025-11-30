@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Buddy Web - Mobile-friendly web client",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
