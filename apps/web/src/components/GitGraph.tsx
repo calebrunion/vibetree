@@ -155,10 +155,11 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
           )
         } else {
           const midY = y + ROW_HEIGHT / 2
+          const curveRadius = 10
           lines.push(
             <path
               key={`line-${node.commit.hash}-${parentHash}`}
-              d={`M ${x} ${y} L ${x} ${midY} Q ${x} ${midY + 10} ${parentX} ${midY + 10} L ${parentX} ${endY}`}
+              d={`M ${x} ${y} L ${x} ${midY} C ${x} ${midY + curveRadius} ${parentX} ${midY + curveRadius} ${parentX} ${midY + curveRadius * 2} L ${parentX} ${endY}`}
               stroke={parentColor}
               strokeWidth={LINE_WIDTH}
               fill="none"
@@ -186,10 +187,11 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
         )
       } else {
         const midY = y + ROW_HEIGHT / 2
+        const curveRadius = 10
         lines.push(
           <path
             key={`line-${node.commit.hash}-${parentHash}`}
-            d={`M ${x} ${y} L ${x} ${midY} Q ${x} ${midY + 10} ${parentX} ${midY + 10} L ${parentX} ${parentY}`}
+            d={`M ${x} ${y} L ${x} ${midY} C ${x} ${midY + curveRadius} ${parentX} ${midY + curveRadius} ${parentX} ${midY + curveRadius * 2} L ${parentX} ${parentY}`}
             stroke={parentColor}
             strokeWidth={LINE_WIDTH}
             fill="none"
@@ -246,6 +248,33 @@ export default function GitGraph({ commits, onCommitClick, theme = 'dark', isFul
     [graphWidth]
   )
 
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (e.touches.length !== 1) return
+      isDragging.current = true
+      startX.current = e.touches[0].clientX
+      startWidth.current = graphWidth
+
+      const handleTouchMove = (e: TouchEvent) => {
+        if (!isDragging.current || e.touches.length !== 1) return
+        e.preventDefault()
+        const delta = e.touches[0].clientX - startX.current
+        const newWidth = Math.min(200, Math.max(30, startWidth.current + delta))
+        setGraphWidth(newWidth)
+      }
+
+      const handleTouchEnd = () => {
+        isDragging.current = false
+        document.removeEventListener('touchmove', handleTouchMove)
+        document.removeEventListener('touchend', handleTouchEnd)
+      }
+
+      document.addEventListener('touchmove', handleTouchMove, { passive: false })
+      document.addEventListener('touchend', handleTouchEnd)
+    },
+    [graphWidth]
+  )
+
   if (commits.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -266,11 +295,12 @@ export default function GitGraph({ commits, onCommitClick, theme = 'dark', isFul
         >
           <GraphSvg nodes={nodes} theme={theme} />
           <div
-            className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-border hover:bg-primary/50 transition-colors"
+            className="absolute top-0 right-0 w-3 h-full cursor-col-resize bg-border hover:bg-primary/50 active:bg-primary/50 transition-colors touch-none"
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
           />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-x-auto md:overflow-x-visible">
           {nodes.map((node) => {
             const branchNames = getBranchNames(node.commit.refs)
             return (
@@ -278,24 +308,15 @@ export default function GitGraph({ commits, onCommitClick, theme = 'dark', isFul
                 key={node.commit.hash}
                 type="button"
                 onClick={() => onCommitClick?.(node.commit)}
-                className="w-full flex items-center gap-2 px-2 text-left cursor-pointer transition-colors hover:bg-muted/50"
+                className="w-full md:w-full min-w-max md:min-w-0 flex items-center gap-2 px-2 pr-4 text-left cursor-pointer"
                 style={{ height: ROW_HEIGHT }}
               >
-                <div className="flex-1 min-w-0 flex items-center gap-2">
-                  <span className="text-xs font-mono text-muted-foreground flex-shrink-0">{node.commit.shortHash}</span>
-                  <span className="text-sm truncate" title={node.commit.subject}>
-                    {node.commit.subject}
-                  </span>
-                  <span className="text-xs text-muted-foreground flex-shrink-0 hidden md:inline">
-                    {node.commit.relativeDate}
-                  </span>
-                </div>
                 {branchNames.length > 0 && (
                   <div className="flex-shrink-0 flex gap-1">
                     {branchNames.map((name) => (
                       <span
                         key={name}
-                        className={`px-2 py-0.5 text-xs font-mono rounded truncate max-w-32 ${
+                        className={`px-2 py-0.5 text-xs font-mono rounded whitespace-nowrap md:truncate md:max-w-32 ${
                           name === 'origin/HEAD' ? 'bg-blue-500/20 text-blue-400' : 'bg-accent'
                         }`}
                       >
@@ -304,6 +325,15 @@ export default function GitGraph({ commits, onCommitClick, theme = 'dark', isFul
                     ))}
                   </div>
                 )}
+                <div className="flex items-center gap-2 md:flex-1 md:min-w-0">
+                  <span className="text-sm whitespace-nowrap md:truncate" title={node.commit.subject}>
+                    {node.commit.subject}
+                  </span>
+                  <span className="text-xs font-mono text-muted-foreground flex-shrink-0">{node.commit.shortHash}</span>
+                  <span className="text-xs text-muted-foreground flex-shrink-0 hidden md:inline">
+                    {node.commit.relativeDate}
+                  </span>
+                </div>
               </button>
             )
           })}
