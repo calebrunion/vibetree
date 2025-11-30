@@ -88,7 +88,10 @@ export default function MobileTerminalToolbar() {
     try {
       await adapter.writeToShell(sessionId, KEYS.CTRL_C)
       await new Promise((resolve) => setTimeout(resolve, 100))
-      await adapter.writeToShell(sessionId, 'claude -c --permission-mode bypassPermissions\n')
+      await adapter.writeToShell(
+        sessionId,
+        'claude -c --permission-mode bypassPermissions || claude --permission-mode bypassPermissions\n'
+      )
     } catch (error) {
       console.error('Failed to launch Claude:', error)
     }
