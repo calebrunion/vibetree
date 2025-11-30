@@ -1,4 +1,4 @@
-import { GitBranch, Plus, Trash2 } from 'lucide-react'
+import { GitBranch, Loader2, Plus, Trash2 } from 'lucide-react'
 import type { Worktree } from '@buddy/core'
 import { useState, useEffect, useRef } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -30,7 +30,7 @@ export function MobileWorktreeTabs({
   const setShowAddWorktreeDialog = useAppStore((state) => state.setShowAddWorktreeDialog)
   const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set())
   const [deleteConfirmWorktree, setDeleteConfirmWorktree] = useState<{ path: string; branch: string } | null>(null)
-  const [deleting, setDeleting] = useState(false)
+  const [deletingPath, setDeletingPath] = useState<string | null>(null)
   const selectedButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export function MobileWorktreeTabs({
     const adapter = getAdapter()
     if (!adapter) return
 
-    setDeleting(true)
+    setDeletingPath(worktreePath)
     try {
       await adapter.removeWorktree(projectPath, worktreePath, branch.replace('refs/heads/', ''))
 
@@ -109,7 +109,7 @@ export function MobileWorktreeTabs({
     } catch (error) {
       console.error('Failed to delete worktree:', error)
     } finally {
-      setDeleting(false)
+      setDeletingPath(null)
       setDeleteConfirmWorktree(null)
     }
   }
@@ -154,7 +154,7 @@ export function MobileWorktreeTabs({
                 onClick={() => onSelectWorktree(worktree.path)}
                 className={`
                   flex flex-col items-start justify-center h-12 px-3 rounded-md whitespace-nowrap transition-colors border
-                  ${canDelete ? 'pr-10' : ''}
+                  ${canDelete ? 'pr-8' : ''}
                   ${
                     isSelected
                       ? 'bg-accent text-accent-foreground border-border shadow-sm'
@@ -174,10 +174,15 @@ export function MobileWorktreeTabs({
               {canDelete && (
                 <button
                   onClick={(e) => handleDeleteWorktree(worktree.path, worktree.branch!, e)}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50"
+                  disabled={deletingPath === worktree.path}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 disabled:opacity-100"
                   title="Delete worktree"
                 >
-                  <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+                  {deletingPath === worktree.path ? (
+                    <Loader2 className="h-3.5 w-3.5 text-red-600 dark:text-red-400 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+                  )}
                 </button>
               )}
             </div>
@@ -207,17 +212,24 @@ export function MobileWorktreeTabs({
               <div className="flex justify-end gap-2 mt-6">
                 <button
                   onClick={() => setDeleteConfirmWorktree(null)}
-                  disabled={deleting}
+                  disabled={!!deletingPath}
                   className="px-4 py-2 text-sm border border-border rounded-md hover:bg-accent disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => performDelete(deleteConfirmWorktree.path, deleteConfirmWorktree.branch)}
-                  disabled={deleting}
-                  className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                  disabled={!!deletingPath}
+                  className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
                 >
-                  {deleting ? 'Deleting...' : 'Delete'}
+                  {deletingPath ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
                 </button>
               </div>
             </div>
