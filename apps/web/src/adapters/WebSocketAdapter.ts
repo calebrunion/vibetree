@@ -137,9 +137,9 @@ export class WebSocketAdapter extends BaseAdapter {
     cols?: number,
     rows?: number,
     forceNew?: boolean,
-    runStartupCommands?: boolean
+    terminalId?: string
   ): Promise<ShellStartResult> {
-    return this.sendMessage('shell:start', { worktreePath, cols, rows, forceNew, runStartupCommands })
+    return this.sendMessage('shell:start', { worktreePath, cols, rows, forceNew, terminalId })
   }
 
   async writeToShell(processId: string, data: string): Promise<ShellWriteResult> {

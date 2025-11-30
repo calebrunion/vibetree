@@ -60,14 +60,11 @@ export default function VoiceInputDialog({
   setText: React.Dispatch<React.SetStateAction<string>>
 }) {
   const [isListening, setIsListening] = useState(false)
-  const [isVoiceSupported, setIsVoiceSupported] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition
-    setIsVoiceSupported(!!SpeechRecognitionAPI)
-
     if (!SpeechRecognitionAPI) return
 
     const recognition = new SpeechRecognitionAPI()
@@ -115,18 +112,6 @@ export default function VoiceInputDialog({
       }
     }
   }, [isOpen, isListening])
-
-  const toggleVoiceInput = useCallback(() => {
-    if (!recognitionRef.current) return
-
-    if (isListening) {
-      recognitionRef.current.stop()
-      setIsListening(false)
-    } else {
-      recognitionRef.current.start()
-      setIsListening(true)
-    }
-  }, [isListening])
 
   const handleSend = useCallback(() => {
     const trimmed = text.trim()

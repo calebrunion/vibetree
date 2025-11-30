@@ -8,9 +8,7 @@ import {
   CornerDownLeft,
   Delete,
   Eraser,
-  GitCommit,
   Mic,
-  SquarePen,
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
