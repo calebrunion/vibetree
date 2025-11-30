@@ -86,4 +86,26 @@ export default defineConfig({
     strictPort: false, // Allow Vite to find alternative ports
     // Note: Proxy configuration removed - apps will connect directly using environment variables
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-dom') || id.includes('react-router') || id.includes('/react/')) {
+              return 'vendor-react'
+            }
+            if (id.includes('xterm')) {
+              return 'vendor-xterm'
+            }
+            if (id.includes('@git-diff-view')) {
+              return 'vendor-diff'
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons'
+            }
+          }
+        },
+      },
+    },
+  },
 })

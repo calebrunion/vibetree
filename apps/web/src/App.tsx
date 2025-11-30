@@ -17,12 +17,16 @@ import {
   Terminal,
   X,
 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import AddProjectModal from './components/AddProjectModal'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
-import { GitDiffView, GitDiffViewRef } from './components/GitDiffView'
-import { GitGraphView, GitGraphViewRef } from './components/GitGraphView'
+import type { GitDiffViewRef } from './components/GitDiffView'
+
+const GitDiffView = lazy(() => import('./components/GitDiffView').then((m) => ({ default: m.GitDiffView })))
+import type { GitGraphViewRef } from './components/GitGraphView'
+
+const GitGraphView = lazy(() => import('./components/GitGraphView').then((m) => ({ default: m.GitGraphView })))
 import MobileTerminalToolbar from './components/MobileTerminalToolbar'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
@@ -701,25 +705,41 @@ function App() {
 
                     {/* Keep GitDiffView mounted but hidden to preserve state */}
                     <div className={`absolute inset-0 ${getCurrentTab(project) === 'changes' ? 'block' : 'hidden'}`}>
-                      <GitDiffView
-                        ref={gitDiffRef}
-                        worktreePath={project.selectedWorktree}
-                        theme={theme}
-                        onFileCountChange={setChangedFilesCount}
-                        isFullscreen={project.isDiffFullscreen}
-                        onExitFullscreen={() => toggleDiffFullscreen(project.id)}
-                      />
+                      <Suspense
+                        fallback={
+                          <div className="flex items-center justify-center h-full text-muted-foreground">
+                            Loading diff viewer...
+                          </div>
+                        }
+                      >
+                        <GitDiffView
+                          ref={gitDiffRef}
+                          worktreePath={project.selectedWorktree}
+                          theme={theme}
+                          onFileCountChange={setChangedFilesCount}
+                          isFullscreen={project.isDiffFullscreen}
+                          onExitFullscreen={() => toggleDiffFullscreen(project.id)}
+                        />
+                      </Suspense>
                     </div>
 
                     {/* Git Graph View */}
                     <div className={`absolute inset-0 ${getCurrentTab(project) === 'graph' ? 'block' : 'hidden'}`}>
-                      <GitGraphView
-                        ref={gitGraphRef}
-                        worktreePath={project.selectedWorktree}
-                        theme={theme}
-                        isFullscreen={project.isGraphFullscreen}
-                        onExitFullscreen={() => toggleGraphFullscreen(project.id)}
-                      />
+                      <Suspense
+                        fallback={
+                          <div className="flex items-center justify-center h-full text-muted-foreground">
+                            Loading graph...
+                          </div>
+                        }
+                      >
+                        <GitGraphView
+                          ref={gitGraphRef}
+                          worktreePath={project.selectedWorktree}
+                          theme={theme}
+                          isFullscreen={project.isGraphFullscreen}
+                          onExitFullscreen={() => toggleGraphFullscreen(project.id)}
+                        />
+                      </Suspense>
                     </div>
                   </div>
                 </div>
