@@ -398,6 +398,8 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     const srcIndex = dirPath.indexOf('/src/')
     if (srcIndex !== -1) {
       dirPath = '@' + dirPath.substring(srcIndex + 4)
+    } else if (dirPath.endsWith('/src')) {
+      dirPath = '@'
     } else if (dirPath.startsWith('src/')) {
       dirPath = '@/' + dirPath.substring(4)
     } else if (dirPath === 'src') {
