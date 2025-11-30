@@ -75,6 +75,7 @@ function App() {
   const [showMobileSettingsModal, setShowMobileSettingsModal] = useState(false)
   const gitDiffRef = useRef<GitDiffViewRef>(null)
   const gitGraphRef = useRef<GitGraphViewRef>(null)
+  const activeProjectTabRef = useRef<HTMLButtonElement>(null)
 
   // const activeProject = getActiveProject();
 
@@ -168,6 +169,18 @@ function App() {
       document.documentElement.classList.remove('dark')
     }
   }, [theme])
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      if (activeProjectTabRef.current) {
+        activeProjectTabRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        })
+      }
+    })
+  }, [activeProjectId, projects.length])
 
   const cycleProject = useCallback(
     (direction: 'next' | 'prev') => {
@@ -510,6 +523,7 @@ function App() {
                 <TabsTrigger
                   key={project.id}
                   value={project.id}
+                  ref={project.id === activeProjectId ? activeProjectTabRef : null}
                   className="project-tab group/tab relative pl-3 pr-7 h-[34px] min-w-[120px] md:min-w-[140px] max-w-[240px] rounded-t-xl text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 data-[state=active]:hover:!bg-background app-region-no-drag"
                 >
                   <span className="truncate">{project.name}</span>
