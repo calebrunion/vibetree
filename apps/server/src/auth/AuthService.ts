@@ -25,7 +25,7 @@ export class AuthService {
   private userSessions: Set<string> = new Set() // For username/password auth sessions
 
   constructor() {
-    this.jwtSecret = process.env.JWT_SECRET || 'vibetree-dev-secret-change-in-production'
+    this.jwtSecret = process.env.JWT_SECRET || 'buddy-dev-secret-change-in-production'
 
     // Clean up expired tokens periodically
     setInterval(() => this.cleanupExpiredTokens(), 60000) // Every minute

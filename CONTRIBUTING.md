@@ -1,6 +1,6 @@
-# Contributing to VibeTree
+# Contributing to Buddy
 
-We love your input! We want to make contributing to VibeTree as easy and transparent as possible, whether it's:
+We love your input! We want to make contributing to Buddy as easy and transparent as possible, whether it's:
 
 - Reporting a bug
 - Discussing the current state of the code

@@ -1,5 +1,5 @@
-import { LoginPage, useAuth } from '@vibetree/auth'
-import { ConfirmDialog, Tabs, TabsContent, TabsList, TabsTrigger } from '@vibetree/ui'
+import { LoginPage, useAuth } from '@buddy/auth'
+import { ConfirmDialog, Tabs, TabsContent, TabsList, TabsTrigger } from '@buddy/ui'
 import {
   CheckCircle,
   Columns2,
@@ -412,7 +412,7 @@ function App() {
         {/* Header */}
         <header className="h-14 border-b flex items-center justify-between px-4 flex-shrink-0 titlebar-area titlebar-area-inset">
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold">VibeTree</h1>
+            <h1 className="text-lg font-semibold">Buddy</h1>
             <span className="text-xs text-muted-foreground hidden sm:inline">Web Terminal</span>
           </div>
           <div className="flex items-center gap-2 app-region-no-drag">
@@ -457,7 +457,7 @@ function App() {
       {/* Header - hidden */}
       <header className="hidden h-14 border-b flex items-center justify-between px-4 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold">VibeTree</h1>
+          <h1 className="text-lg font-semibold">Buddy</h1>
           <span className="text-xs text-muted-foreground hidden sm:inline">Web Terminal</span>
         </div>
         <div className="flex items-center gap-2">

@@ -1,6 +1,6 @@
-# Running E2E Tests for VibeTree Desktop
+# Running E2E Tests for Buddy Desktop
 
-This document explains how to successfully run the end-to-end (E2E) tests for the VibeTree desktop application.
+This document explains how to successfully run the end-to-end (E2E) tests for the Buddy desktop application.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ pnpm install
 
 ### 2. Build Workspace Dependencies
 
-The desktop app depends on workspace packages (@vibetree/core and @vibetree/ui) that need to be built first:
+The desktop app depends on workspace packages (@buddy/core and @buddy/ui) that need to be built first:
 
 ```bash
 pnpm build:deps
@@ -28,8 +28,8 @@ pnpm build:deps
 
 This command builds:
 
-- `@vibetree/core` - Core functionality shared across applications
-- `@vibetree/ui` - Shared UI components
+- `@buddy/core` - Core functionality shared across applications
+- `@buddy/ui` - Shared UI components
 
 ### 3. Fix Electron Installation (if needed)
 
@@ -46,7 +46,7 @@ This command will properly install the Electron binary by running the install sc
 Execute the E2E tests using:
 
 ```bash
-pnpm --filter @vibetree/desktop test:e2e
+pnpm --filter @buddy/desktop test:e2e
 ```
 
 This command will:
@@ -79,7 +79,7 @@ The Playwright configuration is defined in `apps/desktop/playwright.config.ts` w
 For debugging and interactive test development:
 
 ```bash
-pnpm --filter @vibetree/desktop test:e2e:ui
+pnpm --filter @buddy/desktop test:e2e:ui
 ```
 
 ## Running a Single Test
@@ -88,20 +88,20 @@ When debugging, you can run a single test file to focus on specific issues:
 
 ```bash
 # Run a specific test file
-pnpm --filter @vibetree/desktop test:e2e path/to/test.spec.ts
+pnpm --filter @buddy/desktop test:e2e path/to/test.spec.ts
 
 # Example: Run only the terminal splitting tests
-pnpm --filter @vibetree/desktop test:e2e e2e/terminal-split.spec.ts
+pnpm --filter @buddy/desktop test:e2e e2e/terminal-split.spec.ts
 ```
 
 You can also run a specific test within a file by using Playwright's test filtering:
 
 ```bash
 # Run tests matching a specific name pattern
-pnpm --filter @vibetree/desktop test:e2e --grep "test name pattern"
+pnpm --filter @buddy/desktop test:e2e --grep "test name pattern"
 
 # Example: Run only tests containing "vertical split"
-pnpm --filter @vibetree/desktop test:e2e --grep "vertical split"
+pnpm --filter @buddy/desktop test:e2e --grep "vertical split"
 ```
 
 ## Troubleshooting
@@ -141,5 +141,5 @@ pnpm build:deps
 pnpm fix:electron
 
 # Run E2E tests
-pnpm --filter @vibetree/desktop test:e2e
+pnpm --filter @buddy/desktop test:e2e
 ```

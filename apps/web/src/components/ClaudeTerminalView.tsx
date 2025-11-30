@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Terminal } from '@vibetree/ui'
+import { Terminal } from '@buddy/ui'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
 import type { Terminal as XTerm } from '@xterm/xterm'

@@ -5,7 +5,7 @@ import { WebLinksAddon } from '@xterm/addon-web-links'
 import { SerializeAddon } from '@xterm/addon-serialize'
 import { Unicode11Addon } from '@xterm/addon-unicode11'
 import { SearchAddon } from '@xterm/addon-search'
-import { escapeShellPath } from '@vibetree/core'
+import { escapeShellPath } from '@buddy/core'
 import '@xterm/xterm/css/xterm.css'
 
 /**

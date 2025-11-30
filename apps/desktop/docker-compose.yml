@@ -14,4 +14,4 @@ services:
       - CI=true
       - DISPLAY=:99.0
       - ELECTRON_DISABLE_SANDBOX=1
-    command: sh -c "xvfb-run --auto-servernum --server-args='-screen 0 1280x960x24' -- pnpm --filter @vibetree/desktop exec playwright test --reporter=list"
+    command: sh -c "xvfb-run --auto-servernum --server-args='-screen 0 1280x960x24' -- pnpm --filter @buddy/desktop exec playwright test --reporter=list"

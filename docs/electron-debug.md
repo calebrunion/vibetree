@@ -1,6 +1,6 @@
 # Electron MCP Debugging Guide - Project Opening Features
 
-This guide documents how to open projects in the VibeTree Electron application using the Electron MCP tools.
+This guide documents how to open projects in the Buddy Electron application using the Electron MCP tools.
 
 ## Prerequisites
 
@@ -47,7 +47,7 @@ window.electronAPI = {
 
 ### Method 1: Open Current Working Directory
 
-The `openCwd` method allows you to quickly open the current working directory (where the Electron app was launched from) in VibeTree.
+The `openCwd` method allows you to quickly open the current working directory (where the Electron app was launched from) in Buddy.
 
 #### Quick Usage
 

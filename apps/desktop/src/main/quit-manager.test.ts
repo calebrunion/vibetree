@@ -52,8 +52,8 @@ describe('QuitManager', () => {
         mockWindow,
         expect.objectContaining({
           type: 'question',
-          title: 'Quit VibeTree?',
-          message: 'Quit VibeTree?',
+          title: 'Quit Buddy?',
+          message: 'Quit Buddy?',
           detail: 'All sessions will be closed.',
           buttons: ['Cancel', 'OK'],
         })
@@ -101,7 +101,7 @@ describe('QuitManager', () => {
       expect(dialog.showMessageBoxSync).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'question',
-          title: 'Quit VibeTree?',
+          title: 'Quit Buddy?',
         })
       )
 

@@ -1,7 +1,7 @@
 {
-  "name": "@vibetree/web",
+  "name": "@buddy/web",
   "version": "0.0.1",
-  "description": "VibeTree Web - Mobile-friendly web client",
+  "description": "Buddy Web - Mobile-friendly web client",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -14,9 +14,9 @@
   },
   "dependencies": {
     "@git-diff-view/react": "^0.0.30",
-    "@vibetree/auth": "workspace:*",
-    "@vibetree/core": "workspace:*",
-    "@vibetree/ui": "workspace:*",
+    "@buddy/auth": "workspace:*",
+    "@buddy/core": "workspace:*",
+    "@buddy/ui": "workspace:*",
     "clsx": "^2.1.0",
     "lucide-react": "^0.309.0",
     "nosleep.js": "^0.12.0",

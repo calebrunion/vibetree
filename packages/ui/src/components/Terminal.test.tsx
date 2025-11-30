@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, fireEvent, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { Terminal } from './Terminal'
-import { escapeShellPath } from '@vibetree/core'
+import { escapeShellPath } from '@buddy/core'
 import React from 'react'
 
 // Mock xterm and its addons

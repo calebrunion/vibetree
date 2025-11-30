@@ -4,7 +4,7 @@ import {
   getSystemDiagnostics,
   getExtendedDiagnostics,
   formatExtendedDiagnostics,
-} from '@vibetree/core'
+} from '@buddy/core'
 import { terminalSettingsManager } from './terminal-settings'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -51,7 +51,7 @@ class DesktopShellManager {
       return workerPath
     } else {
       // Production: worker is bundled in app.asar
-      return path.join(app.getAppPath(), 'node_modules/@vibetree/core/dist/workers/pty-worker.cjs')
+      return path.join(app.getAppPath(), 'node_modules/@buddy/core/dist/workers/pty-worker.cjs')
     }
   }
 
@@ -257,7 +257,7 @@ class DesktopShellManager {
         const formattedText = formatExtendedDiagnostics(diagnostics)
 
         // Create diagnostics directory in user's home
-        const diagDir = path.join(os.homedir(), '.vibetree', 'diagnostics')
+        const diagDir = path.join(os.homedir(), '.buddy', 'diagnostics')
         if (!fs.existsSync(diagDir)) {
           fs.mkdirSync(diagDir, { recursive: true })
         }

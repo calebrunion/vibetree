@@ -1,5 +1,5 @@
 import { GitBranch, Plus, Trash2 } from 'lucide-react'
-import type { Worktree } from '@vibetree/core'
+import type { Worktree } from '@buddy/core'
 import { useState, useEffect, useRef } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAppStore } from '../store'

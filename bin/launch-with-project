@@ -11,7 +11,7 @@ set -e
 #
 # Prerequisites:
 #   - Dependencies must be installed: pnpm install
-#   - The desktop app should be built: pnpm --filter @vibetree/desktop build
+#   - The desktop app should be built: pnpm --filter @buddy/desktop build
 #     (The script will attempt to build if not already built)
 
 # Parse arguments
@@ -57,9 +57,9 @@ fi
 PROJECT_PATH="$(cd "$PROJECT_ARG" && pwd)"
 
 if [ -n "$PROJECT_NAME" ]; then
-  echo "Launching VibeTree with project: $PROJECT_PATH (name: $PROJECT_NAME)"
+  echo "Launching Buddy with project: $PROJECT_PATH (name: $PROJECT_NAME)"
 else
-  echo "Launching VibeTree with project: $PROJECT_PATH"
+  echo "Launching Buddy with project: $PROJECT_PATH"
 fi
 
 # Install dependencies (pnpm install is fast if already installed)
@@ -81,7 +81,7 @@ pnpm fix:electron || {
 
 # Build the app (always build to ensure latest code)
 echo "Building app..."
-pnpm --filter @vibetree/core build && pnpm --filter @vibetree/desktop build || {
+pnpm --filter @buddy/core build && pnpm --filter @buddy/desktop build || {
   echo ""
   echo "Build failed. Please check the error above."
   exit 1

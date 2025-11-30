@@ -111,13 +111,13 @@ jobs:
       run: pnpm build
     
     - name: Build web app
-      run: pnpm --filter @vibetree/web build
+      run: pnpm --filter @buddy/web build
     
     - name: Build server
-      run: pnpm --filter @vibetree/server build
+      run: pnpm --filter @buddy/server build
       
     - name: Build desktop app
-      run: pnpm --filter @vibetree/desktop build
+      run: pnpm --filter @buddy/desktop build
 
   build-linux:
     name: Build (Linux)
@@ -154,10 +154,10 @@ jobs:
       run: pnpm build
     
     - name: Build web app
-      run: pnpm --filter @vibetree/web build
+      run: pnpm --filter @buddy/web build
     
     - name: Build server
-      run: pnpm --filter @vibetree/server build
+      run: pnpm --filter @buddy/server build
       
     # Skip desktop app build on Linux due to potential GUI dependencies
 
@@ -196,13 +196,13 @@ jobs:
       run: pnpm build
     
     - name: Build web app
-      run: pnpm --filter @vibetree/web build
+      run: pnpm --filter @buddy/web build
     
     - name: Build server
-      run: pnpm --filter @vibetree/server build
+      run: pnpm --filter @buddy/server build
       
     - name: Build desktop app
-      run: pnpm --filter @vibetree/desktop build
+      run: pnpm --filter @buddy/desktop build
 
   e2e-tests:
     name: E2E Tests
@@ -230,7 +230,7 @@ jobs:
       run: pnpm build:deps
 
     - name: Build desktop app
-      run: pnpm --filter @vibetree/desktop build
+      run: pnpm --filter @buddy/desktop build
 
     - name: Compile test main file
       run: |
@@ -249,7 +249,7 @@ jobs:
 
     - name: Run e2e tests
       run: |
-        xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter @vibetree/desktop exec playwright test --reporter=list || TEST_EXIT_CODE=$?
+        xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter @buddy/desktop exec playwright test --reporter=list || TEST_EXIT_CODE=$?
         # Kill any lingering Electron processes to prevent worker teardown timeout
         pkill -9 -f electron || true
         pkill -9 -f xvfb || true

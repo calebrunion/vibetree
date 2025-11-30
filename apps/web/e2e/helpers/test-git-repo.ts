@@ -18,7 +18,7 @@ export function createTestGitRepo(options: CreateTestRepoOptions = {}): TestRepo
   const { nameSuffix = 'repo', createWorktree = false, worktreeBranch = 'test-branch' } = options
 
   const timestamp = Date.now()
-  const repoPath = path.join(os.tmpdir(), `vibetree-web-test-${nameSuffix}-${timestamp}`)
+  const repoPath = path.join(os.tmpdir(), `buddy-web-test-${nameSuffix}-${timestamp}`)
 
   fs.mkdirSync(repoPath, { recursive: true })
   execSync('git init -q', { cwd: repoPath })
@@ -40,7 +40,7 @@ export function createTestGitRepo(options: CreateTestRepoOptions = {}): TestRepo
   const result: TestRepoResult = { repoPath }
 
   if (createWorktree) {
-    const worktreePath = path.join(os.tmpdir(), `vibetree-web-test-${worktreeBranch}-${timestamp}`)
+    const worktreePath = path.join(os.tmpdir(), `buddy-web-test-${worktreeBranch}-${timestamp}`)
     execSync(`git worktree add -b ${worktreeBranch} "${worktreePath}"`, { cwd: repoPath })
     console.log('Created worktree at:', worktreePath)
     result.worktreePath = worktreePath

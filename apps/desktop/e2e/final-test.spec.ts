@@ -3,7 +3,7 @@ import { ElectronApplication, Page, _electron as electron } from 'playwright'
 import { closeElectronApp } from './helpers/test-launcher'
 import path from 'path'
 
-test.describe('VibeTree Desktop App', () => {
+test.describe('Buddy Desktop App', () => {
   let electronApp: ElectronApplication
   let page: Page
 

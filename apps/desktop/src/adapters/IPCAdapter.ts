@@ -1,4 +1,4 @@
-import { BaseAdapter } from '@vibetree/core'
+import { BaseAdapter } from '@buddy/core'
 import type {
   Worktree,
   GitStatus,
@@ -8,7 +8,7 @@ import type {
   WorktreeAddResult,
   WorktreeRemoveResult,
   IDE,
-} from '@vibetree/core'
+} from '@buddy/core'
 
 export class IPCAdapter extends BaseAdapter {
   async startShell(

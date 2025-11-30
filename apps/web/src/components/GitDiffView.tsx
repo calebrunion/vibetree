@@ -3,7 +3,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, Minimize2,
 import { DiffView, DiffModeEnum } from '@git-diff-view/react'
 import '@git-diff-view/react/styles/diff-view.css'
 import { useWebSocket } from '../hooks/useWebSocket'
-import type { GitStatus, GitCommit as GitCommitType, CommitFile } from '@vibetree/core'
+import type { GitStatus, GitCommit as GitCommitType, CommitFile } from '@buddy/core'
 
 class DiffErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode; fallback: ReactNode }) {

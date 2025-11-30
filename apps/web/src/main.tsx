@@ -1,6 +1,6 @@
 // import React from 'react';
 import ReactDOM from 'react-dom/client'
-import { AuthProvider } from '@vibetree/auth'
+import { AuthProvider } from '@buddy/auth'
 import App from './App'
 import './styles/globals.css'
 

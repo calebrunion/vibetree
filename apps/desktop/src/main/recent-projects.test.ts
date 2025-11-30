@@ -5,7 +5,7 @@ import path from 'path'
 // Mock electron
 vi.mock('electron', () => ({
   app: {
-    getPath: vi.fn(() => '/tmp/vibetree-test'),
+    getPath: vi.fn(() => '/tmp/buddy-test'),
   },
 }))
 
@@ -72,7 +72,7 @@ describe('RecentProjectsManager', () => {
 
     // Verify save was called
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      path.join('/tmp/vibetree-test', 'recent-projects.json'),
+      path.join('/tmp/buddy-test', 'recent-projects.json'),
       expect.any(String)
     )
   })
@@ -137,7 +137,7 @@ describe('RecentProjectsManager', () => {
     expect(recentProjects[0].path).toBe('/path/to/project2')
 
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-      path.join('/tmp/vibetree-test', 'recent-projects.json'),
+      path.join('/tmp/buddy-test', 'recent-projects.json'),
       expect.any(String)
     )
   })
@@ -158,7 +158,7 @@ describe('RecentProjectsManager', () => {
     const recentProjects = recentProjectsManager.getRecentProjects()
     expect(recentProjects).toHaveLength(0)
 
-    expect(mockFs.writeFileSync).toHaveBeenCalledWith(path.join('/tmp/vibetree-test', 'recent-projects.json'), '[]')
+    expect(mockFs.writeFileSync).toHaveBeenCalledWith(path.join('/tmp/buddy-test', 'recent-projects.json'), '[]')
   })
 
   it('should handle corrupted file gracefully', async () => {
@@ -202,7 +202,7 @@ describe('RecentProjectsManager', () => {
 
     recentProjectsManager.addRecentProject('/path/to/project')
 
-    expect(mockFs.mkdirSync).toHaveBeenCalledWith('/tmp/vibetree-test', { recursive: true })
+    expect(mockFs.mkdirSync).toHaveBeenCalledWith('/tmp/buddy-test', { recursive: true })
     expect(mockFs.writeFileSync).toHaveBeenCalled()
   })
 })

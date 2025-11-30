@@ -147,9 +147,7 @@ export function LoginPage({ onLoginSuccess, className = '' }: LoginPageProps) {
     <div className={`h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 ${className}`}>
       <div className="max-w-md w-full space-y-8 p-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Sign in to VibeTree
-          </h2>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">Sign in to Buddy</h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Enter your credentials to access the terminal interface
           </p>

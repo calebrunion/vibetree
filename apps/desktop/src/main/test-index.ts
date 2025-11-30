@@ -25,8 +25,8 @@ function showQuitConfirmation() {
     buttons: ['Cancel', 'OK'],
     defaultId: 0,
     cancelId: 0,
-    title: 'Quit VibeTree?',
-    message: 'Quit VibeTree?',
+    title: 'Quit Buddy?',
+    message: 'Quit Buddy?',
     detail: 'All sessions will be closed.',
   }
 
@@ -48,7 +48,7 @@ function createWindow() {
     minHeight: 600,
     titleBarStyle: 'hiddenInset',
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
-    icon: path.join(__dirname, '../../assets/icons/VibeTree.png'),
+    icon: path.join(__dirname, '../../assets/icons/Buddy.png'),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,

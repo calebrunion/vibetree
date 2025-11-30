@@ -1,11 +1,11 @@
-# VibeTree Monorepo Structure
+# Buddy Monorepo Structure
 
 This repository has been restructured as a monorepo to support multiple platforms (desktop, web, mobile) while sharing core functionality.
 
 ## Architecture Overview
 
 ```
-vibetree/
+buddy/
 ├── packages/
 │   ├── core/       # Shared business logic and types
 │   ├── desktop/    # Electron desktop application
@@ -60,7 +60,7 @@ pnpm package:desktop
 
 ## Package Details
 
-### @vibetree/core
+### @buddy/core
 
 Shared TypeScript types and interfaces used across all packages:
 
@@ -68,7 +68,7 @@ Shared TypeScript types and interfaces used across all packages:
 - Common types (Worktree, GitStatus, ShellSession, etc.)
 - Business logic that can be shared
 
-### @vibetree/desktop
+### @buddy/desktop
 
 The original Electron desktop application with:
 
@@ -77,7 +77,7 @@ The original Electron desktop application with:
 - IPC communication
 - IDE integration (VS Code, Cursor)
 
-### @vibetree/server
+### @buddy/server
 
 Backend service that enables web/mobile access:
 
@@ -87,7 +87,7 @@ Backend service that enables web/mobile access:
 - QR code authentication for device pairing
 - JWT-based authentication
 
-### @vibetree/web
+### @buddy/web
 
 Mobile-friendly Progressive Web App:
 
@@ -110,7 +110,7 @@ Desktop UI <-> IPC <-> Electron Main Process <-> Native APIs (git, pty, fs)
 Web UI <-> WebSocket <-> Server <-> Native APIs (git, pty, fs)
 ```
 
-Both use the same `CommunicationAdapter` interface from `@vibetree/core`, allowing code reuse and consistent behavior across platforms.
+Both use the same `CommunicationAdapter` interface from `@buddy/core`, allowing code reuse and consistent behavior across platforms.
 
 ## QR Code Connection (Future Feature)
 

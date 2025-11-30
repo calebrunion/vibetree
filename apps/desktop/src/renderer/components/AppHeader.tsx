@@ -27,7 +27,7 @@ export function AppHeader({ className = '', theme, onThemeToggle }: AppHeaderPro
             className="text-2xl font-bold cursor-text select-text"
             style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
           >
-            VibeTree
+            Buddy
           </h1>
           <p
             className="text-muted-foreground mt-1 cursor-text select-text"

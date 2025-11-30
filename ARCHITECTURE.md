@@ -1,13 +1,13 @@
-# VibeTree Architecture
+# Buddy Architecture
 
 ## Overview
 
-VibeTree is a multi-platform application that enables parallel development with AI assistance across multiple git worktrees. The architecture follows a monorepo structure with clear separation between applications and shared packages.
+Buddy is a multi-platform application that enables parallel development with AI assistance across multiple git worktrees. The architecture follows a monorepo structure with clear separation between applications and shared packages.
 
 ## Directory Structure
 
 ```
-vibetree/
+buddy/
 ├── apps/                    # Applications
 │   ├── desktop/            # Electron desktop app
 │   ├── server/             # Backend service for web/mobile
@@ -24,7 +24,7 @@ vibetree/
 
 ## Packages
 
-### @vibetree/core
+### @buddy/core
 
 **Purpose**: Shared business logic, types, and utilities
 
@@ -34,7 +34,7 @@ vibetree/
 - **Adapters**: `CommunicationAdapter` interface for platform abstraction
 - **Utilities**: Git parsing functions (`parseWorktrees`, `parseGitStatus`)
 
-### @vibetree/ui
+### @buddy/ui
 
 **Purpose**: Shared React components for consistent UI across platforms
 
@@ -45,7 +45,7 @@ vibetree/
 
 ## Applications
 
-### @vibetree/desktop
+### @buddy/desktop
 
 **Platform**: Electron
 **Communication**: IPC (Inter-Process Communication)
@@ -56,7 +56,7 @@ vibetree/
 - IDE integration (VS Code, Cursor)
 - Native git operations
 
-### @vibetree/server
+### @buddy/server
 
 **Platform**: Node.js
 **Communication**: WebSocket + REST API
@@ -68,7 +68,7 @@ vibetree/
 - JWT-based sessions
 - Device pairing
 
-### @vibetree/web
+### @buddy/web
 
 **Platform**: Browser (PWA)
 **Communication**: WebSocket
@@ -130,7 +130,7 @@ UI → WebSocketAdapter → WebSocket → Server → Native APIs
 ### 3. Shared UI Components
 
 - **Reasoning**: Consistent user experience across platforms
-- **Implementation**: React components in @vibetree/ui package
+- **Implementation**: React components in @buddy/ui package
 
 ### 4. Git Operations in Core
 
@@ -183,7 +183,7 @@ pnpm typecheck
 
 ### Testing Changes
 
-1. Build core packages first: `pnpm build --filter @vibetree/core`
+1. Build core packages first: `pnpm build --filter @buddy/core`
 2. Test in target application: `pnpm dev:desktop`
 3. Verify cross-platform compatibility
 

@@ -1,7 +1,7 @@
 import { Express } from 'express'
 import { ShellManager } from '../services/ShellManager'
 import { AuthService } from '../auth/AuthService'
-import { listWorktrees, getGitStatus, getGitDiff, addWorktree, removeWorktree, validateProjects } from '@vibetree/core'
+import { listWorktrees, getGitStatus, getGitDiff, addWorktree, removeWorktree, validateProjects } from '@buddy/core'
 
 interface Services {
   shellManager: ShellManager

@@ -11,7 +11,7 @@ import {
 } from '../types'
 
 /**
- * Unified communication interface for VibeTree applications.
+ * Unified communication interface for Buddy applications.
  * This adapter pattern allows the same application logic to work
  * across different environments (Electron IPC, WebSockets, etc.)
  */

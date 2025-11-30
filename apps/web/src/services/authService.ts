@@ -1,4 +1,4 @@
-import { AuthStorage } from '@vibetree/auth'
+import { AuthStorage } from '@buddy/auth'
 
 /**
  * Get authenticated headers for API requests

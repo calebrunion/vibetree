@@ -1,7 +1,7 @@
 {
-  "name": "@vibetree/desktop",
+  "name": "@buddy/desktop",
   "version": "0.0.1",
-  "description": "VibeTree Desktop Application",
+  "description": "Buddy Desktop Application",
   "main": "dist/main/index.js",
   "scripts": {
     "predev": "cd ../../packages/core && pnpm build && cd ../../apps/desktop && pnpm copy:assets",
@@ -29,7 +29,7 @@
     "test:e2e": "pnpm build && playwright test",
     "test:e2e:ui": "pnpm build && playwright test --ui",
     "test:e2e:docker": "docker-compose run --rm playwright",
-    "test:e2e:docker:build": "docker build -f Dockerfile.playwright -t vibetree-playwright ../../ && docker run --rm vibetree-playwright"
+    "test:e2e:docker:build": "docker build -f Dockerfile.playwright -t buddy-playwright ../../ && docker run --rm buddy-playwright"
   },
   "keywords": [
     "electron",
@@ -81,8 +81,8 @@
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-toast": "^1.1.5",
-    "@vibetree/core": "workspace:*",
-    "@vibetree/ui": "workspace:*",
+    "@buddy/core": "workspace:*",
+    "@buddy/ui": "workspace:*",
     "@xterm/addon-clipboard": "^0.2.0-beta.101",
     "@xterm/addon-fit": "^0.11.0-beta.118",
     "@xterm/addon-image": "^0.9.0-beta.118",

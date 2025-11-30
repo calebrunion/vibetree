@@ -2,12 +2,12 @@ version: '3.8'
 
 services:
   # Backend API Server
-  vibetree-server:
+  buddy-server:
     build:
       context: .
       dockerfile: Dockerfile
       target: runtime
-    container_name: vibetree-server
+    container_name: buddy-server
     ports:
       - "3002:3002"
     environment:
@@ -27,19 +27,19 @@ services:
       start_period: 40s
 
   # Frontend Web Application
-  vibetree-web:
+  buddy-web:
     build:
       context: .
       dockerfile: Dockerfile
       target: runtime
-    container_name: vibetree-web
+    container_name: buddy-web
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
       - WEB_PORT=3000
     depends_on:
-      vibetree-server:
+      buddy-server:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
@@ -52,14 +52,14 @@ services:
   # Optional: Reverse Proxy (Nginx)
   nginx:
     image: nginx:alpine
-    container_name: vibetree-proxy
+    container_name: buddy-proxy
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - vibetree-web
-      - vibetree-server
+      - buddy-web
+      - buddy-server
     restart: unless-stopped
     profiles:
       - proxy

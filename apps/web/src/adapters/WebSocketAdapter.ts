@@ -1,4 +1,4 @@
-import { BaseAdapter } from '@vibetree/core'
+import { BaseAdapter } from '@buddy/core'
 import type {
   Worktree,
   GitStatus,
@@ -11,7 +11,7 @@ import type {
   WorktreeRemoveResult,
   IDE,
   ProjectSettings,
-} from '@vibetree/core'
+} from '@buddy/core'
 
 export class WebSocketAdapter extends BaseAdapter {
   private ws: WebSocket | null = null

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { escapeShellPath } from '@vibetree/core'
+import { escapeShellPath } from '@buddy/core'
 
 // Test the escapeShellPath function
 describe('ClaudeTerminal - escapeShellPath', () => {

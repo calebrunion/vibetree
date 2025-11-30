@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Build script for custom VibeTree variations (macOS only)
+# Build script for custom Buddy variations (macOS only)
 # Usage: ./build-custom-mac-version.sh [VARIATION_NAME]
-# Example: ./build-custom-mac-version.sh Nov2  -> Creates VibeTreeNov2.app
+# Example: ./build-custom-mac-version.sh Nov2  -> Creates BuddyNov2.app
 
 set -e  # Exit on error
 
@@ -26,7 +26,7 @@ if [ -z "$1" ]; then
 fi
 
 VARIATION_NAME="$1"
-PRODUCT_NAME="VibeTree${VARIATION_NAME}"
+PRODUCT_NAME="Buddy${VARIATION_NAME}"
 APP_NAME="${PRODUCT_NAME}.app"
 ELECTRON_BUILDER_CONFIG="apps/desktop/electron-builder.json"
 BACKUP_CONFIG="${ELECTRON_BUILDER_CONFIG}.backup"
@@ -35,10 +35,10 @@ echo "📦 Installing dependencies..."
 pnpm install
 
 echo "🔨 Building core package..."
-pnpm --filter @vibetree/core build
+pnpm --filter @buddy/core build
 
-echo "🔨 Building VibeTree desktop app..."
-pnpm --filter @vibetree/desktop build
+echo "🔨 Building Buddy desktop app..."
+pnpm --filter @buddy/desktop build
 
 echo "📝 Updating electron-builder config with custom product name..."
 # Backup original config
@@ -47,14 +47,14 @@ cp "${ELECTRON_BUILDER_CONFIG}" "${BACKUP_CONFIG}"
 # Update productName in the config
 if [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS sed syntax
-  sed -i '' "s/\"productName\": \"VibeTree\"/\"productName\": \"${PRODUCT_NAME}\"/" "${ELECTRON_BUILDER_CONFIG}"
+  sed -i '' "s/\"productName\": \"Buddy\"/\"productName\": \"${PRODUCT_NAME}\"/" "${ELECTRON_BUILDER_CONFIG}"
 else
   # Linux sed syntax
-  sed -i "s/\"productName\": \"VibeTree\"/\"productName\": \"${PRODUCT_NAME}\"/" "${ELECTRON_BUILDER_CONFIG}"
+  sed -i "s/\"productName\": \"Buddy\"/\"productName\": \"${PRODUCT_NAME}\"/" "${ELECTRON_BUILDER_CONFIG}"
 fi
 
 echo "📦 Packaging the app as ${PRODUCT_NAME}..."
-pnpm --filter @vibetree/desktop package
+pnpm --filter @buddy/desktop package
 
 echo "🗑️  Removing old ${APP_NAME} if exists..."
 rm -rf "/Applications/${APP_NAME}"

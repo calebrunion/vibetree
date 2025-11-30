@@ -1,6 +1,6 @@
-# VibeTree Web Application
+# Buddy Web Application
 
-The web interface for VibeTree that connects to the socket server for terminal and git operations.
+The web interface for Buddy that connects to the socket server for terminal and git operations.
 
 ## Setup
 

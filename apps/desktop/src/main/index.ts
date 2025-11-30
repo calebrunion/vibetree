@@ -13,7 +13,7 @@ let mainWindow: BrowserWindow | null = null
 function createWindow() {
   // Get custom app name from environment
   const autoOpenAppName = process.env.AUTO_OPEN_PROJECT_NAME
-  const windowTitle = autoOpenAppName ? `VibeTree - ${autoOpenAppName}` : 'VibeTree'
+  const windowTitle = autoOpenAppName ? `Buddy - ${autoOpenAppName}` : 'Buddy'
 
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -22,7 +22,7 @@ function createWindow() {
     minHeight: 600,
     titleBarStyle: 'hiddenInset',
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
-    icon: path.join(__dirname, '../../assets/icons/VibeTree.png'),
+    icon: path.join(__dirname, '../../assets/icons/Buddy.png'),
     title: windowTitle,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
@@ -97,7 +97,7 @@ app.whenReady().then(() => {
       if (mainWindow && fs.existsSync(autoOpenProject)) {
         // Set title again after page load to ensure it persists
         if (autoOpenAppName) {
-          mainWindow.setTitle(`VibeTree - ${autoOpenAppName}`)
+          mainWindow.setTitle(`Buddy - ${autoOpenAppName}`)
         }
         setTimeout(() => {
           // Send just the path - project name will be derived from path
@@ -123,4 +123,4 @@ app.on('activate', () => {
   }
 })
 
-// Parsing functions are now imported from @vibetree/core
+// Parsing functions are now imported from @buddy/core

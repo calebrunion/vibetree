@@ -1,5 +1,5 @@
 import * as pty from 'node-pty'
-import { ShellSessionManager } from '@vibetree/core'
+import { ShellSessionManager } from '@buddy/core'
 
 /**
  * Server shell manager - thin wrapper around shared ShellSessionManager

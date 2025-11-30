@@ -19,7 +19,7 @@ import {
   getStartupCommands,
   readProjectSettings,
   writeProjectSettings,
-} from '@vibetree/core'
+} from '@buddy/core'
 
 interface Services {
   shellManager: ShellManager

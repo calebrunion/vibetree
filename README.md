@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="assets/icons/VibeTree.png" alt="VibeTree Logo" width="128" height="128">
+  <img src="assets/icons/Buddy.png" alt="Buddy Logo" width="128" height="128">
   
-  # VibeTree
+  # Buddy
   
   **Vibe code with AI in parallel git worktrees**
   
@@ -17,15 +17,15 @@
 
 ---
 
-VibeTree is a cross-platform application that enhances your development workflow by enabling parallel development with AI assistance across multiple git worktrees. Work on features simultaneously without context switching. Access from desktop, browser, or mobile devices.
+Buddy is a cross-platform application that enhances your development workflow by enabling parallel development with AI assistance across multiple git worktrees. Work on features simultaneously without context switching. Access from desktop, browser, or mobile devices.
 
 ## Screenshot
 
-![VibeTree Screenshot](assets/screenshot.png)
+![Buddy Screenshot](assets/screenshot.png)
 
 ## Demo
 
-![VibeTree Demo](assets/demo.gif)
+![Buddy Demo](assets/demo.gif)
 
 ## Installation
 
@@ -53,7 +53,7 @@ Download the latest release for your platform from the [Releases page](https://g
 - **Windows**: Download `.exe` installer
 - **Linux**: Download `.AppImage` or `.deb` file
 
-**Build custom versions** (macOS): `./build-custom-mac-version.sh [VARIATION_NAME]` to create a custom build with the variation name included in both the app file name and displayed app name (e.g., `./build-custom-mac-version.sh Nov2` creates VibeTreeNov2.app which displays as "VibeTreeNov2" when opened)
+**Build custom versions** (macOS): `./build-custom-mac-version.sh [VARIATION_NAME]` to create a custom build with the variation name included in both the app file name and displayed app name (e.g., `./build-custom-mac-version.sh Nov2` creates BuddyNov2.app which displays as "BuddyNov2" when opened)
 
 #### Testing with Auto-Open Project
 
@@ -69,15 +69,15 @@ Download the latest release for your platform from the [Releases page](https://g
 
 ### 🐳 Docker Deployment
 
-Deploy VibeTree on any VM or cloud instance with one command:
+Deploy Buddy on any VM or cloud instance with one command:
 
 ```bash
 npm run deploy
 ```
 
-This automatically builds and runs VibeTree in a Docker container. Perfect for deployment on EC2, Digital Ocean, or any Docker-enabled environment. See [DOCKER.md](DOCKER.md) for detailed instructions.
+This automatically builds and runs Buddy in a Docker container. Perfect for deployment on EC2, Digital Ocean, or any Docker-enabled environment. See [DOCKER.md](DOCKER.md) for detailed instructions.
 
-**Access VibeTree:**
+**Access Buddy:**
 
 - **Web Interface**: http://localhost:3000
 - **API Server**: http://localhost:3002

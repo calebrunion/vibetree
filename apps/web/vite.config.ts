@@ -51,8 +51,8 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'VibeTree',
-        short_name: 'VibeTree',
+        name: 'Buddy',
+        short_name: 'Buddy',
         description: 'Code with AI in parallel git worktrees',
         theme_color: '#ea580c',
         background_color: '#000000',

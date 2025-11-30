@@ -1,5 +1,5 @@
 import { ipcMain, dialog, nativeTheme, shell, BrowserWindow } from 'electron'
-import { listWorktrees, getGitStatus, getGitDiff, getGitDiffStaged, addWorktree, removeWorktree } from '@vibetree/core'
+import { listWorktrees, getGitStatus, getGitDiff, getGitDiffStaged, addWorktree, removeWorktree } from '@buddy/core'
 import { terminalSettingsManager } from './terminal-settings'
 import { recentProjectsManager } from './recent-projects'
 import { schedulerHistoryManager } from './scheduler-history'

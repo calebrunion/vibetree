@@ -1,6 +1,6 @@
 {
-  "appId": "com.vibetree.app",
-  "productName": "VibeTree",
+  "appId": "com.buddy.app",
+  "productName": "Buddy",
   "directories": {
     "output": "release"
   },
@@ -10,7 +10,7 @@
     "category": "public.app-category.developer-tools",
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
-    "icon": "assets/icons/VibeTree.png",
+    "icon": "assets/icons/Buddy.png",
     "target": [
       {
         "target": "dmg",
@@ -32,7 +32,7 @@
         "arch": ["x64"]
       }
     ],
-    "icon": "assets/icons/VibeTree.png"
+    "icon": "assets/icons/Buddy.png"
   },
   "nsis": {
     "oneClick": false,
@@ -51,8 +51,8 @@
       }
     ],
     "category": "Development",
-    "icon": "assets/icons/VibeTree.png",
-    "maintainer": "VibeTree Contributors"
+    "icon": "assets/icons/Buddy.png",
+    "maintainer": "Buddy Contributors"
   },
   "appImage": {
     "artifactName": "${productName}-${version}.${ext}"

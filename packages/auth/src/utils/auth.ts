@@ -1,8 +1,8 @@
 import type { AuthConfig, LoginCredentials, LoginResponse } from '../types'
 
 const STORAGE_KEYS = {
-  SESSION_TOKEN: 'vibetree_session_token',
-  IS_AUTHENTICATED: 'vibetree_is_authenticated',
+  SESSION_TOKEN: 'buddy_session_token',
+  IS_AUTHENTICATED: 'buddy_is_authenticated',
 } as const
 
 export class AuthAPI {

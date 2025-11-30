@@ -1,5 +1,5 @@
 # Simple Dockerfile - assumes local build has been run first
-# Run 'pnpm build:web && pnpm --filter @vibetree/server build' locally before building this
+# Run 'pnpm build:web && pnpm --filter @buddy/server build' locally before building this
 
 FROM node:18-alpine AS runtime
 
@@ -10,7 +10,7 @@ RUN apk add --no-cache python3 python3-dev py3-setuptools make g++
 RUN npm install -g pnpm@8.14.0 serve
 
 # Create app user for security
-RUN addgroup -g 1001 -S nodejs && adduser -S vibetree -u 1001
+RUN addgroup -g 1001 -S nodejs && adduser -S buddy -u 1001
 
 # Set working directory
 WORKDIR /app
@@ -43,8 +43,8 @@ COPY packages/ui/package.json ./packages/ui/
 COPY packages/auth/package.json ./packages/auth/
 
 # Change ownership to app user
-RUN chown -R vibetree:nodejs /app
-USER vibetree
+RUN chown -R buddy:nodejs /app
+USER buddy
 
 # Expose ports
 EXPOSE 3000 3002
@@ -56,22 +56,22 @@ ENV PORT=3002
 ENV WEB_PORT=3000
 
 # Create startup script
-COPY --chown=vibetree:nodejs <<EOF /app/start.sh
+COPY --chown=buddy:nodejs <<EOF /app/start.sh
 #!/bin/sh
 
 # Start the backend server in background
-echo "Starting VibeTree server..."
+echo "Starting Buddy server..."
 cd /app/apps/server && node dist/index.js &
 SERVER_PID=\$!
 
 # Start the web frontend
-echo "Starting VibeTree web frontend..."
+echo "Starting Buddy web frontend..."
 cd /app/apps/web && serve -s dist -l \${WEB_PORT} -n &
 WEB_PID=\$!
 
 # Function to handle shutdown
 shutdown() {
-    echo "Shutting down VibeTree services..."
+    echo "Shutting down Buddy services..."
     kill \$SERVER_PID \$WEB_PID 2>/dev/null
     wait \$SERVER_PID \$WEB_PID 2>/dev/null
     exit 0
@@ -80,7 +80,7 @@ shutdown() {
 # Trap signals for graceful shutdown
 trap shutdown SIGTERM SIGINT
 
-echo "VibeTree is running!"
+echo "Buddy is running!"
 echo "Web UI: http://localhost:\${WEB_PORT}"
 echo "API Server: http://localhost:\${PORT}"
 

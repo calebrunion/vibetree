@@ -11,7 +11,7 @@ import { setupWebSocketHandlers } from './api/websocket'
 import { setupRestRoutes } from './api/rest'
 import { ShellManager } from './services/ShellManager'
 import { AuthService } from './auth/AuthService'
-import { getNetworkUrls } from '@vibetree/core'
+import { getNetworkUrls } from '@buddy/core'
 
 dotenv.config()
 
@@ -81,7 +81,7 @@ async function startServer() {
   // Root endpoint - provide server info
   app.get('/', (req, res) => {
     res.json({
-      name: 'VibeTree Socket Server',
+      name: 'Buddy Socket Server',
       version: '0.0.1',
       endpoints: {
         websocket: `ws://${req.headers.host}`,
@@ -114,7 +114,7 @@ async function startServer() {
     const webUrls = getNetworkUrls(webPort, HOST)
 
     console.log('\n╔════════════════════════════════════════════════════════╗')
-    console.log('║               VibeTree Services Started                   ║')
+    console.log('║               Buddy Services Started                   ║')
     console.log('╚════════════════════════════════════════════════════════╝\n')
 
     console.log('📁 Project Path:', PROJECT_PATH)

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { GitCommitHorizontal } from 'lucide-react'
-import type { GitCommit } from '@vibetree/core'
+import type { GitCommit } from '@buddy/core'
 
 interface GitGraphProps {
   commits: GitCommit[]

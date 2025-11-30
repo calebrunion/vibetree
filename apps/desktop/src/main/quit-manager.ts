@@ -66,8 +66,8 @@ export class QuitManager {
       buttons: ['Cancel', 'OK'],
       defaultId: 0,
       cancelId: 0,
-      title: 'Quit VibeTree?',
-      message: 'Quit VibeTree?',
+      title: 'Quit Buddy?',
+      message: 'Quit Buddy?',
       detail: 'All sessions will be closed.',
     }
 

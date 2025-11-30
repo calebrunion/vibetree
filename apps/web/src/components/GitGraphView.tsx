@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, forwardRef, useImperativeHandle } fro
 import { Minimize2, RefreshCw, Users, User } from 'lucide-react'
 import GitGraph from './GitGraph'
 import { useWebSocket } from '../hooks/useWebSocket'
-import type { GitCommit } from '@vibetree/core'
+import type { GitCommit } from '@buddy/core'
 
 interface GitGraphViewProps {
   worktreePath: string

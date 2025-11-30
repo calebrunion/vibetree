@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Terminal } from '@vibetree/ui'
+import { Terminal } from '@buddy/ui'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { Minimize2, Columns2, Rows2 } from 'lucide-react'

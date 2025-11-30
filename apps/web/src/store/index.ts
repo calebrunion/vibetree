@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Worktree } from '@vibetree/core'
+import { Worktree } from '@buddy/core'
 
 interface Project {
   id: string
@@ -301,7 +301,7 @@ export const useAppStore = create<AppState>()(
       },
     }),
     {
-      name: 'vibetree-web-storage',
+      name: 'buddy-web-storage',
       partialize: (state) => ({
         projects: state.projects,
         activeProjectId: state.activeProjectId,

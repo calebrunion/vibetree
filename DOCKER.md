@@ -1,6 +1,6 @@
-# VibeTree Docker Setup
+# Buddy Docker Setup
 
-This guide explains how to run VibeTree in a Docker container, perfect for deployment on VMs like EC2 instances or any Docker-enabled environment.
+This guide explains how to run Buddy in a Docker container, perfect for deployment on VMs like EC2 instances or any Docker-enabled environment.
 
 ## What is Docker?
 
@@ -23,7 +23,7 @@ Docker is a platform that packages applications and their dependencies into ligh
 
 ## Quick Start - Single Command Deployment
 
-**Deploy VibeTree with just one command:**
+**Deploy Buddy with just one command:**
 
 ```bash
 npm run deploy
@@ -36,7 +36,7 @@ This command automatically:
 - ✅ Stops any existing container
 - ✅ Starts a new container with proper configuration
 
-### Access VibeTree
+### Access Buddy
 
 - **Web Interface**: http://localhost:3000
 - **API Server**: http://localhost:3002
@@ -45,7 +45,7 @@ This command automatically:
 ### Stop the Container
 
 ```bash
-docker stop vibetree-container
+docker stop buddy-container
 ```
 
 ## Manual Steps (Advanced Users)
@@ -55,19 +55,19 @@ If you prefer to run the steps manually:
 ### 1. Build Locally
 
 ```bash
-pnpm build:web && pnpm --filter @vibetree/server build
+pnpm build:web && pnpm --filter @buddy/server build
 ```
 
 ### 2. Build Docker Image
 
 ```bash
-docker build -t vibetree-webapp .
+docker build -t buddy-webapp .
 ```
 
 ### 3. Run Container
 
 ```bash
-docker run -p 3000:3000 -p 3002:3002 --name vibetree-container vibetree-webapp
+docker run -p 3000:3000 -p 3002:3002 --name buddy-container buddy-webapp
 ```
 
 ## Docker Scripts Reference
@@ -110,8 +110,8 @@ docker-compose up --build
 
 The `docker-compose.yml` includes:
 
-- **vibetree-server**: Backend API and WebSocket server
-- **vibetree-web**: Frontend web application
+- **buddy-server**: Backend API and WebSocket server
+- **buddy-web**: Frontend web application
 - **nginx**: Optional reverse proxy (use profile: `--profile proxy`)
 
 ### Using with Nginx Proxy
@@ -136,12 +136,12 @@ Access via: http://localhost (port 80)
 3. **Build locally** (if not using CI/CD):
    ```bash
    pnpm install
-   pnpm build:web && pnpm --filter @vibetree/server build
+   pnpm build:web && pnpm --filter @buddy/server build
    ```
 4. **Build and run Docker container**:
    ```bash
-   docker build -t vibetree-webapp .
-   docker run -d -p 3000:3000 -p 3002:3002 --name vibetree vibetree-webapp
+   docker build -t buddy-webapp .
+   docker run -d -p 3000:3000 -p 3002:3002 --name buddy buddy-webapp
    ```
 5. **Configure security group** to allow ports 3000 and 3002
 6. **Access via public IP**: `http://your-ec2-ip:3000`
@@ -160,7 +160,7 @@ docker run -p 3000:3000 -p 3002:3002 \
   -e HOST=0.0.0.0 \
   -e PORT=3002 \
   -e WEB_PORT=3000 \
-  vibetree-webapp
+  buddy-webapp
 ```
 
 ## Persistent Data
@@ -170,7 +170,7 @@ To persist data across container restarts, mount volumes:
 ```bash
 docker run -p 3000:3000 -p 3002:3002 \
   -v /host/path/to/projects:/workspace \
-  vibetree-webapp
+  buddy-webapp
 ```
 
 ## Troubleshooting
@@ -182,23 +182,23 @@ docker run -p 3000:3000 -p 3002:3002 \
 
 ### Build Fails
 
-- Ensure local build completed: `pnpm build:web && pnpm --filter @vibetree/server build`
+- Ensure local build completed: `pnpm build:web && pnpm --filter @buddy/server build`
 - Check Docker has enough resources (RAM/disk)
 
 ### Can't Access from Other Machines
 
 - Ensure container binds to `0.0.0.0`: already configured
 - Check firewall/security group settings
-- Verify correct ports are exposed: `docker port vibetree-container`
+- Verify correct ports are exposed: `docker port buddy-container`
 
 ### Health Check Fails
 
-- Check server logs: `docker logs vibetree-container`
+- Check server logs: `docker logs buddy-container`
 - Test health endpoint: `curl http://localhost:3002/health`
 
 ### Permission Issues
 
-- Container runs as non-root user `vibetree` for security
+- Container runs as non-root user `buddy` for security
 - Ensure file permissions allow read access
 
 ## Development vs Production
@@ -219,8 +219,8 @@ npm run docker:run
 # Or with restart policy
 docker run -d --restart unless-stopped \
   -p 3000:3000 -p 3002:3002 \
-  --name vibetree-prod \
-  vibetree-webapp
+  --name buddy-prod \
+  buddy-webapp
 ```
 
 ## Monitoring
@@ -229,29 +229,29 @@ docker run -d --restart unless-stopped \
 
 ```bash
 # View container logs
-docker logs vibetree-container
+docker logs buddy-container
 
 # Follow logs in real-time
-docker logs -f vibetree-container
+docker logs -f buddy-container
 ```
 
 ### Container Stats
 
 ```bash
 # View resource usage
-docker stats vibetree-container
+docker stats buddy-container
 ```
 
 ### Health Status
 
 ```bash
 # Check container health
-docker inspect vibetree-container | grep -i health
+docker inspect buddy-container | grep -i health
 ```
 
 ## Security Notes
 
-- Container runs as non-root user `vibetree`
+- Container runs as non-root user `buddy`
 - Only necessary ports (3000, 3002) are exposed
 - No sensitive data should be hardcoded in the image
 - Use environment variables for configuration
