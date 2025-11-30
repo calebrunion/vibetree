@@ -414,19 +414,8 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
         </div>
       )
     }
-    let dirPath = path.substring(0, lastSlash)
+    const dirPath = path.substring(0, lastSlash)
     const fileName = path.substring(lastSlash + 1)
-
-    const srcIndex = dirPath.indexOf('/src/')
-    if (srcIndex !== -1) {
-      dirPath = '@' + dirPath.substring(srcIndex + 4)
-    } else if (dirPath.endsWith('/src')) {
-      dirPath = '@'
-    } else if (dirPath.startsWith('src/')) {
-      dirPath = '@/' + dirPath.substring(4)
-    } else if (dirPath === 'src') {
-      dirPath = '@'
-    }
 
     return (
       <div className="flex flex-col min-w-0">
