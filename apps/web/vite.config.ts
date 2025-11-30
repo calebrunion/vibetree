@@ -54,7 +54,7 @@ export default defineConfig({
         name: 'Buddy',
         short_name: 'Buddy',
         description: 'Code with AI in parallel git worktrees',
-        theme_color: '#ea580c',
+        theme_color: '#1a1a1a',
         background_color: '#000000',
         display: 'standalone',
         // @ts-expect-error - display_override is valid but not in vite-plugin-pwa types
