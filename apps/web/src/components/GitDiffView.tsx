@@ -64,6 +64,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [historyCollapsed, setHistoryCollapsed] = useState(false)
   const [isWideScreen, setIsWideScreen] = useState(false)
   const [discardConfirm, setDiscardConfirm] = useState<GitFile | null>(null)
+  const [discardAllConfirm, setDiscardAllConfirm] = useState(false)
 
   const { getAdapter } = useWebSocket()
 
@@ -351,6 +352,24 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
     }
   }
 
+  const handleDiscardAll = async () => {
+    const adapter = getAdapter()
+    if (!adapter || !('discardAllChanges' in adapter)) return
+
+    try {
+      setLoading(true)
+      await (adapter as any).discardAllChanges(worktreePath)
+      setDiscardAllConfirm(false)
+      setSelectedFile(null)
+      setDiffText('')
+      loadGitStatus()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to discard all changes')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const getCurrentFileStatusIcon = (file: GitFile) => {
     const baseClass = 'px-2 py-1 rounded text-sm font-semibold inline-flex items-center justify-center min-w-[28px]'
     if (file.staged && file.modified) {
@@ -442,7 +461,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
               <div className="border-b">
                 <button
                   onClick={() => setCurrentCollapsed(!currentCollapsed)}
-                  className="w-full p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
+                  className="group w-full p-3 flex items-center gap-2 hover:bg-muted/50 transition-colors"
                 >
                   {currentCollapsed ? (
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -450,7 +469,20 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   )}
                   <span className="text-sm font-medium">Current</span>
-                  <span className="ml-auto text-xs text-muted-foreground">{files.length}</span>
+                  <span className="ml-auto flex items-center gap-2">
+                    <span
+                      role="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDiscardAllConfirm(true)
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+                      title="Discard all changes"
+                    >
+                      <Undo2 className="h-4 w-4" />
+                    </span>
+                    <span className="text-xs text-muted-foreground">{files.length}</span>
+                  </span>
                 </button>
                 {!currentCollapsed && (
                   <div className="px-2 pb-2">
@@ -727,6 +759,16 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
         variant="destructive"
         onConfirm={() => discardConfirm && handleDiscardFile(discardConfirm)}
         onCancel={() => setDiscardConfirm(null)}
+      />
+      <ConfirmDialog
+        open={discardAllConfirm}
+        title="Discard All Changes?"
+        description={`Are you sure you want to discard all ${files.length} changed file${files.length === 1 ? '' : 's'}? This action cannot be undone.`}
+        confirmLabel="Discard All"
+        cancelLabel="Cancel"
+        variant="destructive"
+        onConfirm={handleDiscardAll}
+        onCancel={() => setDiscardAllConfirm(false)}
       />
     </div>
   )
