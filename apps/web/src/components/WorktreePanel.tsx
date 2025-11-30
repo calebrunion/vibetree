@@ -1,4 +1,4 @@
-import { GitBranch, Plus, Trash2 } from 'lucide-react'
+import { GitBranch, Loader2, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAppStore } from '../store'
@@ -29,6 +29,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
   const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set())
   const [deleteConfirmWorktree, setDeleteConfirmWorktree] = useState<{ path: string; branch: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [deletingPath, setDeletingPath] = useState<string | null>(null)
 
   const project = getProject(projectId)
   const adapter = getAdapter() // Get adapter once per render
@@ -115,6 +116,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
     if (!adapter || !connected || !project) return
 
     setDeleting(true)
+    setDeletingPath(worktreePath)
     try {
       await adapter.removeWorktree(project.path, worktreePath, branch.replace('refs/heads/', ''))
       console.log('✅ Deleted worktree:', worktreePath)
@@ -135,6 +137,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
       console.error('❌ Failed to delete worktree:', error)
     } finally {
       setDeleting(false)
+      setDeletingPath(null)
       setDeleteConfirmWorktree(null)
     }
   }
@@ -269,10 +272,15 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                     {canDelete && (
                       <button
                         onClick={(e) => handleDeleteWorktree(worktree.path, worktree.branch!, e)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 transition-opacity bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50"
+                        disabled={deletingPath === worktree.path}
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded-md transition-opacity bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 disabled:cursor-not-allowed ${deletingPath === worktree.path ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
                         title="Delete worktree"
                       >
-                        <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+                        {deletingPath === worktree.path ? (
+                          <Loader2 className="h-3.5 w-3.5 text-red-600 dark:text-red-400 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+                        )}
                       </button>
                     )}
                   </div>
