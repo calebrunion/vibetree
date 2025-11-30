@@ -506,11 +506,11 @@ function App() {
                 <TabsTrigger
                   key={project.id}
                   value={project.id}
-                  className="project-tab group/tab relative pl-4 pr-9 h-[34px] min-w-[100px] md:min-w-[140px] max-w-[240px] rounded-t-xl text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 data-[state=active]:hover:!bg-background app-region-no-drag"
+                  className="project-tab group/tab relative pl-3 pr-7 h-[34px] min-w-[120px] md:min-w-[140px] max-w-[240px] rounded-t-xl text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 data-[state=active]:hover:!bg-background app-region-no-drag"
                 >
                   <span className="truncate">{project.name}</span>
                   <span
-                    className="group/close absolute right-3 top-1/2 -translate-y-1/2 h-[18px] w-[18px] opacity-0 group-hover/tab:opacity-100 data-[state=active]:opacity-100 bg-muted hover:bg-accent border border-border/50 rounded-md cursor-pointer inline-flex items-center justify-center app-region-no-drag transition-opacity"
+                    className="group/close absolute right-2 top-1/2 -translate-y-1/2 h-[18px] w-[18px] opacity-0 group-hover/tab:opacity-100 data-[state=active]:opacity-100 cursor-pointer inline-flex items-center justify-center app-region-no-drag transition-opacity"
                     onClick={(e) => handleCloseProject(e, project.id)}
                   >
                     <X className="h-3 w-3 text-muted-foreground group-hover/close:text-foreground transition-colors" />
