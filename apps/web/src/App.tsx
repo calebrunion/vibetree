@@ -474,10 +474,7 @@ function App() {
 
       {/* Project Tabs and Content */}
       <Tabs value={activeProjectId || ''} onValueChange={setActiveProject} className="flex-1 flex flex-col">
-        <div
-          className="flex items-end justify-start overflow-x-auto bg-secondary titlebar-area titlebar-area-inset pl-4 md:pl-6 pr-2 pt-2 scrollbar-hide"
-          style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
+        <div className="flex items-end justify-start bg-secondary titlebar-area titlebar-area-inset pl-4 md:pl-6 pr-2 pt-2">
           <button
             onClick={toggleSidebarCollapsed}
             className="group hidden md:inline-flex size-[30px] p-0 hover:bg-accent rounded-full transition-colors items-center justify-center app-region-no-drag self-center mr-1"
@@ -500,34 +497,39 @@ function App() {
               <Sliders className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
             </button>
           )}
-          <TabsList className="h-auto bg-transparent p-0 ml-2 md:ml-14 rounded-none gap-0 min-w-0 app-region-no-drag items-end !justify-start">
-            {projects.map((project, index) => (
-              <TabsTrigger
-                key={project.id}
-                value={project.id}
-                className="project-tab group/tab relative pl-4 pr-9 h-[34px] min-w-[100px] md:min-w-[140px] max-w-[240px] rounded-t-xl text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 data-[state=active]:hover:!bg-background app-region-no-drag"
-              >
-                <span className="truncate">{project.name}</span>
-                <span
-                  className="group/close absolute right-3 top-1/2 -translate-y-1/2 h-[18px] w-[18px] opacity-0 group-hover/tab:opacity-100 data-[state=active]:opacity-100 bg-muted hover:bg-accent border border-border/50 rounded-md cursor-pointer inline-flex items-center justify-center app-region-no-drag transition-opacity"
-                  onClick={(e) => handleCloseProject(e, project.id)}
+          <div
+            className="flex-1 overflow-x-auto min-w-0 ml-2 md:ml-14 scrollbar-hide"
+            style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <TabsList className="h-auto bg-transparent p-0 rounded-none gap-0 min-w-0 app-region-no-drag items-end !justify-start">
+              {projects.map((project, index) => (
+                <TabsTrigger
+                  key={project.id}
+                  value={project.id}
+                  className="project-tab group/tab relative pl-4 pr-9 h-[34px] min-w-[100px] md:min-w-[140px] max-w-[240px] rounded-t-xl text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 data-[state=active]:hover:!bg-background app-region-no-drag"
                 >
-                  <X className="h-3 w-3 text-muted-foreground group-hover/close:text-foreground transition-colors" />
-                </span>
-                {index === 0 && project.id !== activeProjectId && (
-                  <span className="absolute -left-px top-1/2 -translate-y-1/2 w-0.5 h-4 bg-border z-20 transition-opacity group-hover/tab:opacity-0 tab-divider-left" />
-                )}
-                {index < projects.length - 1 &&
-                  project.id !== activeProjectId &&
-                  projects[index + 1].id !== activeProjectId && (
-                    <span className="absolute -right-px top-1/2 -translate-y-1/2 w-0.5 h-4 bg-border z-20 transition-opacity group-hover/tab:opacity-0 tab-divider-right" />
+                  <span className="truncate">{project.name}</span>
+                  <span
+                    className="group/close absolute right-3 top-1/2 -translate-y-1/2 h-[18px] w-[18px] opacity-0 group-hover/tab:opacity-100 data-[state=active]:opacity-100 bg-muted hover:bg-accent border border-border/50 rounded-md cursor-pointer inline-flex items-center justify-center app-region-no-drag transition-opacity"
+                    onClick={(e) => handleCloseProject(e, project.id)}
+                  >
+                    <X className="h-3 w-3 text-muted-foreground group-hover/close:text-foreground transition-colors" />
+                  </span>
+                  {index === 0 && project.id !== activeProjectId && (
+                    <span className="absolute -left-px top-1/2 -translate-y-1/2 w-0.5 h-4 bg-border z-20 transition-opacity group-hover/tab:opacity-0 tab-divider-left" />
                   )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+                  {index < projects.length - 1 &&
+                    project.id !== activeProjectId &&
+                    projects[index + 1].id !== activeProjectId && (
+                      <span className="absolute -right-px top-1/2 -translate-y-1/2 w-0.5 h-4 bg-border z-20 transition-opacity group-hover/tab:opacity-0 tab-divider-right" />
+                    )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
           <button
             onClick={() => setShowAddProjectModal(true)}
-            className="group size-[28px] p-0 hover:bg-accent rounded-full transition-colors inline-flex items-center justify-center app-region-no-drag self-center ml-1"
+            className="group size-[28px] p-0 hover:bg-accent rounded-full transition-colors inline-flex items-center justify-center app-region-no-drag self-center ml-1 flex-shrink-0"
             aria-label="Add project"
           >
             <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
