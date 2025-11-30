@@ -15,7 +15,6 @@ import {
   Sliders,
   Sun,
   Terminal,
-  Trash2,
   X,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -69,10 +68,6 @@ function App() {
   const [successMessage, setSuccessMessage] = useState('')
   const [changedFilesCount, setChangedFilesCount] = useState(0)
   const [projectToRemove, setProjectToRemove] = useState<string | null>(null)
-  const [worktreeToDelete, setWorktreeToDelete] = useState<{ projectId: string; path: string; branch: string } | null>(
-    null
-  )
-  const [deletingWorktree, setDeletingWorktree] = useState(false)
   const [showMobileSettingsModal, setShowMobileSettingsModal] = useState(false)
   const gitDiffRef = useRef<GitDiffViewRef>(null)
   const gitGraphRef = useRef<GitGraphViewRef>(null)
@@ -392,58 +387,6 @@ function App() {
 
   const projectToRemoveData = projectToRemove ? projects.find((p) => p.id === projectToRemove) : null
 
-  const isProtectedBranch = (branch: string) => {
-    const branchName = branch.replace('refs/heads/', '')
-    return branchName === 'main' || branchName === 'master'
-  }
-
-  const handleDeleteWorktree = (projectId: string, worktreePath: string, branch: string) => {
-    if (isProtectedBranch(branch)) return
-    setWorktreeToDelete({ projectId, path: worktreePath, branch })
-  }
-
-  const handleConfirmDeleteWorktree = async () => {
-    if (!worktreeToDelete) return
-
-    const adapter = getAdapter()
-    const project = projects.find((p) => p.id === worktreeToDelete.projectId)
-    if (!adapter || !connected || !project) {
-      setWorktreeToDelete(null)
-      return
-    }
-
-    setDeletingWorktree(true)
-    try {
-      await adapter.removeWorktree(
-        project.path,
-        worktreeToDelete.path,
-        worktreeToDelete.branch.replace('refs/heads/', '')
-      )
-
-      if (project.selectedWorktree === worktreeToDelete.path) {
-        const remainingWorktree = project.worktrees.find((wt) => wt.path !== worktreeToDelete.path)
-        if (remainingWorktree) {
-          setSelectedWorktree(worktreeToDelete.projectId, remainingWorktree.path)
-        } else {
-          setSelectedWorktree(worktreeToDelete.projectId, null)
-        }
-      }
-
-      const trees = await adapter.listWorktrees(project.path)
-      updateProjectWorktrees(worktreeToDelete.projectId, trees)
-    } catch (error) {
-      console.error('Failed to delete worktree:', error)
-    } finally {
-      setDeletingWorktree(false)
-      setWorktreeToDelete(null)
-    }
-  }
-
-  const getSelectedWorktreeInfo = (project: (typeof projects)[0]) => {
-    if (!project.selectedWorktree) return null
-    return project.worktrees.find((wt) => wt.path === project.selectedWorktree)
-  }
-
   const handleRefreshChanges = async (project: (typeof projects)[0]) => {
     gitDiffRef.current?.refresh()
     const adapter = getAdapter()
@@ -690,24 +633,6 @@ function App() {
                             <Maximize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
                           )}
                         </button>
-                        {(() => {
-                          const worktreeInfo = getSelectedWorktreeInfo(project)
-                          const canDelete =
-                            worktreeInfo?.branch &&
-                            !isProtectedBranch(worktreeInfo.branch) &&
-                            project.worktrees.length > 1 &&
-                            worktreeInfo.path !== project.path
-                          if (!canDelete) return null
-                          return (
-                            <button
-                              onClick={() => handleDeleteWorktree(project.id, worktreeInfo.path, worktreeInfo.branch!)}
-                              className="md:hidden p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors border border-border"
-                              title="Delete worktree"
-                            >
-                              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            </button>
-                          )
-                        })()}
                       </div>
                     ) : (
                       <div className="flex items-center gap-1">
@@ -737,24 +662,6 @@ function App() {
                             )}
                           </button>
                         )}
-                        {(() => {
-                          const worktreeInfo = getSelectedWorktreeInfo(project)
-                          const canDelete =
-                            worktreeInfo?.branch &&
-                            !isProtectedBranch(worktreeInfo.branch) &&
-                            project.worktrees.length > 1 &&
-                            worktreeInfo.path !== project.path
-                          if (!canDelete) return null
-                          return (
-                            <button
-                              onClick={() => handleDeleteWorktree(project.id, worktreeInfo.path, worktreeInfo.branch!)}
-                              className="md:hidden p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors border border-border"
-                              title="Delete worktree"
-                            >
-                              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            </button>
-                          )
-                        })()}
                       </div>
                     )}
                   </div>
@@ -844,20 +751,6 @@ function App() {
         variant="destructive"
         onConfirm={handleConfirmRemoveProject}
         onCancel={() => setProjectToRemove(null)}
-      />
-
-      <ConfirmDialog
-        open={!!worktreeToDelete}
-        title="Delete Worktree"
-        description={`Are you sure you want to delete the worktree "${worktreeToDelete?.branch.replace(
-          'refs/heads/',
-          ''
-        )}"? The worktree directory will be removed but the branch will be preserved.`}
-        confirmLabel={deletingWorktree ? 'Deleting...' : 'Delete'}
-        cancelLabel="Cancel"
-        variant="destructive"
-        onConfirm={handleConfirmDeleteWorktree}
-        onCancel={() => setWorktreeToDelete(null)}
       />
 
       <FloatingAddWorktree />
