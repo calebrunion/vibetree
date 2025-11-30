@@ -113,10 +113,22 @@ body {
   display: none;
 }
 
+/* iOS Safe Area - Status bar background */
+html::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0);
+  background-color: #ea580c;
+  z-index: 9999;
+}
+
 /* Window Controls Overlay (PWA titlebar) */
 .titlebar-area {
   padding-left: env(titlebar-area-x, 0);
-  padding-top: env(titlebar-area-y, 0);
+  padding-top: max(0.5rem, env(titlebar-area-y, 0.5rem));
   height: env(titlebar-area-height, auto);
   -webkit-app-region: drag;
   app-region: drag;
