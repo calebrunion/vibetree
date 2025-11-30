@@ -204,6 +204,12 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
           <div className="p-2">
             {[...project.worktrees]
               .sort((a, b) => {
+                // HEAD worktree (main project path) always first
+                const isHeadA = a.path === project.path
+                const isHeadB = b.path === project.path
+                if (isHeadA) return -1
+                if (isHeadB) return 1
+
                 // Extract branch names, handling refs/heads/ prefix and detached HEAD
                 const getBranchName = (wt: typeof a) => {
                   if (!wt.branch) return wt.head.substring(0, 8) // detached HEAD
@@ -212,10 +218,6 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
 
                 const branchA = getBranchName(a)
                 const branchB = getBranchName(b)
-
-                // Keep main or master first
-                if (branchA === 'main' || branchA === 'master') return -1
-                if (branchB === 'main' || branchB === 'master') return 1
 
                 // Sort alphabetically for the rest
                 return branchA.localeCompare(branchB)
