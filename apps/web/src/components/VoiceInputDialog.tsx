@@ -1,4 +1,4 @@
-import { GitCommit, SquarePen } from 'lucide-react'
+import { GitCommit, SquarePen, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SpeechRecognitionEvent extends Event {
@@ -164,7 +164,7 @@ export default function VoiceInputDialog({
               }
             }}
             placeholder="Type or use voice input..."
-            className="flex-1 h-10 px-3 text-sm bg-muted border rounded-lg focus:outline-none focus:ring-1 focus:ring-border"
+            className="flex-1 h-10 px-3 text-sm bg-muted border rounded-lg placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-border"
             enterKeyHint="send"
           />
         </form>
@@ -201,6 +201,15 @@ export default function VoiceInputDialog({
           >
             <GitCommit className="h-4 w-4" />
             Commit
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onTouchEnd={() => setText('')}
+            onClick={() => setText('')}
+            className="h-10 w-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 

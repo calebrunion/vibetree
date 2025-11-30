@@ -9,6 +9,7 @@ import {
   Delete,
   Eraser,
   GitCommit,
+  Mic,
   SquarePen,
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -194,14 +195,14 @@ export default function MobileTerminalToolbar() {
         >
           ESC
         </button>
-        <input
-          type="text"
-          value={inputText}
-          readOnly
+        <button
+          type="button"
           onClick={() => setIsVoiceDialogOpen(true)}
-          placeholder="Type or speak..."
-          className="h-14 flex-1 px-3 text-sm bg-muted border border-border rounded-md text-left truncate cursor-pointer active:scale-95 transition-transform"
-        />
+          className="h-14 flex-1 px-3 text-sm bg-muted border border-border rounded-md text-left truncate cursor-pointer text-muted-foreground active:scale-95 transition-transform flex items-center gap-2"
+        >
+          <Mic className="h-4 w-4 flex-shrink-0" />
+          {inputText || 'Type or use voice input...'}
+        </button>
         <button
           onClick={() => sendKey(KEYS.ENTER)}
           className="h-14 w-20 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
