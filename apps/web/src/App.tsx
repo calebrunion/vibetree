@@ -474,27 +474,27 @@ function App() {
 
       {/* Project Tabs and Content */}
       <Tabs value={activeProjectId || ''} onValueChange={setActiveProject} className="flex-1 flex flex-col">
-        <div className="flex items-end overflow-hidden bg-orange-600 titlebar-area titlebar-area-inset px-1 gap-0.5">
+        <div className="flex items-end overflow-hidden bg-[#1a1a1a] titlebar-area titlebar-area-inset px-1 gap-0.5">
           <button
             onClick={toggleSidebarCollapsed}
-            className="group hidden md:inline-flex size-[30px] p-0 hover:bg-orange-500 rounded-md transition-colors items-center justify-center flex-shrink-0 app-region-no-drag self-center"
+            className="group hidden md:inline-flex size-[30px] p-0 hover:bg-white/10 rounded-md transition-colors items-center justify-center flex-shrink-0 app-region-no-drag self-center"
             aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {sidebarCollapsed ? (
-              <PanelLeftOpen className="h-4 w-4 text-orange-200 group-hover:text-white" />
+              <PanelLeftOpen className="h-4 w-4 text-gray-400 group-hover:text-white" />
             ) : (
-              <PanelLeftClose className="h-4 w-4 text-orange-200 group-hover:text-white" />
+              <PanelLeftClose className="h-4 w-4 text-gray-400 group-hover:text-white" />
             )}
           </button>
           {activeProject && (
             <button
               onClick={() => setShowMobileSettingsModal(true)}
-              className="group size-[30px] p-0 hover:bg-orange-500 rounded-md transition-colors inline-flex items-center justify-center flex-shrink-0 app-region-no-drag self-center"
+              className="group size-[30px] p-0 hover:bg-white/10 rounded-md transition-colors inline-flex items-center justify-center flex-shrink-0 app-region-no-drag self-center"
               aria-label="Project settings"
               title="Project settings"
             >
-              <Sliders className="h-4 w-4 text-orange-200 group-hover:text-white" />
+              <Sliders className="h-4 w-4 text-gray-400 group-hover:text-white" />
             </button>
           )}
           <TabsList className="h-full bg-transparent p-0 rounded-none gap-0.5 min-w-0 overflow-x-auto scrollbar-hide app-region-no-drag items-end">
@@ -502,7 +502,7 @@ function App() {
               <TabsTrigger
                 key={project.id}
                 value={project.id}
-                className="relative pr-8 h-full min-w-[100px] lg:min-w-[150px] rounded-t-lg rounded-b-none border-0 bg-orange-500/50 text-orange-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none hover:bg-orange-500 app-region-no-drag"
+                className="relative pr-8 h-full min-w-[100px] lg:min-w-[150px] rounded-t-lg rounded-b-none border-0 bg-white/10 text-gray-300 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none hover:bg-white/20 app-region-no-drag"
               >
                 {project.name}
                 <span
@@ -516,10 +516,10 @@ function App() {
           </TabsList>
           <button
             onClick={() => setShowAddProjectModal(true)}
-            className="group size-[30px] p-0 hover:bg-orange-500 rounded-md transition-colors inline-flex items-center justify-center flex-shrink-0 app-region-no-drag self-center"
+            className="group size-[30px] p-0 hover:bg-white/10 rounded-md transition-colors inline-flex items-center justify-center flex-shrink-0 app-region-no-drag self-center"
             aria-label="Add project"
           >
-            <Plus className="h-4 w-4 text-orange-200 group-hover:text-white" />
+            <Plus className="h-4 w-4 text-gray-400 group-hover:text-white" />
           </button>
         </div>
 

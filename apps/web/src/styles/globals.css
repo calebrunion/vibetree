@@ -121,7 +121,7 @@ html::before {
   left: 0;
   right: 0;
   height: env(safe-area-inset-top, 0);
-  background-color: #ea580c;
+  background-color: #1a1a1a;
   z-index: 9999;
 }
 
