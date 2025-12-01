@@ -31,7 +31,7 @@ docker rm buddy-container 2>/dev/null || true
 
 echo "🌟 Starting Buddy container..."
 docker run -d \
-  -p 3000:3000 \
+  -p 9000:9000 \
   -p 3002:3002 \
   --name buddy-container \
   --restart unless-stopped \
@@ -39,7 +39,7 @@ docker run -d \
 
 echo ""
 echo "✅ Buddy is now running!"
-echo "🌐 Web UI: http://localhost:3000"
+echo "🌐 Web UI: http://localhost:9000"
 echo "🔌 API Server: http://localhost:3002"
 echo ""
 echo "📋 Useful commands:"

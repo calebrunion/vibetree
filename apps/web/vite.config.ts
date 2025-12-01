@@ -86,6 +86,10 @@ export default defineConfig({
     strictPort: false, // Allow Vite to find alternative ports
     // Note: Proxy configuration removed - apps will connect directly using environment variables
   },
+  preview: {
+    port: 9000,
+    host: '0.0.0.0',
+  },
   build: {
     rollupOptions: {
       output: {

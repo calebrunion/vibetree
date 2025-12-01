@@ -34,16 +34,16 @@ services:
       target: runtime
     container_name: buddy-web
     ports:
-      - '3000:3000'
+      - '9000:9000'
     environment:
       - NODE_ENV=production
-      - WEB_PORT=3000
+      - WEB_PORT=9000
     depends_on:
       buddy-server:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000']
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:9000']
       interval: 30s
       timeout: 10s
       retries: 3

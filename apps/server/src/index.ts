@@ -90,7 +90,7 @@ async function startServer() {
         api: '/api/*',
       },
       webApp: {
-        url: 'http://localhost:3000',
+        url: 'http://localhost:9000',
         note: 'Run "pnpm dev:web" to start the web interface',
       },
     })
@@ -100,8 +100,8 @@ async function startServer() {
   server.listen(parseInt(PORT.toString()), HOST, async () => {
     const socketUrls = getNetworkUrls(PORT, HOST)
 
-    // Try to read web port from file, fallback to 3000
-    let webPort = 3000
+    // Try to read web port from file, fallback to 9000
+    let webPort = 9000
     try {
       const webPortFile = path.join(__dirname, '../../../apps/web/.web-port')
       if (fs.existsSync(webPortFile)) {

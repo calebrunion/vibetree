@@ -47,13 +47,13 @@ RUN chown -R buddy:nodejs /app
 USER buddy
 
 # Expose ports
-EXPOSE 3000 3002
+EXPOSE 9000 3002
 
 # Environment variables
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3002
-ENV WEB_PORT=3000
+ENV WEB_PORT=9000
 
 # Create startup script
 COPY --chown=buddy:nodejs <<EOF /app/start.sh
