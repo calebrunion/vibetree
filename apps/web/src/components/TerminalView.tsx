@@ -184,7 +184,14 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
           clearWorktreeStartup(selectedWorktree)
         }
 
-        const result = await adapter.startShell(selectedWorktree)
+        const result = await adapter.startShell(
+          selectedWorktree,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          runStartup
+        )
 
         if (result.success && result.processId) {
           const actualSessionId = result.processId
