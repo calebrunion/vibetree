@@ -4,6 +4,8 @@ import {
   ArrowRight,
   ArrowUp,
   Bot,
+  ChevronsDown,
+  ChevronsUp,
   Clipboard,
   CornerDownLeft,
   Delete,
@@ -21,6 +23,8 @@ const KEYS = {
   ARROW_DOWN: '\x1b[B',
   ARROW_RIGHT: '\x1b[C',
   ARROW_LEFT: '\x1b[D',
+  PAGE_UP: '\x1b[5~',
+  PAGE_DOWN: '\x1b[6~',
   TAB: '\t',
   SHIFT_TAB: '\x1b[Z',
   CTRL_C: '\x03',
@@ -146,9 +150,23 @@ export default function MobileTerminalToolbar() {
           </button>
           <button
             onClick={() => sendKey(KEYS.ARROW_RIGHT)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0 mr-2"
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
           >
             <ArrowRight className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.PAGE_UP)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+            title="Page Up"
+          >
+            <ChevronsUp className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.PAGE_DOWN)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0 mr-2"
+            title="Page Down"
+          >
+            <ChevronsDown className="h-5 w-5" />
           </button>
           <button
             onClick={() => sendKey(KEYS.SHIFT_TAB)}
@@ -196,10 +214,10 @@ export default function MobileTerminalToolbar() {
         <button
           type="button"
           onClick={() => setIsVoiceDialogOpen(true)}
-          className="h-14 flex-1 px-3 text-sm bg-muted border border-border rounded-md text-left truncate cursor-pointer text-muted-foreground active:scale-95 transition-transform flex items-center gap-2"
+          className={`h-14 flex-1 min-w-0 px-3 text-sm bg-muted border border-border rounded-md text-left cursor-pointer active:scale-95 transition-transform flex items-center gap-2 ${inputText ? 'text-white' : 'text-muted-foreground'}`}
         >
-          <Mic className="h-4 w-4 flex-shrink-0" />
-          {inputText || 'Type or use voice input...'}
+          <Mic className={`h-4 w-4 flex-shrink-0 ${inputText ? 'text-white' : ''}`} />
+          <span className="truncate">{inputText || 'Type or use voice input...'}</span>
         </button>
         <button
           onClick={() => sendKey(KEYS.ENTER)}

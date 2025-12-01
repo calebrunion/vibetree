@@ -149,7 +149,7 @@ export default function VoiceInputDialog({
               }
             }}
             placeholder="Type or use voice input..."
-            className="flex-1 h-10 px-3 text-sm bg-muted border rounded-lg placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-border"
+            className="flex-1 h-10 px-3 text-sm bg-muted border rounded-lg placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
             enterKeyHint="send"
           />
         </form>
@@ -159,11 +159,11 @@ export default function VoiceInputDialog({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onTouchEnd={() => {
-              onSend('/clear\n')
+              onSend('/new\n')
               onClose()
             }}
             onClick={() => {
-              onSend('/clear\n')
+              onSend('/new\n')
               onClose()
             }}
             className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
