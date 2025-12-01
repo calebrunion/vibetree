@@ -1,4 +1,4 @@
-import { BarChart3, GitCommit, SquarePen, X } from 'lucide-react'
+import { BarChart3, GitCommit, RefreshCw, SquarePen, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SpeechRecognitionEvent extends Event {
@@ -185,17 +185,33 @@ export default function VoiceInputDialog({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onTouchEnd={() => {
-              onSend('commit these changes\n')
+              onSend('commit\n')
               onClose()
             }}
             onClick={() => {
-              onSend('commit these changes\n')
+              onSend('commit\n')
               onClose()
             }}
             className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
             title="Commit"
           >
             <GitCommit className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onTouchEnd={() => {
+              onSend('push\n')
+              onClose()
+            }}
+            onClick={() => {
+              onSend('push\n')
+              onClose()
+            }}
+            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
+            title="Push"
+          >
+            <RefreshCw className="h-5 w-5" />
           </button>
           <button
             type="button"
