@@ -4,7 +4,8 @@ import { AuthProvider } from '@buddy/auth'
 import App from './App'
 import './styles/globals.css'
 
-const serverUrl = `${window.location.protocol}//${window.location.hostname}:3002`
+const serverPort = import.meta.env.VITE_SERVER_PORT || 3002
+const serverUrl = `${window.location.protocol}//${window.location.hostname}:${serverPort}`
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // Temporarily disable StrictMode to fix terminal character duplication

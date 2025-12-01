@@ -16,8 +16,9 @@ async function discoverServerPort(): Promise<number> {
   const hostname = window.location.hostname
   const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:'
 
-  // Start with default port 3002 and check sequential ports
-  let startPort = 3002
+  // Start with configured port or default 3002 and check sequential ports
+  const defaultPort = import.meta.env.VITE_SERVER_PORT ? parseInt(import.meta.env.VITE_SERVER_PORT) : 3002
+  let startPort = defaultPort
 
   for (let i = 0; i < 50; i++) {
     // Check 50 sequential ports max
@@ -46,8 +47,8 @@ async function discoverServerPort(): Promise<number> {
     return port
   }
 
-  console.warn('⚠️ Could not discover server port, using fallback 8000')
-  return 8000
+  console.warn('⚠️ Could not discover server port, using fallback 3002')
+  return 3002
 }
 
 /**
