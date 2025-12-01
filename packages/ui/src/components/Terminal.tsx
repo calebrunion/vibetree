@@ -236,6 +236,123 @@ export const Terminal: React.FC<TerminalProps> = ({
     // Activate unicode support
     unicode11Addon.activate(term)
 
+    // Fix touch scrolling for mobile browsers (especially Android Chrome)
+    if (isMobile) {
+      // Wait for xterm to render, then attach touch handlers to the screen element
+      setTimeout(() => {
+        const screen = terminalRef.current?.querySelector('.xterm-screen') as HTMLElement
+        if (!screen) return
+
+        let lastTouchY = 0
+        let lastTouchTime = 0
+        let velocity = 0
+        let accumulatedDelta = 0
+        let momentumAnimationId: number | null = null
+        const LINE_HEIGHT = 16
+        const FRICTION = 0.92
+        const MIN_VELOCITY = 0.5
+
+        const stopMomentum = () => {
+          if (momentumAnimationId !== null) {
+            cancelAnimationFrame(momentumAnimationId)
+            momentumAnimationId = null
+          }
+        }
+
+        const applyMomentum = () => {
+          if (Math.abs(velocity) < MIN_VELOCITY) {
+            momentumAnimationId = null
+            return
+          }
+
+          accumulatedDelta += velocity
+          const linesToScroll = Math.trunc(accumulatedDelta / LINE_HEIGHT)
+          if (linesToScroll !== 0) {
+            term.scrollLines(linesToScroll)
+            accumulatedDelta -= linesToScroll * LINE_HEIGHT
+          }
+
+          velocity *= FRICTION
+          momentumAnimationId = requestAnimationFrame(applyMomentum)
+        }
+
+        const handleTouchStart = (e: TouchEvent) => {
+          if (e.touches.length === 1) {
+            stopMomentum()
+            lastTouchY = e.touches[0].clientY
+            lastTouchTime = e.timeStamp
+            velocity = 0
+            accumulatedDelta = 0
+          }
+        }
+
+        const handleTouchMove = (e: TouchEvent) => {
+          if (e.touches.length !== 1) return
+
+          const currentY = e.touches[0].clientY
+          const currentTime = e.timeStamp
+          const deltaY = lastTouchY - currentY
+          const deltaTime = currentTime - lastTouchTime
+
+          // Calculate velocity (pixels per ms) and apply acceleration
+          if (deltaTime > 0) {
+            const instantVelocity = deltaY / deltaTime
+            // Smooth velocity with previous value
+            velocity = velocity * 0.3 + instantVelocity * 0.7
+          }
+
+          // Apply acceleration based on swipe speed
+          const speed = Math.abs(velocity)
+          let accelerationMultiplier = 1
+          if (speed > 2) {
+            accelerationMultiplier = 3
+          } else if (speed > 1) {
+            accelerationMultiplier = 2
+          } else if (speed > 0.5) {
+            accelerationMultiplier = 1.5
+          }
+
+          accumulatedDelta += deltaY * accelerationMultiplier
+
+          const linesToScroll = Math.trunc(accumulatedDelta / LINE_HEIGHT)
+          if (linesToScroll !== 0) {
+            term.scrollLines(linesToScroll)
+            accumulatedDelta -= linesToScroll * LINE_HEIGHT
+          }
+
+          lastTouchY = currentY
+          lastTouchTime = currentTime
+          e.preventDefault()
+        }
+
+        const handleTouchEnd = () => {
+          // Apply momentum scrolling based on final velocity
+          if (Math.abs(velocity) > MIN_VELOCITY) {
+            // Scale velocity for momentum (convert from px/ms to px/frame)
+            velocity = velocity * 16 * 2
+            momentumAnimationId = requestAnimationFrame(applyMomentum)
+          } else {
+            accumulatedDelta = 0
+          }
+        }
+
+        // Use capture phase to intercept events before xterm handles them
+        screen.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true })
+        screen.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true })
+        screen.addEventListener('touchend', handleTouchEnd, { passive: true, capture: true })
+        screen.addEventListener('touchcancel', handleTouchEnd, { passive: true, capture: true })
+
+        // Store cleanup function
+        ;(terminalRef.current as any)._touchCleanup = () => {
+          stopMomentum()
+          screen.removeEventListener('touchstart', handleTouchStart, { capture: true })
+          screen.removeEventListener('touchmove', handleTouchMove, { capture: true })
+          screen.removeEventListener('touchend', handleTouchEnd, { capture: true })
+          screen.removeEventListener('touchcancel', handleTouchEnd, { capture: true })
+        }
+      }, 100)
+    }
+
     // Fit terminal to container after render
     setTimeout(() => {
       fitAddon.fit()
@@ -406,6 +523,10 @@ export const Terminal: React.FC<TerminalProps> = ({
       }
       if (intersectionObserver) {
         intersectionObserver.disconnect()
+      }
+      // Cleanup touch handlers
+      if (terminalRef.current && (terminalRef.current as any)._touchCleanup) {
+        ;(terminalRef.current as any)._touchCleanup()
       }
       dataDisposable.dispose()
       keyDisposable.dispose()
@@ -640,6 +761,13 @@ export const Terminal: React.FC<TerminalProps> = ({
         .terminal-container .xterm-helper-textarea {
           caret-color: transparent !important;
           opacity: 0 !important;
+        }
+        .terminal-container .xterm-viewport {
+          overflow-y: scroll !important;
+          -webkit-overflow-scrolling: touch;
+        }
+        .terminal-container .xterm-screen {
+          touch-action: pan-y !important;
         }
       `}</style>
       <div
