@@ -1,4 +1,4 @@
-import { GitCommit, SquarePen, X } from 'lucide-react'
+import { BarChart3, GitCommit, SquarePen, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SpeechRecognitionEvent extends Event {
@@ -149,9 +149,19 @@ export default function VoiceInputDialog({
               }
             }}
             placeholder="Type or use voice input..."
-            className="flex-1 h-10 px-3 text-sm bg-muted border rounded-lg placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+            className="flex-1 h-10 px-3 text-sm bg-muted border border-border rounded-lg placeholder:text-muted-foreground focus:outline-none focus:bg-background focus:border-white"
             enterKeyHint="send"
           />
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onTouchEnd={() => setText('')}
+            onClick={() => setText('')}
+            className="h-10 w-10 rounded-lg border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center focus:outline-none"
+            title="Clear"
+          >
+            <X className={`h-5 w-5 ${text.trim() ? 'text-white' : ''}`} />
+          </button>
         </form>
 
         <div className="flex items-center gap-2 mt-3">
@@ -166,10 +176,10 @@ export default function VoiceInputDialog({
               onSend('/new\n')
               onClose()
             }}
-            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
+            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
+            title="New Chat"
           >
-            <SquarePen className="h-4 w-4" />
-            New Chat
+            <SquarePen className="h-5 w-5" />
           </button>
           <button
             type="button"
@@ -182,19 +192,26 @@ export default function VoiceInputDialog({
               onSend('commit these changes\n')
               onClose()
             }}
-            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center gap-2 text-sm"
+            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
+            title="Commit"
           >
-            <GitCommit className="h-4 w-4" />
-            Commit
+            <GitCommit className="h-5 w-5" />
           </button>
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
-            onTouchEnd={() => setText('')}
-            onClick={() => setText('')}
-            className="h-10 w-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
+            onTouchEnd={() => {
+              onSend('/usage\n')
+              onClose()
+            }}
+            onClick={() => {
+              onSend('/usage\n')
+              onClose()
+            }}
+            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
+            title="Usage"
           >
-            <X className={`h-5 w-5 ${text.trim() ? 'text-white' : ''}`} />
+            <BarChart3 className="h-5 w-5" />
           </button>
         </div>
 

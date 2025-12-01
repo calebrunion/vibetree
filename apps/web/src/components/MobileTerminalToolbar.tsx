@@ -155,18 +155,18 @@ export default function MobileTerminalToolbar() {
             <ArrowRight className="h-5 w-5" />
           </button>
           <button
-            onClick={() => sendKey(KEYS.PAGE_UP)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
-            title="Page Up"
-          >
-            <ChevronsUp className="h-5 w-5" />
-          </button>
-          <button
             onClick={() => sendKey(KEYS.PAGE_DOWN)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0 mr-2"
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
             title="Page Down"
           >
             <ChevronsDown className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.PAGE_UP)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0 mr-2"
+            title="Page Up"
+          >
+            <ChevronsUp className="h-5 w-5" />
           </button>
           <button
             onClick={() => sendKey(KEYS.SHIFT_TAB)}
