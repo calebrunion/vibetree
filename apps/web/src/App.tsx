@@ -427,19 +427,42 @@ function App() {
     return (
       <div className="h-full flex flex-col bg-background">
         {/* Header */}
-        <header className="h-14 border-b flex items-center justify-between px-4 flex-shrink-0 titlebar-area titlebar-area-inset">
-          <div className="flex items-center gap-2">
+        <header
+          className="border-b flex items-center justify-between pl-1 pr-2 sm:pr-3 h-12 flex-shrink-0"
+          style={{ backgroundColor: '#1a1a1a' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <svg viewBox="0 0 512 512" className="h-9 w-9">
+              <defs>
+                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#3fb950" />
+                  <stop offset="50%" stopColor="#79c0ff" />
+                  <stop offset="100%" stopColor="#a371f7" />
+                </linearGradient>
+                <filter id="logoGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="12" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path
+                d="M165 145 L347 256 L165 367"
+                stroke="url(#logoGrad)"
+                strokeWidth="40"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                filter="url(#logoGlow)"
+              />
+              <circle cx="165" cy="145" r="28" fill="#3fb950" filter="url(#logoGlow)" />
+              <circle cx="347" cy="256" r="28" fill="#79c0ff" filter="url(#logoGlow)" />
+              <circle cx="165" cy="367" r="28" fill="#a371f7" filter="url(#logoGlow)" />
+            </svg>
             <h1 className="text-lg font-semibold">Buddy</h1>
-            <span className="text-xs text-muted-foreground hidden sm:inline">Web Terminal</span>
           </div>
-          <div className="flex items-center gap-2 app-region-no-drag">
-            <button
-              onClick={toggleTheme}
-              className="p-2 hover:bg-accent rounded-md transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+          <div className="flex items-center gap-2 app-region-no-drag pr-2">
             <ConnectionStatus />
           </div>
         </header>
