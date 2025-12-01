@@ -168,14 +168,8 @@ export default function VoiceInputDialog({
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
-            onTouchEnd={() => {
-              onSend('/new\n')
-              onClose()
-            }}
-            onClick={() => {
-              onSend('/new\n')
-              onClose()
-            }}
+            onTouchEnd={() => setText('/new')}
+            onClick={() => setText('/new')}
             className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
             title="New Chat"
           >
@@ -184,14 +178,8 @@ export default function VoiceInputDialog({
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
-            onTouchEnd={() => {
-              onSend('commit\n')
-              onClose()
-            }}
-            onClick={() => {
-              onSend('commit\n')
-              onClose()
-            }}
+            onTouchEnd={() => setText('commit')}
+            onClick={() => setText('commit')}
             className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
             title="Commit"
           >
@@ -200,14 +188,8 @@ export default function VoiceInputDialog({
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
-            onTouchEnd={() => {
-              onSend('push\n')
-              onClose()
-            }}
-            onClick={() => {
-              onSend('push\n')
-              onClose()
-            }}
+            onTouchEnd={() => setText('push')}
+            onClick={() => setText('push')}
             className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
             title="Push"
           >
@@ -216,14 +198,8 @@ export default function VoiceInputDialog({
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
-            onTouchEnd={() => {
-              onSend('/usage\n')
-              onClose()
-            }}
-            onClick={() => {
-              onSend('/usage\n')
-              onClose()
-            }}
+            onTouchEnd={() => setText('/usage')}
+            onClick={() => setText('/usage')}
             className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
             title="Usage"
           >
