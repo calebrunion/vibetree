@@ -29,7 +29,12 @@ export function MobileWorktreeTabs({
   const { getAdapter } = useWebSocket()
   const setShowAddWorktreeDialog = useAppStore((state) => state.setShowAddWorktreeDialog)
   const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set())
-  const [deleteConfirmWorktree, setDeleteConfirmWorktree] = useState<{ path: string; branch: string } | null>(null)
+  const [deleteConfirmWorktree, setDeleteConfirmWorktree] = useState<{
+    path: string
+    branch: string
+    hasChanges: boolean
+  } | null>(null)
+  const [deleteConfirmed, setDeleteConfirmed] = useState(false)
   const [deletingPath, setDeletingPath] = useState<string | null>(null)
   const selectedButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -72,20 +77,9 @@ export function MobileWorktreeTabs({
   const handleDeleteWorktree = async (worktreePath: string, branch: string, e: React.MouseEvent) => {
     e.stopPropagation()
     if (isProtectedBranch(branch)) return
-
-    const adapter = getAdapter()
-    if (!adapter) return
-
-    try {
-      const status = await adapter.getGitStatus(worktreePath)
-      if (status.length > 0) {
-        setDeleteConfirmWorktree({ path: worktreePath, branch })
-      } else {
-        performDelete(worktreePath, branch)
-      }
-    } catch {
-      performDelete(worktreePath, branch)
-    }
+    const hasChanges = worktreesWithChanges.has(worktreePath)
+    setDeleteConfirmed(false)
+    setDeleteConfirmWorktree({ path: worktreePath, branch, hasChanges })
   }
 
   const performDelete = async (worktreePath: string, branch: string) => {
@@ -203,11 +197,25 @@ export function MobileWorktreeTabs({
             <div className="p-6">
               <h3 className="text-lg font-semibold mb-2 text-red-600 dark:text-red-400">Delete Worktree?</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                This worktree has uncommitted changes that will be lost. Are you sure you want to delete it?
+                Are you sure you want to delete this worktree? This action cannot be undone.
               </p>
               <p className="text-sm font-medium mb-4 p-2 bg-muted rounded">
                 {deleteConfirmWorktree.branch.replace('refs/heads/', '')}
               </p>
+
+              {deleteConfirmWorktree.hasChanges && (
+                <label className="flex items-start gap-3 p-3 bg-muted border border-border rounded-md mb-4 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={deleteConfirmed}
+                    onChange={(e) => setDeleteConfirmed(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    I understand this worktree has uncommitted changes that will be lost
+                  </span>
+                </label>
+              )}
 
               <div className="flex justify-end gap-2 mt-6">
                 <button
@@ -219,7 +227,7 @@ export function MobileWorktreeTabs({
                 </button>
                 <button
                   onClick={() => performDelete(deleteConfirmWorktree.path, deleteConfirmWorktree.branch)}
-                  disabled={!!deletingPath}
+                  disabled={!!deletingPath || (deleteConfirmWorktree.hasChanges && !deleteConfirmed)}
                   className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
                 >
                   {deletingPath ? (
