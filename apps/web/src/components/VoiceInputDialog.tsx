@@ -104,6 +104,7 @@ export default function VoiceInputDialog({
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus()
+      window.scrollTo(0, document.body.scrollHeight)
     }
     if (!isOpen) {
       if (recognitionRef.current && isListening) {
