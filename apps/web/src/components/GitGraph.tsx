@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { GitCommitHorizontal } from 'lucide-react'
+import { GitCommitHorizontal, Check } from 'lucide-react'
 import type { GitCommit } from '@buddy/core'
 
 interface GitGraphProps {
@@ -7,6 +7,7 @@ interface GitGraphProps {
   onCommitClick?: (commit: GitCommit) => void
   theme?: 'light' | 'dark'
   isFullscreen?: boolean
+  copiedHash?: string | null
 }
 
 const BRANCH_COLORS = {
@@ -214,7 +215,13 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
   )
 }
 
-export default function GitGraph({ commits, onCommitClick, theme = 'dark', isFullscreen = false }: GitGraphProps) {
+export default function GitGraph({
+  commits,
+  onCommitClick,
+  theme = 'dark',
+  isFullscreen = false,
+  copiedHash,
+}: GitGraphProps) {
   const [graphWidth, setGraphWidth] = useState(isFullscreen ? 100 : 60)
   const isDragging = useRef(false)
   const startX = useRef(0)
@@ -351,7 +358,16 @@ export default function GitGraph({ commits, onCommitClick, theme = 'dark', isFul
                   <span className="text-sm whitespace-nowrap md:truncate" title={node.commit.subject}>
                     {node.commit.subject}
                   </span>
-                  <span className="text-xs font-mono text-muted-foreground flex-shrink-0">{node.commit.shortHash}</span>
+                  <span className="text-xs font-mono text-muted-foreground flex-shrink-0 flex items-center gap-1">
+                    {copiedHash === node.commit.hash ? (
+                      <>
+                        <Check className="h-3 w-3 text-green-500" />
+                        <span className="text-green-500">copied</span>
+                      </>
+                    ) : (
+                      node.commit.shortHash
+                    )}
+                  </span>
                   <span className="text-xs text-muted-foreground flex-shrink-0 hidden md:inline">
                     {node.commit.relativeDate}
                   </span>

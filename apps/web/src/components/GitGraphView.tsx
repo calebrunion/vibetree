@@ -24,7 +24,18 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
   const [error, setError] = useState<string | null>(null)
   const [showAllAuthors, setShowAllAuthors] = useState(false)
   const [userName, setUserName] = useState<string | null>(null)
+  const [copiedHash, setCopiedHash] = useState<string | null>(null)
   const { getAdapter } = useWebSocket()
+
+  const handleCommitClick = useCallback(async (commit: GitCommit) => {
+    try {
+      await navigator.clipboard.writeText(commit.hash)
+      setCopiedHash(commit.hash)
+      setTimeout(() => setCopiedHash(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }, [])
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -145,9 +156,8 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
           commits={commits}
           theme={theme}
           isFullscreen={isFullscreen}
-          onCommitClick={(commit) => {
-            console.log('Clicked commit:', commit)
-          }}
+          copiedHash={copiedHash}
+          onCommitClick={handleCommitClick}
         />
       </div>
     </div>
