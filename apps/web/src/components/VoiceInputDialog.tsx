@@ -1,4 +1,4 @@
-import { BarChart3, GitCommit, RefreshCw, SquarePen, X } from 'lucide-react'
+import { BarChart3, GitCommit, RefreshCw, Send, SquarePen } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SpeechRecognitionEvent extends Event {
@@ -153,14 +153,12 @@ export default function VoiceInputDialog({
             enterKeyHint="send"
           />
           <button
-            type="button"
+            type="submit"
             onMouseDown={(e) => e.preventDefault()}
-            onTouchEnd={() => setText('')}
-            onClick={() => setText('')}
-            className="h-10 w-10 rounded-lg border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center focus:outline-none"
-            title="Clear"
+            className={`h-10 w-10 rounded-lg border active:scale-95 transition-transform flex items-center justify-center focus:outline-none ${text.trim() ? 'bg-muted-foreground/30 text-white' : 'bg-muted text-muted-foreground'}`}
+            title="Send"
           >
-            <X className={`h-5 w-5 ${text.trim() ? 'text-white' : ''}`} />
+            <Send className="h-5 w-5" />
           </button>
         </form>
 
