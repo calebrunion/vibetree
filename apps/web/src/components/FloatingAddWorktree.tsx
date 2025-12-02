@@ -53,6 +53,7 @@ export function FloatingAddWorktree() {
 
               <input
                 type="text"
+                inputMode="url"
                 placeholder="branch-name"
                 value={branchName}
                 onChange={(e) => setBranchName(e.target.value.replace(/[^a-zA-Z0-9/\-\.]/g, ''))}
@@ -68,7 +69,8 @@ export function FloatingAddWorktree() {
                 }}
                 className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                 autoFocus
-                autoCapitalize="none"
+                autoComplete="off"
+                autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
                 disabled={loading}
