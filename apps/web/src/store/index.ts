@@ -37,6 +37,13 @@ interface AppState {
   // UI state
   showAddWorktreeDialog: boolean
   sidebarCollapsed: boolean
+  deleteWorktreeConfirm: {
+    path: string
+    branch: string
+    hasChanges: boolean
+    projectPath: string
+    onDeleted?: () => void
+  } | null
 
   // Actions
   setConnected: (connected: boolean) => void
@@ -62,6 +69,7 @@ interface AppState {
   setTheme: (theme: 'light' | 'dark') => void
   setShowAddWorktreeDialog: (show: boolean) => void
   setSidebarCollapsed: (collapsed: boolean) => void
+  setDeleteWorktreeConfirm: (confirm: AppState['deleteWorktreeConfirm']) => void
   toggleSidebarCollapsed: () => void
   toggleTerminalSplit: (projectId: string) => void
   toggleTerminalFullscreen: (projectId: string) => void
@@ -86,6 +94,7 @@ export const useAppStore = create<AppState>()(
       theme: 'light',
       showAddWorktreeDialog: false,
       sidebarCollapsed: false,
+      deleteWorktreeConfirm: null,
 
       // Actions
       setConnected: (connected) => set({ connected }),
@@ -258,6 +267,7 @@ export const useAppStore = create<AppState>()(
       setTheme: (theme) => set({ theme }),
       setShowAddWorktreeDialog: (show) => set({ showAddWorktreeDialog: show }),
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+      setDeleteWorktreeConfirm: (confirm) => set({ deleteWorktreeConfirm: confirm }),
       toggleSidebarCollapsed: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
       toggleTerminalSplit: (projectId: string) => {

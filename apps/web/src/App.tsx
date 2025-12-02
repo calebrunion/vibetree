@@ -22,6 +22,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import AddProjectModal from './components/AddProjectModal'
 import { ConnectionStatus } from './components/ConnectionStatus'
 import { FloatingAddWorktree } from './components/FloatingAddWorktree'
+import DeleteWorktreeDialog from './components/DeleteWorktreeDialog'
 import type { GitDiffViewRef } from './components/GitDiffView'
 
 const GitDiffView = lazy(() => import('./components/GitDiffView').then((m) => ({ default: m.GitDiffView })))
@@ -832,6 +833,7 @@ function App() {
       />
 
       <FloatingAddWorktree />
+      <DeleteWorktreeDialog />
 
       {/* Mobile Settings Modal */}
       {showMobileSettingsModal && activeProject && (
