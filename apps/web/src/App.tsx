@@ -11,6 +11,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
+  RotateCcw,
   Rows2,
   Sliders,
   Sun,
@@ -658,6 +659,13 @@ function App() {
                     </div>
                     {getCurrentTab(project) === 'terminal' ? (
                       <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => window.dispatchEvent(new CustomEvent('reload-terminal'))}
+                          className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                          title="Reload Terminal"
+                        >
+                          <RotateCcw className="h-4 w-4 text-[#999] group-hover:text-white" />
+                        </button>
                         <button
                           onClick={() => toggleTerminalSplit(project.id)}
                           className={`group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center ${project.isTerminalSplit ? 'bg-muted' : ''}`}

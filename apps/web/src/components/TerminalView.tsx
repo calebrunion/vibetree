@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Terminal } from '@buddy/ui'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
-import { Minimize2, Columns2, Rows2 } from 'lucide-react'
+import { Minimize2, Columns2, Rows2, RotateCcw } from 'lucide-react'
 import type { Terminal as XTerm } from '@xterm/xterm'
 
 // Cache for terminal states per session ID (like desktop app)
@@ -36,6 +36,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [splitSessionId, setSplitSessionId] = useState<string | null>(null)
   const [containerWidth, setContainerWidth] = useState(0)
+  const [isReloading, setIsReloading] = useState(false)
   const terminalRef = useRef<XTerm | null>(null)
   const splitTerminalRef = useRef<XTerm | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -101,6 +102,15 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     window.addEventListener('focus-terminal', handleFocusTerminal)
     return () => window.removeEventListener('focus-terminal', handleFocusTerminal)
   }, [])
+
+  useEffect(() => {
+    const handleReloadTerminal = () => {
+      reloadTerminal()
+    }
+
+    window.addEventListener('reload-terminal', handleReloadTerminal)
+    return () => window.removeEventListener('reload-terminal', handleReloadTerminal)
+  }, [sessionId, selectedWorktree])
 
   useEffect(() => {
     if (!selectedWorktree) {
@@ -405,6 +415,86 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     terminalRef.current = terminal
   }
 
+  const reloadTerminal = async () => {
+    if (isReloading) return
+
+    setIsReloading(true)
+    const adapter = getAdapter()
+    if (!adapter || !selectedWorktree) {
+      setIsReloading(false)
+      return
+    }
+
+    try {
+      // Cleanup existing listeners
+      cleanupRef.current.forEach((cleanup) => cleanup())
+      cleanupRef.current = []
+
+      // Clear the save interval
+      if (saveIntervalRef.current) {
+        clearInterval(saveIntervalRef.current)
+        saveIntervalRef.current = null
+      }
+
+      // Terminate existing session if any
+      if (sessionId) {
+        try {
+          await adapter.terminateShell(sessionId)
+        } catch {
+          // Ignore errors when terminating - session might already be dead
+        }
+        terminalStateCache.delete(sessionId)
+        removeTerminalSession(selectedWorktree)
+      }
+
+      // Clear terminal display
+      if (terminalRef.current) {
+        terminalRef.current.clear()
+        terminalRef.current.write('\x1b[2J\x1b[H')
+      }
+
+      // Reset state
+      setSessionId(null)
+      initializedWorktreeRef.current = null
+      initializingRef.current = false
+
+      // Start a new session
+      const result = await adapter.startShell(selectedWorktree, undefined, undefined, true)
+
+      if (result.success && result.processId) {
+        const actualSessionId = result.processId
+
+        const unsubscribeOutput = adapter.onShellOutput(actualSessionId, (data) => {
+          if (terminalRef.current) {
+            terminalRef.current.write(data)
+          }
+        })
+
+        const unsubscribeExit = adapter.onShellExit(actualSessionId, (code) => {
+          if (terminalRef.current) {
+            terminalRef.current.write(`\r\n[Process exited with code ${code}]\r\n`)
+          }
+          terminalStateCache.delete(actualSessionId)
+          removeTerminalSession(selectedWorktree)
+          setSessionId(null)
+          initializedWorktreeRef.current = null
+          initializingRef.current = false
+        })
+
+        cleanupRef.current = [unsubscribeOutput, unsubscribeExit]
+        setSessionId(actualSessionId)
+        addTerminalSession(selectedWorktree, actualSessionId)
+        initializedWorktreeRef.current = selectedWorktree
+      } else {
+        console.error('Failed to reload terminal session:', result.error)
+      }
+    } catch (error) {
+      console.error('Failed to reload terminal:', error)
+    } finally {
+      setIsReloading(false)
+    }
+  }
+
   const handleSplitTerminalData = async (data: string) => {
     if (!splitSessionId) return
 
@@ -520,6 +610,14 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
       {isFullscreen && activeProject && (
         <div className="fixed top-[46px] right-4 z-[51] flex items-center gap-1">
           <button
+            onClick={reloadTerminal}
+            disabled={isReloading}
+            className="group size-[34px] p-0 bg-black hover:bg-accent rounded-md transition-colors border border-border inline-flex items-center justify-center disabled:opacity-50"
+            title="Reload Terminal"
+          >
+            <RotateCcw className={`h-4 w-4 text-[#999] group-hover:text-white ${isReloading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
             onClick={() => toggleTerminalSplit(activeProject.id)}
             className={`group size-[34px] p-0 ${isSplit ? 'bg-accent' : 'bg-black'} hover:bg-accent rounded-md transition-colors border border-border inline-flex items-center justify-center`}
             title="Split Terminal"
@@ -543,7 +641,9 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
         ref={containerRef}
         className={`flex-1 flex min-h-0 ${isSplit ? (useColumns ? 'flex-row' : 'flex-col') : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
       >
-        <div className={isSplit ? (useColumns ? 'h-full w-1/2 border-r' : 'h-1/2 w-full border-b') : 'w-full h-full'}>
+        <div
+          className={`relative ${isSplit ? (useColumns ? 'h-full w-1/2 border-r' : 'h-1/2 w-full border-b') : 'w-full h-full'}`}
+        >
           {sessionId && (
             <Terminal
               id={sessionId}
@@ -560,7 +660,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
           )}
           {!sessionId && (
             <div className="flex items-center justify-center h-full text-muted-foreground">
-              <p>Starting terminal session...</p>
+              <p>{isReloading ? 'Reloading terminal...' : 'Starting terminal session...'}</p>
             </div>
           )}
         </div>

@@ -287,6 +287,32 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
             break
           }
 
+          case 'shell:terminate': {
+            try {
+              const sessionId = message.payload.sessionId
+              if (sessionId) {
+                shellManager.terminateSession(sessionId)
+                activeShellSessions.delete(sessionId)
+              }
+              ws.send(
+                JSON.stringify({
+                  type: 'shell:terminate:response',
+                  payload: { success: true },
+                  id: message.id,
+                })
+              )
+            } catch (error) {
+              ws.send(
+                JSON.stringify({
+                  type: 'shell:terminate:response',
+                  payload: { success: false, error: (error as Error).message },
+                  id: message.id,
+                })
+              )
+            }
+            break
+          }
+
           case 'git:worktree:list': {
             try {
               const worktrees = await listWorktrees(message.payload.projectPath)

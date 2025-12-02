@@ -151,6 +151,10 @@ export class WebSocketAdapter extends BaseAdapter {
     return this.sendMessage('shell:resize', { sessionId: processId, cols, rows })
   }
 
+  async terminateShell(processId: string): Promise<{ success: boolean }> {
+    return this.sendMessage('shell:terminate', { sessionId: processId })
+  }
+
   async getShellStatus(_processId: string): Promise<{ running: boolean }> {
     // WebSocket doesn't have a direct status check, assume running if we have a session
     return { running: true }
