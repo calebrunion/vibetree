@@ -665,19 +665,19 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
               className="md:hidden pl-1 pr-2 py-2 border-b bg-muted/30 flex items-center gap-2 w-full text-left hover:bg-muted/50 transition-colors"
             >
               <ChevronLeft className="h-5 w-5 flex-shrink-0" />
-              <span className="text-sm font-medium truncate">
-                {(() => {
-                  const lastSlash = selectedFile.lastIndexOf('/')
-                  if (lastSlash === -1) return selectedFile
-                  return (
-                    <>
-                      <span className="opacity-50">{selectedFile.substring(0, lastSlash + 1)}</span>
-                      {selectedFile.substring(lastSlash + 1)}
-                    </>
-                  )
-                })()}
-              </span>
-              <span className="ml-auto text-xs text-muted-foreground flex-shrink-0 flex items-center gap-1">
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-sm font-medium truncate">
+                  {selectedFile.includes('/')
+                    ? selectedFile.substring(selectedFile.lastIndexOf('/') + 1)
+                    : selectedFile}
+                </span>
+                {selectedFile.includes('/') && (
+                  <span className="text-xs text-muted-foreground truncate">
+                    {selectedFile.substring(0, selectedFile.lastIndexOf('/'))}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground flex-shrink-0 flex items-center gap-1">
                 {selectedSection === 'all' && 'vs origin'}
                 {selectedSection === 'commit' && (
                   <>
