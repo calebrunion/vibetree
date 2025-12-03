@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  BarChart3,
   Bot,
   ChevronsDown,
   ChevronsUp,
@@ -10,8 +11,12 @@ import {
   CornerDownLeft,
   Delete,
   Eraser,
+  GitCommit,
   Mic,
+  Minimize2,
+  RefreshCw,
   Rewind,
+  SquarePen,
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
@@ -101,24 +106,27 @@ export default function MobileTerminalToolbar() {
     }
   }, [getActiveProject, terminalSessions, getAdapter])
 
-  const sendRewind = useCallback(async () => {
-    const activeProject = getActiveProject()
-    if (!activeProject?.selectedWorktree) return
+  const sendCommand = useCallback(
+    async (command: string) => {
+      const activeProject = getActiveProject()
+      if (!activeProject?.selectedWorktree) return
 
-    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
-    if (!sessionId) return
+      const sessionId = terminalSessions.get(activeProject.selectedWorktree)
+      if (!sessionId) return
 
-    const adapter = getAdapter()
-    if (!adapter) return
+      const adapter = getAdapter()
+      if (!adapter) return
 
-    try {
-      await adapter.writeToShell(sessionId, '/rewind')
-      await new Promise((resolve) => setTimeout(resolve, 50))
-      await adapter.writeToShell(sessionId, KEYS.ENTER)
-    } catch (error) {
-      console.error('Failed to send rewind:', error)
-    }
-  }, [getActiveProject, terminalSessions, getAdapter])
+      try {
+        await adapter.writeToShell(sessionId, command)
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        await adapter.writeToShell(sessionId, KEYS.ENTER)
+      } catch (error) {
+        console.error('Failed to send command:', error)
+      }
+    },
+    [getActiveProject, terminalSessions, getAdapter]
+  )
 
   const activeProject = getActiveProject()
 
@@ -135,20 +143,6 @@ export default function MobileTerminalToolbar() {
             className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400 flex-shrink-0 mr-2"
           >
             ^C
-          </button>
-          <button
-            onClick={launchClaude}
-            className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
-            title="Launch Claude"
-          >
-            <Bot className="h-5 w-5" />
-          </button>
-          <button
-            onClick={sendRewind}
-            className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
-            title="Rewind"
-          >
-            <Rewind className="h-5 w-5" />
           </button>
           <button
             onClick={() => sendTextToTerminal('clear\n')}
@@ -229,6 +223,58 @@ export default function MobileTerminalToolbar() {
             <Delete className="h-5 w-5 -ml-px" />
           </button>
         </div>
+      </div>
+
+      <div className="flex items-center gap-1 px-2 pt-1 pb-2">
+        <button
+          onClick={launchClaude}
+          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          title="Launch Claude"
+        >
+          <Bot className="h-5 w-5 text-white" />
+        </button>
+        <button
+          onClick={() => sendCommand('/rewind')}
+          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          title="Rewind"
+        >
+          <Rewind className="h-5 w-5 text-white" />
+        </button>
+        <button
+          onClick={() => sendCommand('commit')}
+          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          title="Commit"
+        >
+          <GitCommit className="h-5 w-5 text-white" />
+        </button>
+        <button
+          onClick={() => sendCommand('/new')}
+          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          title="New Chat"
+        >
+          <SquarePen className="h-5 w-5 text-white" />
+        </button>
+        <button
+          onClick={() => sendCommand('push')}
+          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          title="Push"
+        >
+          <RefreshCw className="h-5 w-5 text-white" />
+        </button>
+        <button
+          onClick={() => sendCommand('/usage')}
+          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          title="Usage"
+        >
+          <BarChart3 className="h-5 w-5 text-white" />
+        </button>
+        <button
+          onClick={() => sendCommand('/compact')}
+          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          title="Compact"
+        >
+          <Minimize2 className="h-5 w-5 text-white -rotate-45" />
+        </button>
       </div>
 
       <div className="flex items-start justify-between gap-2 px-2 pt-1 pb-3">
