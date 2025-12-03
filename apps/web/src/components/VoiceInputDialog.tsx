@@ -1,4 +1,4 @@
-import { BarChart3, GitCommit, RefreshCw, Send, SquarePen } from 'lucide-react'
+import { BarChart3, GitCommit, Minimize2, RefreshCw, Send, SquarePen } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SpeechRecognitionEvent extends Event {
@@ -203,6 +203,16 @@ export default function VoiceInputDialog({
             title="Usage"
           >
             <BarChart3 className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onTouchEnd={() => setText('/compact')}
+            onClick={() => setText('/compact')}
+            className="size-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
+            title="Compact"
+          >
+            <Minimize2 className="h-5 w-5 -rotate-45" />
           </button>
         </div>
 
