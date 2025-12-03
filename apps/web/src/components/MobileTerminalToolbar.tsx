@@ -140,16 +140,9 @@ export default function MobileTerminalToolbar() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => sendKey(KEYS.CTRL_C)}
-            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400 flex-shrink-0 mr-2"
+            className="h-11 px-4 text-sm font-medium bg-muted border rounded-md active:bg-accent text-red-600 dark:text-red-400 flex-shrink-0 mr-2"
           >
             ^C
-          </button>
-          <button
-            onClick={() => sendTextToTerminal('clear\n')}
-            className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0 mr-2"
-            title="Clear Terminal"
-          >
-            <Eraser className="h-4 w-4" />
           </button>
           <button
             onClick={() => sendKey(KEYS.ARROW_LEFT)}
@@ -171,33 +164,19 @@ export default function MobileTerminalToolbar() {
           </button>
           <button
             onClick={() => sendKey(KEYS.ARROW_RIGHT)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0 mr-2"
           >
             <ArrowRight className="h-5 w-5" />
           </button>
           <button
-            onClick={() => sendKey(KEYS.PAGE_DOWN)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
-            title="Page Down"
-          >
-            <ChevronsDown className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => sendKey(KEYS.PAGE_UP)}
-            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0 mr-2"
-            title="Page Up"
-          >
-            <ChevronsUp className="h-5 w-5" />
-          </button>
-          <button
             onClick={() => sendKey(KEYS.SHIFT_TAB)}
-            className="px-3 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            className="h-11 px-3 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0"
           >
             ⇧TAB
           </button>
           <button
             onClick={() => sendKey(KEYS.TAB)}
-            className="px-4 py-2.5 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            className="h-11 px-4 text-sm font-medium bg-muted border rounded-md active:bg-accent flex-shrink-0"
           >
             TAB
           </button>
@@ -210,17 +189,38 @@ export default function MobileTerminalToolbar() {
                 console.error('Failed to read clipboard:', err)
               }
             }}
-            className="p-3 bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
             title="Paste"
           >
-            <Clipboard className="h-4 w-4" />
+            <Clipboard className="h-5 w-5" />
           </button>
           <button
             onClick={() => sendKey(KEYS.BACKSPACE)}
-            className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
             title="Backspace"
           >
-            <Delete className="h-5 w-5 -ml-px" />
+            <Delete className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendTextToTerminal('clear\n')}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+            title="Clear Terminal"
+          >
+            <Eraser className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.PAGE_DOWN)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+            title="Page Down"
+          >
+            <ChevronsDown className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => sendKey(KEYS.PAGE_UP)}
+            className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center flex-shrink-0"
+            title="Page Up"
+          >
+            <ChevronsUp className="h-5 w-5" />
           </button>
         </div>
       </div>
