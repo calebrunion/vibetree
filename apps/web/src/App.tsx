@@ -75,6 +75,9 @@ function App() {
   const [changedFilesCount, setChangedFilesCount] = useState(0)
   const [projectToRemove, setProjectToRemove] = useState<string | null>(null)
   const [showMobileSettingsModal, setShowMobileSettingsModal] = useState(false)
+  const [isRefreshingTerminal, setIsRefreshingTerminal] = useState(false)
+  const [isRefreshingChanges, setIsRefreshingChanges] = useState(false)
+  const [isRefreshingGraph, setIsRefreshingGraph] = useState(false)
   const gitDiffRef = useRef<GitDiffViewRef>(null)
   const gitGraphRef = useRef<GitGraphViewRef>(null)
   const activeProjectTabRef = useRef<HTMLButtonElement>(null)
@@ -406,7 +409,9 @@ function App() {
 
   const projectToRemoveData = projectToRemove ? projects.find((p) => p.id === projectToRemove) : null
 
-  const handleRefreshChanges = async (project: (typeof projects)[0]) => {
+  const handleRefreshChanges = async (project: (typeof projects)[0], showSpinner = false) => {
+    if (showSpinner) setIsRefreshingChanges(true)
+    const minSpinTime = showSpinner ? new Promise((resolve) => setTimeout(resolve, 1000)) : Promise.resolve()
     gitDiffRef.current?.refresh()
     const adapter = getAdapter()
     if (adapter && connected) {
@@ -417,6 +422,22 @@ function App() {
         console.error('Failed to refresh worktrees:', error)
       }
     }
+    await minSpinTime
+    if (showSpinner) setIsRefreshingChanges(false)
+  }
+
+  const handleRefreshGraph = async () => {
+    setIsRefreshingGraph(true)
+    const minSpinTime = new Promise((resolve) => setTimeout(resolve, 1000))
+    await Promise.all([gitGraphRef.current?.refresh(), minSpinTime])
+    setIsRefreshingGraph(false)
+  }
+
+  const handleRefreshTerminal = async () => {
+    setIsRefreshingTerminal(true)
+    window.dispatchEvent(new CustomEvent('reload-terminal'))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    setIsRefreshingTerminal(false)
   }
 
   // Show login page if not authenticated and not loading
@@ -661,11 +682,13 @@ function App() {
                     {getCurrentTab(project) === 'terminal' ? (
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => window.dispatchEvent(new CustomEvent('reload-terminal'))}
+                          onClick={handleRefreshTerminal}
                           className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                           title="Reload Terminal"
                         >
-                          <RotateCcw className="h-4 w-4 text-[#999] group-hover:text-white" />
+                          <RotateCcw
+                            className={`h-4 w-4 text-[#999] group-hover:text-white ${isRefreshingTerminal ? 'animate-spin [animation-direction:reverse]' : ''}`}
+                          />
                         </button>
                         <button
                           onClick={() => toggleTerminalSplit(project.id)}
@@ -700,30 +723,52 @@ function App() {
                     ) : (
                       <div className="flex items-center gap-1">
                         {getCurrentTab(project) === 'changes' && (
-                          <button
-                            onClick={() => toggleDiffFullscreen(project.id)}
-                            className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
-                            title={project.isDiffFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-                          >
-                            {project.isDiffFullscreen ? (
-                              <Minimize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
-                            ) : (
-                              <Maximize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
-                            )}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleRefreshChanges(project, true)}
+                              className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                              title="Reload Changes"
+                            >
+                              <RotateCcw
+                                className={`h-4 w-4 text-[#999] group-hover:text-white ${isRefreshingChanges ? 'animate-spin [animation-direction:reverse]' : ''}`}
+                              />
+                            </button>
+                            <button
+                              onClick={() => toggleDiffFullscreen(project.id)}
+                              className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                              title={project.isDiffFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                            >
+                              {project.isDiffFullscreen ? (
+                                <Minimize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
+                              ) : (
+                                <Maximize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
+                              )}
+                            </button>
+                          </>
                         )}
                         {getCurrentTab(project) === 'graph' && (
-                          <button
-                            onClick={() => toggleGraphFullscreen(project.id)}
-                            className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
-                            title={project.isGraphFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-                          >
-                            {project.isGraphFullscreen ? (
-                              <Minimize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
-                            ) : (
-                              <Maximize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
-                            )}
-                          </button>
+                          <>
+                            <button
+                              onClick={handleRefreshGraph}
+                              className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                              title="Reload Graph"
+                            >
+                              <RotateCcw
+                                className={`h-4 w-4 text-[#999] group-hover:text-white ${isRefreshingGraph ? 'animate-spin [animation-direction:reverse]' : ''}`}
+                              />
+                            </button>
+                            <button
+                              onClick={() => toggleGraphFullscreen(project.id)}
+                              className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                              title={project.isGraphFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                            >
+                              {project.isGraphFullscreen ? (
+                                <Minimize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
+                              ) : (
+                                <Maximize2 className="h-4 w-4 text-[#999] group-hover:text-white" />
+                              )}
+                            </button>
+                          </>
                         )}
                       </div>
                     )}
