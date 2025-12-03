@@ -167,22 +167,22 @@ export default function VoiceInputDialog({
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
-            onTouchEnd={() => setText('/new')}
-            onClick={() => setText('/new')}
-            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
-            title="New Chat"
-          >
-            <SquarePen className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
             onTouchEnd={() => setText('commit')}
             onClick={() => setText('commit')}
             className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
             title="Commit"
           >
             <GitCommit className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onTouchEnd={() => setText('/new')}
+            onClick={() => setText('/new')}
+            className="flex-1 h-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
+            title="New Chat"
+          >
+            <SquarePen className="h-5 w-5" />
           </button>
           <button
             type="button"
