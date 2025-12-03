@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useImperativeHandle, forwardRef, Component, ReactNode } from 'react'
+import { useEffect, useState, useCallback, useImperativeHandle, forwardRef, useRef, Component, ReactNode } from 'react'
 import { ChevronDown, ChevronLeft, ChevronRight, FileText, GitCommit, Minimize2, RefreshCw, Undo2 } from 'lucide-react'
 import { ConfirmDialog } from '@buddy/ui'
 import { DiffView, DiffModeEnum } from '@git-diff-view/react'
@@ -65,16 +65,20 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
   const [isWideScreen, setIsWideScreen] = useState(false)
   const [discardConfirm, setDiscardConfirm] = useState<GitFile | null>(null)
   const [discardAllConfirm, setDiscardAllConfirm] = useState(false)
+  const diffContainerRef = useRef<HTMLDivElement>(null)
 
   const { getAdapter } = useWebSocket()
 
   useEffect(() => {
-    const checkWidth = () => {
-      setIsWideScreen(window.innerWidth >= 1200)
-    }
-    checkWidth()
-    window.addEventListener('resize', checkWidth)
-    return () => window.removeEventListener('resize', checkWidth)
+    if (!diffContainerRef.current) return
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setIsWideScreen(entry.contentRect.width >= 768)
+      }
+    })
+    observer.observe(diffContainerRef.current)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
@@ -637,6 +641,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
 
         {/* Diff View - Hidden on mobile when no file selected */}
         <div
+          ref={diffContainerRef}
           className={`
           ${selectedFile ? 'flex' : 'hidden md:flex'}
           flex-1 flex-col min-w-0 overflow-hidden relative
