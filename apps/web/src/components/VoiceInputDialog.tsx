@@ -60,7 +60,15 @@ export default function VoiceInputDialog({
 }) {
   const [isListening, setIsListening] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const adjustTextareaHeight = useCallback(() => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      textarea.style.height = 'auto'
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`
+    }
+  }, [])
 
   useEffect(() => {
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -101,8 +109,9 @@ export default function VoiceInputDialog({
   }, [])
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus()
+    if (isOpen && textareaRef.current) {
+      textareaRef.current.focus()
+      adjustTextareaHeight()
       window.scrollTo(0, document.body.scrollHeight)
     }
     if (!isOpen) {
@@ -111,22 +120,27 @@ export default function VoiceInputDialog({
         setIsListening(false)
       }
     }
-  }, [isOpen, isListening])
+  }, [isOpen, isListening, adjustTextareaHeight])
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     const trimmed = text.trim()
     if (trimmed) {
-      onSend(trimmed)
-      onEnter()
-      setText('')
-      onClose()
+      try {
+        await onSend(trimmed)
+        await new Promise((resolve) => setTimeout(resolve, 50))
+        await onEnter()
+        setText('')
+        onClose()
+      } catch (error) {
+        console.error('Failed to send text to terminal:', error)
+      }
     }
-  }, [text, onSend, onEnter, onClose])
+  }, [text, onSend, onEnter, setText, onClose])
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault()
-      handleSend()
+      void handleSend()
     },
     [handleSend]
   )
@@ -137,20 +151,28 @@ export default function VoiceInputDialog({
     <div className="fixed inset-0 z-50 flex items-end justify-center md:hidden">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full bg-background border-t rounded-t-2xl p-4 animate-in slide-in-from-bottom duration-200">
-        <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          <input
-            ref={inputRef}
-            type="text"
+        <form onSubmit={handleSubmit} className="flex items-start gap-2">
+          <textarea
+            ref={textareaRef}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value)
+              adjustTextareaHeight()
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                void handleSend()
+              }
+            }}
             onBlur={(e) => {
               if (!e.relatedTarget || !e.currentTarget.form?.contains(e.relatedTarget)) {
                 onClose()
               }
             }}
             placeholder="Type or use voice input..."
-            className="flex-1 h-10 px-3 text-sm bg-muted border border-border rounded-lg placeholder:text-muted-foreground focus:outline-none focus:bg-background focus:border-white"
-            enterKeyHint="send"
+            className="flex-1 min-h-10 max-h-[200px] px-3 py-2 text-sm bg-muted border border-border rounded-lg placeholder:text-muted-foreground focus:outline-none focus:bg-background focus:border-white resize-none overflow-y-auto"
+            rows={1}
           />
         </form>
 
