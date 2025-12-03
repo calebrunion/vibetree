@@ -225,55 +225,62 @@ export default function MobileTerminalToolbar() {
         </div>
       </div>
 
-      <div className="flex items-center gap-1 px-2 pt-1 pb-2">
+      <div className="flex items-center gap-2 px-2 pt-1 pb-2 overflow-x-auto scrollbar-hide">
         <button
           onClick={launchClaude}
-          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
           title="Launch Claude"
         >
           <Bot className="h-5 w-5 text-white" />
+          <span className="font-mono text-sm text-muted-foreground">claude</span>
         </button>
         <button
           onClick={() => sendCommand('/rewind')}
-          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
           title="Rewind"
         >
           <Rewind className="h-5 w-5 text-white" />
+          <span className="font-mono text-sm text-muted-foreground">/rewind</span>
         </button>
         <button
           onClick={() => sendCommand('commit')}
-          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
           title="Commit"
         >
           <GitCommit className="h-5 w-5 text-white" />
+          <span className="font-mono text-sm text-muted-foreground">commit</span>
         </button>
         <button
           onClick={() => sendCommand('/new')}
-          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
           title="New Chat"
         >
           <SquarePen className="h-5 w-5 text-white" />
+          <span className="font-mono text-sm text-muted-foreground">/new</span>
         </button>
         <button
           onClick={() => sendCommand('push')}
-          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
           title="Push"
         >
           <RefreshCw className="h-5 w-5 text-white" />
+          <span className="font-mono text-sm text-muted-foreground">push</span>
         </button>
         <button
           onClick={() => sendCommand('/usage')}
-          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
           title="Usage"
         >
           <BarChart3 className="h-5 w-5 text-white" />
+          <span className="font-mono text-sm text-muted-foreground">/usage</span>
         </button>
         <button
           onClick={() => sendCommand('/compact')}
-          className="h-11 w-11 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center justify-center"
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
           title="Compact"
         >
           <Minimize2 className="h-5 w-5 text-white -rotate-45" />
+          <span className="font-mono text-sm text-muted-foreground">/compact</span>
         </button>
       </div>
 
