@@ -100,7 +100,7 @@ export default function AddProjectModal({ open, onAddProject, onClose }: AddProj
                 if (error) setError('')
               }}
               placeholder="~/project/path"
-              className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+              className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
               disabled={isLoading}
               autoFocus
               autoCapitalize="none"
