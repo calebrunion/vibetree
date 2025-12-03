@@ -11,6 +11,7 @@ import {
   Delete,
   Eraser,
   Mic,
+  Rewind,
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
@@ -100,6 +101,25 @@ export default function MobileTerminalToolbar() {
     }
   }, [getActiveProject, terminalSessions, getAdapter])
 
+  const sendRewind = useCallback(async () => {
+    const activeProject = getActiveProject()
+    if (!activeProject?.selectedWorktree) return
+
+    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
+    if (!sessionId) return
+
+    const adapter = getAdapter()
+    if (!adapter) return
+
+    try {
+      await adapter.writeToShell(sessionId, '/rewind')
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      await adapter.writeToShell(sessionId, KEYS.ENTER)
+    } catch (error) {
+      console.error('Failed to send rewind:', error)
+    }
+  }, [getActiveProject, terminalSessions, getAdapter])
+
   const activeProject = getActiveProject()
 
   if (!activeProject?.selectedWorktree) {
@@ -122,6 +142,13 @@ export default function MobileTerminalToolbar() {
             title="Launch Claude"
           >
             <Bot className="h-5 w-5" />
+          </button>
+          <button
+            onClick={sendRewind}
+            className="p-2.5 bg-muted border rounded-md active:bg-accent flex-shrink-0"
+            title="Rewind"
+          >
+            <Rewind className="h-5 w-5" />
           </button>
           <button
             onClick={() => sendTextToTerminal('clear\n')}

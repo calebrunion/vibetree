@@ -1,4 +1,4 @@
-import { BarChart3, GitCommit, Minimize2, RefreshCw, Send, SquarePen } from 'lucide-react'
+import { BarChart3, GitCommit, Minimize2, RefreshCw, SquarePen } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface SpeechRecognitionEvent extends Event {
@@ -154,12 +154,14 @@ export default function VoiceInputDialog({
             enterKeyHint="send"
           />
           <button
-            type="submit"
+            type="button"
             onMouseDown={(e) => e.preventDefault()}
-            className={`h-10 w-10 rounded-lg border active:scale-95 transition-transform flex items-center justify-center focus:outline-none ${text.trim() ? 'bg-muted-foreground/30 text-white' : 'bg-muted text-muted-foreground'}`}
-            title="Send"
+            onTouchEnd={() => setText('/compact')}
+            onClick={() => setText('/compact')}
+            className="size-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
+            title="Compact"
           >
-            <Send className="h-5 w-5" />
+            <Minimize2 className="h-5 w-5 -rotate-45" />
           </button>
         </form>
 
@@ -203,16 +205,6 @@ export default function VoiceInputDialog({
             title="Usage"
           >
             <BarChart3 className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onTouchEnd={() => setText('/compact')}
-            onClick={() => setText('/compact')}
-            className="size-10 rounded-lg border border-border bg-muted text-muted-foreground active:scale-95 transition-transform flex items-center justify-center"
-            title="Compact"
-          >
-            <Minimize2 className="h-5 w-5 -rotate-45" />
           </button>
         </div>
 
