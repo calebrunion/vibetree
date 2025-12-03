@@ -189,7 +189,18 @@ export const useAppStore = create<AppState>()(
 
       updateProjectWorktrees: (id: string, worktrees: Worktree[]) => {
         set((state) => ({
-          projects: state.projects.map((project) => (project.id === id ? { ...project, worktrees } : project)),
+          projects: state.projects.map((project) => {
+            if (project.id !== id) return project
+
+            // Auto-select HEAD worktree if no worktree is currently selected
+            let selectedWorktree = project.selectedWorktree
+            if (!selectedWorktree && worktrees.length > 0) {
+              const headWorktree = worktrees.find((wt) => wt.path === project.path)
+              selectedWorktree = headWorktree?.path || worktrees[0].path
+            }
+
+            return { ...project, worktrees, selectedWorktree }
+          }),
         }))
       },
 
