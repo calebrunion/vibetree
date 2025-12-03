@@ -1,4 +1,4 @@
-import { GitBranch, Loader2, Plus, RotateCcw, Trash2 } from 'lucide-react'
+import { GitBranch, Loader2, Plus, Trash2, Undo2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAppStore } from '../store'
@@ -305,7 +305,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                         {discardingPath === worktree.path ? (
                           <Loader2 className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400 animate-spin" />
                         ) : (
-                          <RotateCcw className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
+                          <Undo2 className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
                         )}
                       </button>
                     )}
