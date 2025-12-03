@@ -35,7 +35,6 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
   const { getAdapter } = useWebSocket()
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [splitSessionId, setSplitSessionId] = useState<string | null>(null)
-  const [containerWidth, setContainerWidth] = useState(0)
   const [isReloading, setIsReloading] = useState(false)
   const terminalRef = useRef<XTerm | null>(null)
   const splitTerminalRef = useRef<XTerm | null>(null)
@@ -45,24 +44,9 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
   const saveIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const splitSaveIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const useColumns = containerWidth >= 768
-
   // Stability refs to prevent duplicate initialization and listener registration
   const initializingRef = useRef(false)
   const initializedWorktreeRef = useRef<string | null>(null)
-
-  // Track container width for responsive split layout
-  useEffect(() => {
-    if (!containerRef.current) return
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setContainerWidth(entry.contentRect.width)
-      }
-    })
-    observer.observe(containerRef.current)
-    return () => observer.disconnect()
-  }, [])
   const splitInitializingRef = useRef(false)
 
   // Reset initialization state when worktree changes
@@ -639,10 +623,10 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
       {/* Terminal Container */}
       <div
         ref={containerRef}
-        className={`flex-1 flex min-h-0 ${isSplit ? (useColumns ? 'flex-row' : 'flex-col') : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
+        className={`flex-1 flex min-h-0 @container ${isSplit ? 'flex-col @[768px]:flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
       >
         <div
-          className={`relative ${isSplit ? (useColumns ? 'h-full w-1/2 border-r' : 'h-1/2 w-full border-b') : 'w-full h-full'}`}
+          className={`relative ${isSplit ? 'h-1/2 w-full border-b @[768px]:h-full @[768px]:w-1/2 @[768px]:border-b-0 @[768px]:border-r' : 'w-full h-full'}`}
         >
           {sessionId && (
             <Terminal
@@ -665,7 +649,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
           )}
         </div>
         {isSplit && (
-          <div className={`${useColumns ? 'h-full w-1/2' : 'h-1/2 w-full'} relative`}>
+          <div className="h-1/2 w-full @[768px]:h-full @[768px]:w-1/2 relative">
             {splitSessionId && (
               <Terminal
                 id={splitSessionId}
