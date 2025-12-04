@@ -71,9 +71,13 @@ export default function StartupScriptModal({ projectPath, onClose }: StartupScri
                 value={startupCommand}
                 onChange={(e) => setStartupCommand(e.target.value)}
                 placeholder="e.g., pnpm install && pnpm dev"
-                className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring resize-none h-32"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring resize-none h-32 whitespace-nowrap overflow-x-auto"
                 autoFocus
                 spellCheck={false}
+                autoComplete="off"
+                autoCapitalize="off"
+                autoCorrect="off"
+                wrap="off"
               />
               <p className="text-xs text-muted-foreground mt-2">
                 Enter one command per line. Commands run in order when a new terminal session starts in a worktree.
