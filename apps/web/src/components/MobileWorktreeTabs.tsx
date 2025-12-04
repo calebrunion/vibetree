@@ -1,8 +1,9 @@
 import { GitBranch, Plus, Trash2 } from 'lucide-react'
 import type { Worktree } from '@buddy/core'
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
+import ChangeCountBadge from './ChangeCountBadge'
 
 function isProtectedBranch(branch: string): boolean {
   const branchName = branch.replace('refs/heads/', '')
@@ -32,7 +33,8 @@ export function MobileWorktreeTabs({
   const deleteWorktreeConfirm = useAppStore((state) => state.deleteWorktreeConfirm)
   const unreadBellWorktrees = useAppStore((state) => state.unreadBellWorktrees)
   const clearWorktreeBell = useAppStore((state) => state.clearWorktreeBell)
-  const [worktreeChangeCounts, setWorktreeChangeCounts] = useState<Map<string, number>>(new Map())
+  const worktreeChangeCounts = useAppStore((state) => state.worktreeChangeCounts)
+  const setWorktreeChangeCount = useAppStore((state) => state.setWorktreeChangeCount)
   const selectedButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -52,24 +54,20 @@ export function MobileWorktreeTabs({
       const adapter = getAdapter()
       if (!adapter || worktrees.length === 0) return
 
-      const countsMap = new Map<string, number>()
       await Promise.all(
         worktrees.map(async (wt) => {
           try {
             const status = await adapter.getGitStatus(wt.path)
-            if (status.length > 0) {
-              countsMap.set(wt.path, status.length)
-            }
+            setWorktreeChangeCount(wt.path, status.length)
           } catch {
             // Ignore errors
           }
         })
       )
-      setWorktreeChangeCounts(countsMap)
     }
 
     fetchChanges()
-  }, [worktrees, getAdapter])
+  }, [worktrees, getAdapter, setWorktreeChangeCount])
 
   const handleDeleteWorktree = (worktreePath: string, branch: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -148,11 +146,7 @@ export function MobileWorktreeTabs({
               >
                 <span className="text-sm font-medium flex items-center gap-1.5">
                   {isMainWorktree ? 'HEAD' : worktreeName}
-                  {changeCount > 0 && (
-                    <span className="size-3.5 text-[9px] font-medium rounded-full flex items-center justify-center bg-yellow-500 text-black">
-                      {changeCount}
-                    </span>
-                  )}
+                  <ChangeCountBadge count={changeCount} />
                 </span>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <GitBranch className="h-3 w-3" />

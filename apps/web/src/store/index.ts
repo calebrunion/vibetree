@@ -31,6 +31,7 @@ interface AppState {
   claudeTerminalSessions: Map<string, string> // worktreePath -> sessionId
   pendingStartupWorktrees: Set<string> // worktrees that need startup commands run
   unreadBellWorktrees: Set<string> // worktrees with unread terminal bell
+  worktreeChangeCounts: Map<string, number> // worktreePath -> change count
 
   // Theme state
   theme: 'light' | 'dark'
@@ -70,6 +71,8 @@ interface AppState {
   markWorktreeBell: (worktreePath: string) => void
   clearWorktreeBell: (worktreePath: string) => void
   hasUnreadBell: (worktreePath: string) => boolean
+  setWorktreeChangeCount: (worktreePath: string, count: number) => void
+  getWorktreeChangeCount: (worktreePath: string) => number
   setTheme: (theme: 'light' | 'dark') => void
   setShowAddWorktreeDialog: (show: boolean) => void
   setSidebarCollapsed: (collapsed: boolean) => void
@@ -96,6 +99,7 @@ export const useAppStore = create<AppState>()(
       claudeTerminalSessions: new Map(),
       pendingStartupWorktrees: new Set(),
       unreadBellWorktrees: new Set(),
+      worktreeChangeCounts: new Map(),
       theme: 'light',
       showAddWorktreeDialog: false,
       sidebarCollapsed: false,
@@ -295,6 +299,19 @@ export const useAppStore = create<AppState>()(
         }),
 
       hasUnreadBell: (worktreePath) => get().unreadBellWorktrees.has(worktreePath),
+
+      setWorktreeChangeCount: (worktreePath, count) =>
+        set((state) => {
+          const counts = new Map(state.worktreeChangeCounts)
+          if (count > 0) {
+            counts.set(worktreePath, count)
+          } else {
+            counts.delete(worktreePath)
+          }
+          return { worktreeChangeCounts: counts }
+        }),
+
+      getWorktreeChangeCount: (worktreePath) => get().worktreeChangeCounts.get(worktreePath) || 0,
 
       setTheme: (theme) => set({ theme }),
       setShowAddWorktreeDialog: (show) => set({ showAddWorktreeDialog: show }),

@@ -2,6 +2,7 @@ import { GitBranch, Loader2, Plus, Trash2, Undo2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useAppStore } from '../store'
+import ChangeCountBadge from './ChangeCountBadge'
 
 function isProtectedBranch(branch: string): boolean {
   const branchName = branch.replace('refs/heads/', '')
@@ -21,12 +22,13 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
     connected,
     showAddWorktreeDialog,
     setShowAddWorktreeDialog,
+    worktreeChangeCounts,
+    setWorktreeChangeCount,
   } = useAppStore()
 
   const { getAdapter } = useWebSocket()
   const [loading, setLoading] = useState(false)
   const [newBranchName, setNewBranchName] = useState('')
-  const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set())
   const [deleteConfirmWorktree, setDeleteConfirmWorktree] = useState<{ path: string; branch: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [deletingPath, setDeletingPath] = useState<string | null>(null)
@@ -40,20 +42,16 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
     const currentAdapter = getAdapter()
     if (!currentAdapter) return
 
-    const changesSet = new Set<string>()
     await Promise.all(
       worktrees.map(async (wt) => {
         try {
           const status = await currentAdapter.getGitStatus(wt.path)
-          if (status.length > 0) {
-            changesSet.add(wt.path)
-          }
+          setWorktreeChangeCount(wt.path, status.length)
         } catch {
           // Ignore errors for individual worktrees
         }
       })
     )
-    setWorktreesWithChanges(changesSet)
   }
 
   const handleSelectWorktree = (path: string) => {
@@ -257,7 +255,8 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                   : `Detached (${worktree.head.substring(0, 8)})`
                 const worktreeName = worktree.path.split('/').pop() || branchName
 
-                const hasChanges = worktreesWithChanges.has(worktree.path)
+                const changeCount = worktreeChangeCounts.get(worktree.path) || 0
+                const hasChanges = changeCount > 0
 
                 const isMainWorktree = worktree.path === project.path
                 const canDelete =
@@ -282,12 +281,7 @@ export function WorktreePanel({ projectId }: WorktreePanelProps) {
                           ) : (
                             <span className="truncate">{worktreeName}</span>
                           )}
-                          {hasChanges && (
-                            <span
-                              className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0"
-                              title="Has uncommitted changes"
-                            />
-                          )}
+                          <ChangeCountBadge count={changeCount} />
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                           <GitBranch className="h-3 w-3 flex-shrink-0" />
