@@ -364,19 +364,16 @@ export default function GitGraph({
           </div>
         </div>
         <div className="flex-1 min-w-0 overflow-x-auto md:overflow-x-visible">
-          {nodes.map((node, index) => {
+          {nodes.map((node) => {
             const branchNames = getBranchNames(node.commit.refs)
             const isHead = isCurrentHead(node.commit.refs)
-            const isOddRow = index % 2 === 1
             return (
               <button
                 key={node.commit.hash}
                 ref={isHead ? currentHeadRef : null}
                 type="button"
                 onClick={() => onCommitClick?.(node.commit)}
-                className={`w-full md:w-full min-w-max md:min-w-0 flex items-center gap-2 px-2 pr-4 text-left cursor-pointer ${
-                  isOddRow ? 'bg-foreground/[0.09]' : ''
-                }`}
+                className="w-full md:w-full min-w-max md:min-w-0 flex items-center gap-2 px-2 pr-4 text-left cursor-pointer"
                 style={{ height: ROW_HEIGHT }}
               >
                 {branchNames.length > 0 && (
@@ -389,13 +386,13 @@ export default function GitGraph({
                       if (isCopied) {
                         className += 'bg-green-500/20 text-green-500 ring-1 ring-green-500/50'
                       } else if (isHeadBranch) {
-                        className += 'bg-primary/20 text-primary ring-1 ring-primary/50'
+                        className += 'bg-amber-500/20 text-amber-500 ring-1 ring-amber-500/50'
                       } else if (name === 'origin/HEAD') {
                         className += 'bg-blue-500/20 text-blue-400'
                       } else if (name.startsWith('origin/')) {
                         className += 'bg-purple-500/20 text-purple-400'
                       } else {
-                        className += 'bg-accent ring-1 ring-border'
+                        className += 'bg-purple-500/20 text-purple-400 ring-1 ring-purple-500/50'
                       }
                       return (
                         <span
