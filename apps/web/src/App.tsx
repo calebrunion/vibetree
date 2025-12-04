@@ -29,6 +29,7 @@ const GitDiffView = lazy(() => import('./components/GitDiffView').then((m) => ({
 import type { GitGraphViewRef } from './components/GitGraphView'
 
 const GitGraphView = lazy(() => import('./components/GitGraphView').then((m) => ({ default: m.GitGraphView })))
+import ClaudeCommandToolbar from './components/ClaudeCommandToolbar'
 import MobileTerminalToolbar from './components/MobileTerminalToolbar'
 import { MobileWorktreeTabs } from './components/MobileWorktreeTabs'
 import { ProjectSelector } from './components/ProjectSelector'
@@ -783,6 +784,7 @@ function App() {
                         />
                       </div>
                       <div className="flex-shrink-0">
+                        <ClaudeCommandToolbar />
                         <MobileTerminalToolbar />
                       </div>
                       <div className="md:hidden h-14 bg-background flex-shrink-0" />
