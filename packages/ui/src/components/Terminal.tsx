@@ -440,8 +440,17 @@ export const Terminal: React.FC<TerminalProps> = ({
       }
     })
 
-    // Handle Cmd+hjkl as vim-style arrow keys
+    // Handle Cmd+hjkl as vim-style arrow keys and Shift+Enter as Alt+Enter
     term.attachCustomKeyEventHandler((e) => {
+      // Map Shift+Enter to Alt+Enter (Option+Enter)
+      if (e.key === 'Enter' && e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey && e.type === 'keydown') {
+        e.preventDefault()
+        if (onData) {
+          onData('\x1b\r') // ESC + CR = Alt+Enter
+        }
+        return false
+      }
+
       if (e.metaKey && !e.altKey && !e.ctrlKey && e.type === 'keydown') {
         const arrowMap: Record<string, string> = {
           h: '\x1b[D', // Left
