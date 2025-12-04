@@ -30,6 +30,7 @@ interface AppState {
   terminalSessions: Map<string, string> // worktreePath -> sessionId
   claudeTerminalSessions: Map<string, string> // worktreePath -> sessionId
   pendingStartupWorktrees: Set<string> // worktrees that need startup commands run
+  unreadBellWorktrees: Set<string> // worktrees with unread terminal bell
 
   // Theme state
   theme: 'light' | 'dark'
@@ -66,6 +67,9 @@ interface AppState {
   markWorktreeForStartup: (worktreePath: string) => void
   clearWorktreeStartup: (worktreePath: string) => void
   shouldRunStartup: (worktreePath: string) => boolean
+  markWorktreeBell: (worktreePath: string) => void
+  clearWorktreeBell: (worktreePath: string) => void
+  hasUnreadBell: (worktreePath: string) => boolean
   setTheme: (theme: 'light' | 'dark') => void
   setShowAddWorktreeDialog: (show: boolean) => void
   setSidebarCollapsed: (collapsed: boolean) => void
@@ -91,6 +95,7 @@ export const useAppStore = create<AppState>()(
       terminalSessions: new Map(),
       claudeTerminalSessions: new Map(),
       pendingStartupWorktrees: new Set(),
+      unreadBellWorktrees: new Set(),
       theme: 'light',
       showAddWorktreeDialog: false,
       sidebarCollapsed: false,
@@ -274,6 +279,22 @@ export const useAppStore = create<AppState>()(
         }),
 
       shouldRunStartup: (worktreePath) => get().pendingStartupWorktrees.has(worktreePath),
+
+      markWorktreeBell: (worktreePath) =>
+        set((state) => {
+          const bells = new Set(state.unreadBellWorktrees)
+          bells.add(worktreePath)
+          return { unreadBellWorktrees: bells }
+        }),
+
+      clearWorktreeBell: (worktreePath) =>
+        set((state) => {
+          const bells = new Set(state.unreadBellWorktrees)
+          bells.delete(worktreePath)
+          return { unreadBellWorktrees: bells }
+        }),
+
+      hasUnreadBell: (worktreePath) => get().unreadBellWorktrees.has(worktreePath),
 
       setTheme: (theme) => set({ theme }),
       setShowAddWorktreeDialog: (show) => set({ showAddWorktreeDialog: show }),

@@ -23,6 +23,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     setTerminalSplit,
     toggleTerminalSplit,
     toggleTerminalFullscreen,
+    markWorktreeBell,
   } = useAppStore()
 
   // Use a function to get terminalSessions to avoid it in dependency arrays
@@ -540,6 +541,13 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     splitTerminalRef.current = terminal
   }
 
+  const handleTerminalBell = () => {
+    const currentActiveProject = useAppStore.getState().getActiveProject()
+    if (currentActiveProject?.selectedWorktree !== worktreePath) {
+      markWorktreeBell(worktreePath)
+    }
+  }
+
   // Handle split terminal when store state changes
   useEffect(() => {
     const startSplitTerminal = async () => {
@@ -665,6 +673,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
               onData={handleTerminalData}
               onResize={handleTerminalResize}
               onReady={handleTerminalReady}
+              onBell={handleTerminalBell}
               config={{
                 theme: theme,
                 fontSize: 12,
@@ -687,6 +696,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
                 onData={handleSplitTerminalData}
                 onResize={handleSplitTerminalResize}
                 onReady={handleSplitTerminalReady}
+                onBell={handleTerminalBell}
                 config={{
                   theme: theme,
                   fontSize: 12,

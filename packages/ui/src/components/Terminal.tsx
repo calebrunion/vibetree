@@ -58,6 +58,11 @@ export interface TerminalProps {
    * Whether to show the search bar
    */
   showSearchBar?: boolean
+
+  /**
+   * Callback when terminal bell is triggered
+   */
+  onBell?: () => void
 }
 
 /**
@@ -128,6 +133,7 @@ export const Terminal: React.FC<TerminalProps> = ({
   onReady,
   className = '',
   showSearchBar = false,
+  onBell,
 }) => {
   const terminalRef = useRef<HTMLDivElement>(null)
   const [terminal, setTerminal] = useState<XTerm | null>(null)
@@ -490,6 +496,9 @@ export const Terminal: React.FC<TerminalProps> = ({
 
     // Handle bell character - play a soft chime when bell is triggered
     const bellDisposable = term.onBell(() => {
+      // Notify parent component about bell event
+      onBell?.()
+
       try {
         const audioContext = new (
           window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext

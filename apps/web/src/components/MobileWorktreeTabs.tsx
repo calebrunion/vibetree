@@ -30,6 +30,8 @@ export function MobileWorktreeTabs({
   const setShowAddWorktreeDialog = useAppStore((state) => state.setShowAddWorktreeDialog)
   const setDeleteWorktreeConfirm = useAppStore((state) => state.setDeleteWorktreeConfirm)
   const deleteWorktreeConfirm = useAppStore((state) => state.deleteWorktreeConfirm)
+  const unreadBellWorktrees = useAppStore((state) => state.unreadBellWorktrees)
+  const clearWorktreeBell = useAppStore((state) => state.clearWorktreeBell)
   const [worktreeChangeCounts, setWorktreeChangeCounts] = useState<Map<string, number>>(new Map())
   const selectedButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -122,6 +124,7 @@ export function MobileWorktreeTabs({
           const isMainWorktree = worktree.path === projectPath
 
           const changeCount = worktreeChangeCounts.get(worktree.path) || 0
+          const hasUnreadBell = unreadBellWorktrees.has(worktree.path)
           const canDelete =
             worktrees.length > 1 && worktree.branch && !isProtectedBranch(worktree.branch) && !isMainWorktree
 
@@ -129,7 +132,10 @@ export function MobileWorktreeTabs({
             <div key={worktree.path} className="relative group">
               <button
                 ref={isSelected ? selectedButtonRef : null}
-                onClick={() => onSelectWorktree(worktree.path)}
+                onClick={() => {
+                  clearWorktreeBell(worktree.path)
+                  onSelectWorktree(worktree.path)
+                }}
                 className={`
                   flex flex-col items-start justify-center h-12 px-3 rounded-md whitespace-nowrap transition-colors border
                   ${canDelete ? 'pr-12' : ''}
@@ -151,6 +157,7 @@ export function MobileWorktreeTabs({
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <GitBranch className="h-3 w-3" />
                   {branchName}
+                  {hasUnreadBell && <span className="size-2 rounded-full bg-blue-500 animate-pulse" />}
                 </span>
               </button>
               {canDelete && (
