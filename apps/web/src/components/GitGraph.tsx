@@ -146,7 +146,7 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
           y={index * ROW_HEIGHT}
           width={width}
           height={ROW_HEIGHT}
-          fill={theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}
+          fill={theme === 'dark' ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.06)'}
         />
       )
     }
@@ -375,7 +375,7 @@ export default function GitGraph({
                 type="button"
                 onClick={() => onCommitClick?.(node.commit)}
                 className={`w-full md:w-full min-w-max md:min-w-0 flex items-center gap-2 px-2 pr-4 text-left cursor-pointer ${
-                  isOddRow ? 'bg-muted/50' : 'bg-muted/20'
+                  isOddRow ? 'bg-foreground/[0.09]' : ''
                 }`}
                 style={{ height: ROW_HEIGHT }}
               >
