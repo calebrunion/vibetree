@@ -72,7 +72,6 @@ function App() {
   const [autoLoadAttempted, setAutoLoadAttempted] = useState(false)
   const [showSuccessNotification, setShowSuccessNotification] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
-  const [changedFilesCount, setChangedFilesCount] = useState(0)
   const [projectToRemove, setProjectToRemove] = useState<string | null>(null)
   const [showMobileSettingsModal, setShowMobileSettingsModal] = useState(false)
   const [isRefreshingTerminal, setIsRefreshingTerminal] = useState(false)
@@ -657,11 +656,6 @@ function App() {
                       >
                         <GitBranch className="h-3.5 w-3.5 -ml-1" />
                         Changes
-                        {changedFilesCount > 0 && (
-                          <span className="ml-auto -mr-1.5 px-1.5 py-0.5 text-xs font-medium rounded min-w-[1.25rem] text-center text-muted-foreground bg-muted">
-                            {changedFilesCount}
-                          </span>
-                        )}
                       </button>
                       <button
                         className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
@@ -807,7 +801,6 @@ function App() {
                           ref={gitDiffRef}
                           worktreePath={project.selectedWorktree}
                           theme={theme}
-                          onFileCountChange={setChangedFilesCount}
                           isFullscreen={project.isDiffFullscreen}
                           onExitFullscreen={() => toggleDiffFullscreen(project.id)}
                         />

@@ -30,7 +30,7 @@ export function MobileWorktreeTabs({
   const setShowAddWorktreeDialog = useAppStore((state) => state.setShowAddWorktreeDialog)
   const setDeleteWorktreeConfirm = useAppStore((state) => state.setDeleteWorktreeConfirm)
   const deleteWorktreeConfirm = useAppStore((state) => state.deleteWorktreeConfirm)
-  const [worktreesWithChanges, setWorktreesWithChanges] = useState<Set<string>>(new Set())
+  const [worktreeChangeCounts, setWorktreeChangeCounts] = useState<Map<string, number>>(new Map())
   const selectedButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -50,20 +50,20 @@ export function MobileWorktreeTabs({
       const adapter = getAdapter()
       if (!adapter || worktrees.length === 0) return
 
-      const changesSet = new Set<string>()
+      const countsMap = new Map<string, number>()
       await Promise.all(
         worktrees.map(async (wt) => {
           try {
             const status = await adapter.getGitStatus(wt.path)
             if (status.length > 0) {
-              changesSet.add(wt.path)
+              countsMap.set(wt.path, status.length)
             }
           } catch {
             // Ignore errors
           }
         })
       )
-      setWorktreesWithChanges(changesSet)
+      setWorktreeChangeCounts(countsMap)
     }
 
     fetchChanges()
@@ -72,7 +72,7 @@ export function MobileWorktreeTabs({
   const handleDeleteWorktree = (worktreePath: string, branch: string, e: React.MouseEvent) => {
     e.stopPropagation()
     if (isProtectedBranch(branch)) return
-    const hasChanges = worktreesWithChanges.has(worktreePath)
+    const hasChanges = worktreeChangeCounts.has(worktreePath)
     setDeleteWorktreeConfirm({
       path: worktreePath,
       branch,
@@ -121,7 +121,7 @@ export function MobileWorktreeTabs({
           const isSelected = selectedWorktree === worktree.path
           const isMainWorktree = worktree.path === projectPath
 
-          const hasChanges = worktreesWithChanges.has(worktree.path)
+          const changeCount = worktreeChangeCounts.get(worktree.path) || 0
           const canDelete =
             worktrees.length > 1 && worktree.branch && !isProtectedBranch(worktree.branch) && !isMainWorktree
 
@@ -142,7 +142,11 @@ export function MobileWorktreeTabs({
               >
                 <span className="text-sm font-medium flex items-center gap-1.5">
                   {isMainWorktree ? 'HEAD' : worktreeName}
-                  {hasChanges && <span className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0" />}
+                  {changeCount > 0 && (
+                    <span className="size-3.5 text-[9px] font-medium rounded-full flex items-center justify-center bg-yellow-500 text-black">
+                      {changeCount}
+                    </span>
+                  )}
                 </span>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <GitBranch className="h-3 w-3" />
