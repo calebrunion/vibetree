@@ -130,10 +130,24 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
   const width = (maxColumn + 1) * COLUMN_WIDTH + DOT_SIZE
   const height = nodes.length * ROW_HEIGHT
 
+  const backgrounds: JSX.Element[] = []
   const lines: JSX.Element[] = []
   const dots: JSX.Element[] = []
 
   nodes.forEach((node, index) => {
+    // Add alternating row background
+    if (index % 2 === 1) {
+      backgrounds.push(
+        <rect
+          key={`bg-${node.commit.hash}`}
+          x={0}
+          y={index * ROW_HEIGHT}
+          width={width}
+          height={ROW_HEIGHT}
+          fill={theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}
+        />
+      )
+    }
     const x = node.column * COLUMN_WIDTH + DOT_SIZE / 2 + 4
     const y = index * ROW_HEIGHT + ROW_HEIGHT / 2
     const color = colors[node.column % colors.length]
@@ -219,6 +233,7 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
 
   return (
     <svg width={width} height={height} className="flex-shrink-0">
+      {backgrounds}
       {lines}
       {dots}
     </svg>
@@ -345,9 +360,10 @@ export default function GitGraph({
           </div>
         </div>
         <div className="flex-1 min-w-0 overflow-x-auto md:overflow-x-visible">
-          {nodes.map((node) => {
+          {nodes.map((node, index) => {
             const branchNames = getBranchNames(node.commit.refs)
             const isHead = isCurrentHead(node.commit.refs)
+            const isOddRow = index % 2 === 1
             return (
               <button
                 key={node.commit.hash}
@@ -355,7 +371,7 @@ export default function GitGraph({
                 type="button"
                 onClick={() => onCommitClick?.(node.commit)}
                 className={`w-full md:w-full min-w-max md:min-w-0 flex items-center gap-2 px-2 pr-4 text-left cursor-pointer ${
-                  isHead ? 'bg-primary/10 border-l-2 border-primary' : ''
+                  isHead ? 'bg-primary/10 border-l-2 border-primary' : isOddRow ? 'bg-muted/50' : 'bg-muted/20'
                 }`}
                 style={{ height: ROW_HEIGHT }}
               >
