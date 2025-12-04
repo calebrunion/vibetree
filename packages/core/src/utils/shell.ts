@@ -51,6 +51,10 @@ function getSystemLocale(): string {
   return 'en_US.UTF-8'
 }
 
+// Environment variables that should not be inherited by spawned terminals
+// These are typically server-specific and cause issues in child processes
+const SANITIZED_ENV_VARS = ['NODE_ENV', 'PORT', 'VITE_SERVER_PORT']
+
 export function getPtyOptions(
   worktreePath: string,
   cols: number = 80,
@@ -59,6 +63,11 @@ export function getPtyOptions(
 ): any {
   // Create a copy of process.env to avoid modifying the original
   const env = { ...process.env } as Record<string, string>
+
+  // Remove server-specific environment variables that shouldn't leak to terminals
+  for (const varName of SANITIZED_ENV_VARS) {
+    delete env[varName]
+  }
 
   // Set LANG if not already set and setting is enabled
   // This matches iTerm2 and Terminal.app "Set locale environment variables automatically" behavior
