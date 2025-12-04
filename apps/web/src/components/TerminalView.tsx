@@ -626,7 +626,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
         className={`flex-1 flex min-h-0 @container ${isSplit ? 'flex-col @[768px]:flex-row' : ''} ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
       >
         <div
-          className={`relative ${isSplit ? 'h-1/2 w-full border-b @[768px]:h-full @[768px]:w-1/2 @[768px]:border-b-0 @[768px]:border-r' : 'w-full h-full'}`}
+          className={`relative ${isSplit ? 'flex-1 min-h-0 w-full border-b border-border @[768px]:min-h-full @[768px]:w-1/2 @[768px]:border-b-0 @[768px]:border-r' : 'w-full h-full'}`}
         >
           {sessionId && (
             <Terminal
@@ -649,7 +649,7 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
           )}
         </div>
         {isSplit && (
-          <div className="h-1/2 w-full @[768px]:h-full @[768px]:w-1/2 relative">
+          <div className="flex-1 min-h-0 w-full @[768px]:min-h-full @[768px]:w-1/2 relative">
             {splitSessionId && (
               <Terminal
                 id={splitSessionId}
