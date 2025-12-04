@@ -87,6 +87,37 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     return () => window.removeEventListener('focus-terminal', handleFocusTerminal)
   }, [])
 
+  // Handle Cmd+E to toggle focus between split terminals
+  useEffect(() => {
+    const handleToggleSplitFocus = (e: KeyboardEvent) => {
+      if (e.metaKey && e.key === 'e' && !e.shiftKey && !e.ctrlKey && !e.altKey && isSplit) {
+        e.preventDefault()
+        // Check which terminal is currently focused and switch to the other
+        const mainTerminal = terminalRef.current
+        const splitTerminal = splitTerminalRef.current
+
+        if (mainTerminal && splitTerminal) {
+          // Check if main terminal textarea has focus
+          const mainTextarea = containerRef.current?.querySelector(
+            '.xterm-helper-textarea'
+          ) as HTMLTextAreaElement | null
+          const splitContainer = containerRef.current?.querySelectorAll(
+            '.xterm-helper-textarea'
+          )[1] as HTMLTextAreaElement | null
+
+          if (document.activeElement === mainTextarea || !splitContainer?.contains(document.activeElement as Node)) {
+            splitTerminal.focus()
+          } else {
+            mainTerminal.focus()
+          }
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleToggleSplitFocus, true)
+    return () => window.removeEventListener('keydown', handleToggleSplitFocus, true)
+  }, [isSplit])
+
   useEffect(() => {
     const handleReloadTerminal = () => {
       reloadTerminal()
