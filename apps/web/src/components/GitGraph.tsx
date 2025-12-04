@@ -233,6 +233,7 @@ export default function GitGraph({
   copiedHash,
 }: GitGraphProps) {
   const [graphWidth, setGraphWidth] = useState(isFullscreen ? 100 : 60)
+  const [isDraggingState, setIsDraggingState] = useState(false)
   const isDragging = useRef(false)
   const startX = useRef(0)
   const startWidth = useRef(0)
@@ -257,6 +258,7 @@ export default function GitGraph({
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       isDragging.current = true
+      setIsDraggingState(true)
       startX.current = e.clientX
       startWidth.current = graphWidth
       document.body.style.cursor = 'col-resize'
@@ -271,6 +273,7 @@ export default function GitGraph({
 
       const handleMouseUp = () => {
         isDragging.current = false
+        setIsDraggingState(false)
         document.body.style.cursor = ''
         document.body.style.userSelect = ''
         document.removeEventListener('mousemove', handleMouseMove)
@@ -287,6 +290,7 @@ export default function GitGraph({
     (e: React.TouchEvent) => {
       if (e.touches.length !== 1) return
       isDragging.current = true
+      setIsDraggingState(true)
       startX.current = e.touches[0].clientX
       startWidth.current = graphWidth
 
@@ -300,6 +304,7 @@ export default function GitGraph({
 
       const handleTouchEnd = () => {
         isDragging.current = false
+        setIsDraggingState(false)
         document.removeEventListener('touchmove', handleTouchMove)
         document.removeEventListener('touchend', handleTouchEnd)
       }
@@ -330,10 +335,14 @@ export default function GitGraph({
         >
           <GraphSvg nodes={nodes} theme={theme} />
           <div
-            className="absolute top-0 right-0 w-3 h-full cursor-col-resize bg-border hover:bg-primary/50 active:bg-primary/50 transition-colors touch-none"
+            className="absolute top-0 -right-11 w-24 h-full cursor-col-resize touch-none flex items-center justify-center"
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
-          />
+          >
+            <div
+              className={`w-1 h-full transition-colors pointer-events-none ${isDraggingState ? 'bg-primary' : 'bg-border hover:bg-primary/50'}`}
+            />
+          </div>
         </div>
         <div className="flex-1 min-w-0 overflow-x-auto md:overflow-x-visible">
           {nodes.map((node) => {
