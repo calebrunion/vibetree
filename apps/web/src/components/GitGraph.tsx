@@ -371,26 +371,30 @@ export default function GitGraph({
                 type="button"
                 onClick={() => onCommitClick?.(node.commit)}
                 className={`w-full md:w-full min-w-max md:min-w-0 flex items-center gap-2 px-2 pr-4 text-left cursor-pointer ${
-                  isHead ? 'bg-primary/10 border-l-2 border-primary' : isOddRow ? 'bg-muted/50' : 'bg-muted/20'
+                  isOddRow ? 'bg-muted/50' : 'bg-muted/20'
                 }`}
                 style={{ height: ROW_HEIGHT }}
               >
                 {branchNames.length > 0 && (
                   <div className="flex-shrink-0 flex gap-1">
-                    {branchNames.map((name) => (
-                      <span
-                        key={name}
-                        className={`px-2 py-0.5 text-xs font-mono rounded whitespace-nowrap md:truncate md:max-w-32 ${
-                          name === 'origin/HEAD'
-                            ? 'bg-blue-500/20 text-blue-400'
-                            : name.startsWith('origin/')
-                              ? 'bg-purple-500/20 text-purple-400'
-                              : 'bg-accent'
-                        }`}
-                      >
-                        {name}
-                      </span>
-                    ))}
+                    {branchNames.map((name, nameIndex) => {
+                      const isHeadBranch = isHead && nameIndex === 0
+                      let className = 'px-2 py-0.5 text-xs font-mono rounded whitespace-nowrap md:truncate md:max-w-32 '
+                      if (isHeadBranch) {
+                        className += 'bg-primary/20 text-primary ring-1 ring-primary/50'
+                      } else if (name === 'origin/HEAD') {
+                        className += 'bg-blue-500/20 text-blue-400'
+                      } else if (name.startsWith('origin/')) {
+                        className += 'bg-purple-500/20 text-purple-400'
+                      } else {
+                        className += 'bg-accent ring-1 ring-border'
+                      }
+                      return (
+                        <span key={name} className={className}>
+                          {name}
+                        </span>
+                      )
+                    })}
                   </div>
                 )}
                 <div className="flex items-center gap-2 md:flex-1 md:min-w-0">
