@@ -5,9 +5,11 @@ import type { GitCommit } from '@buddy/core'
 interface GitGraphProps {
   commits: GitCommit[]
   onCommitClick?: (commit: GitCommit) => void
+  onBranchClick?: (branchName: string) => void
   theme?: 'light' | 'dark'
   isFullscreen?: boolean
   copiedHash?: string | null
+  copiedBranch?: string | null
 }
 
 const BRANCH_COLORS = {
@@ -243,9 +245,11 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
 export default function GitGraph({
   commits,
   onCommitClick,
+  onBranchClick,
   theme = 'dark',
   isFullscreen = false,
   copiedHash,
+  copiedBranch,
 }: GitGraphProps) {
   const [graphWidth, setGraphWidth] = useState(isFullscreen ? 100 : 60)
   const [isDraggingState, setIsDraggingState] = useState(false)
@@ -379,8 +383,12 @@ export default function GitGraph({
                   <div className="flex-shrink-0 flex gap-1">
                     {branchNames.map((name, nameIndex) => {
                       const isHeadBranch = isHead && nameIndex === 0
-                      let className = 'px-2 py-0.5 text-xs font-mono rounded whitespace-nowrap md:truncate md:max-w-32 '
-                      if (isHeadBranch) {
+                      const isCopied = copiedBranch === name
+                      let className =
+                        'relative px-2 py-0.5 text-xs font-mono rounded whitespace-nowrap md:truncate md:max-w-32 cursor-pointer hover:opacity-80 transition-opacity '
+                      if (isCopied) {
+                        className += 'bg-green-500/20 text-green-500 ring-1 ring-green-500/50'
+                      } else if (isHeadBranch) {
                         className += 'bg-primary/20 text-primary ring-1 ring-primary/50'
                       } else if (name === 'origin/HEAD') {
                         className += 'bg-blue-500/20 text-blue-400'
@@ -390,8 +398,21 @@ export default function GitGraph({
                         className += 'bg-accent ring-1 ring-border'
                       }
                       return (
-                        <span key={name} className={className}>
-                          {name}
+                        <span
+                          key={name}
+                          className={className}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onBranchClick?.(name)
+                          }}
+                        >
+                          <span className={isCopied ? 'invisible' : ''}>{name}</span>
+                          {isCopied && (
+                            <span className="absolute inset-0 flex items-center justify-center gap-1">
+                              <Check className="h-3 w-3" />
+                              copied
+                            </span>
+                          )}
                         </span>
                       )
                     })}

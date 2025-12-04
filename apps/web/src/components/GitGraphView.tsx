@@ -23,6 +23,7 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copiedHash, setCopiedHash] = useState<string | null>(null)
+  const [copiedBranch, setCopiedBranch] = useState<string | null>(null)
   const { getAdapter } = useWebSocket()
 
   const handleCommitClick = useCallback(async (commit: GitCommit) => {
@@ -30,6 +31,16 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
       await navigator.clipboard.writeText(commit.hash)
       setCopiedHash(commit.hash)
       setTimeout(() => setCopiedHash(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }, [])
+
+  const handleBranchClick = useCallback(async (branchName: string) => {
+    try {
+      await navigator.clipboard.writeText(branchName)
+      setCopiedBranch(branchName)
+      setTimeout(() => setCopiedBranch(null), 2000)
     } catch (err) {
       console.error('Failed to copy:', err)
     }
@@ -118,7 +129,9 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
           theme={theme}
           isFullscreen={isFullscreen}
           copiedHash={copiedHash}
+          copiedBranch={copiedBranch}
           onCommitClick={handleCommitClick}
+          onBranchClick={handleBranchClick}
         />
       </div>
     </div>
