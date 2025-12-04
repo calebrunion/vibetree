@@ -25,24 +25,34 @@ function getBranchNames(refs: string[] | undefined): string[] {
 
   const branchNames: string[] = []
 
-  // Check for origin/HEAD first - important for showing remote HEAD
-  if (refs.includes('origin/HEAD')) {
-    branchNames.push('origin/HEAD')
-  }
-
+  // First: current HEAD branch
   for (const ref of refs) {
     if (ref.startsWith('HEAD -> ')) {
       branchNames.push(ref.replace('HEAD -> ', ''))
     }
   }
+
+  // Second: local branches (no /)
   for (const ref of refs) {
     if (!ref.includes('/') && !ref.startsWith('tag:') && !branchNames.includes(ref)) {
       branchNames.push(ref)
     }
   }
 
-  // Limit to 2 labels to avoid clutter
-  return branchNames.slice(0, 2)
+  // Third: remote branches (origin/*)
+  for (const ref of refs) {
+    if (ref.startsWith('origin/') && ref !== 'origin/HEAD' && !branchNames.includes(ref)) {
+      branchNames.push(ref)
+    }
+  }
+
+  // Last: origin/HEAD
+  if (refs.includes('origin/HEAD') && !branchNames.includes('origin/HEAD')) {
+    branchNames.push('origin/HEAD')
+  }
+
+  // Limit to 3 labels to avoid clutter
+  return branchNames.slice(0, 3)
 }
 
 function isCurrentHead(refs: string[] | undefined): boolean {
@@ -346,7 +356,11 @@ export default function GitGraph({
                       <span
                         key={name}
                         className={`px-2 py-0.5 text-xs font-mono rounded whitespace-nowrap md:truncate md:max-w-32 ${
-                          name === 'origin/HEAD' ? 'bg-blue-500/20 text-blue-400' : 'bg-accent'
+                          name === 'origin/HEAD'
+                            ? 'bg-blue-500/20 text-blue-400'
+                            : name.startsWith('origin/')
+                              ? 'bg-purple-500/20 text-purple-400'
+                              : 'bg-accent'
                         }`}
                       >
                         {name}
