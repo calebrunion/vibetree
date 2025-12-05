@@ -127,6 +127,9 @@ export class ShellSessionManager {
     terminalId?: string,
     setLocaleVariables: boolean = true
   ): Promise<ShellStartResult> {
+    // Prune orphan sessions before creating a new one
+    await this.pruneOrphanSessions()
+
     if (!fs.existsSync(worktreePath)) {
       const errorMessage = `Directory does not exist: ${worktreePath}`
       console.error(`Failed to start PTY session: ${errorMessage}`)
@@ -461,6 +464,31 @@ export class ShellSessionManager {
         console.log(`Cleaning up inactive session: ${sessionId}`)
         this.terminateSession(sessionId)
       }
+    }
+  }
+
+  /**
+   * Prune orphan sessions - sessions with no listeners that haven't been active recently
+   * Called automatically when a new session is created to prevent accumulation
+   */
+  private async pruneOrphanSessions(): Promise<void> {
+    const now = new Date()
+    const orphanGracePeriodMs = 60000 // 1 minute grace period before pruning
+    const sessionsToTerminate: string[] = []
+
+    for (const [sessionId, session] of this.sessions) {
+      const hasNoListeners = session.listeners.size === 0 && session.exitListeners.size === 0
+      const inactiveTime = now.getTime() - session.lastActivity.getTime()
+
+      if (hasNoListeners && inactiveTime > orphanGracePeriodMs) {
+        console.log(`Pruning orphan session ${sessionId} (inactive for ${Math.round(inactiveTime / 1000)}s)`)
+        sessionsToTerminate.push(sessionId)
+      }
+    }
+
+    if (sessionsToTerminate.length > 0) {
+      await Promise.all(sessionsToTerminate.map((id) => this.terminateSession(id)))
+      console.log(`Pruned ${sessionsToTerminate.length} orphan session(s)`)
     }
   }
 
