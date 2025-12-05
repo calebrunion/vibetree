@@ -145,11 +145,17 @@ export default function VoiceInputDialog({
     [handleSend]
   )
 
+  const handleClose = useCallback(() => {
+    // Preserve the content by syncing local text to parent before closing
+    setText(localText)
+    onClose()
+  }, [localText, setText, onClose])
+
   if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center md:hidden">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
       <div className="relative w-full bg-background border-t rounded-t-2xl p-4 animate-in slide-in-from-bottom duration-200">
         <form onSubmit={handleSubmit} className="flex items-start gap-2">
           <input
@@ -164,7 +170,7 @@ export default function VoiceInputDialog({
             }}
             onBlur={(e) => {
               if (!e.relatedTarget || !e.currentTarget.form?.contains(e.relatedTarget)) {
-                onClose()
+                handleClose()
               }
             }}
             placeholder="Type or use voice input..."
