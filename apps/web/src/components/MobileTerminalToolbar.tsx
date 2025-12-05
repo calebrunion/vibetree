@@ -11,9 +11,11 @@ import {
   CornerDownLeft,
   Delete,
   Eraser,
+  Eye,
   GitCommit,
   Mic,
   Minimize2,
+  Play,
   RefreshCw,
   SquarePen,
 } from 'lucide-react'
@@ -272,6 +274,22 @@ export default function MobileTerminalToolbar() {
         >
           <BarChart3 className="h-5 w-5 text-white" />
           <span className="font-mono text-sm text-muted-foreground">/usage</span>
+        </button>
+        <button
+          onClick={() => sendCommand('start dev server')}
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
+          title="Start Dev Server"
+        >
+          <Play className="h-5 w-5 text-white" />
+          <span className="font-mono text-sm text-muted-foreground">dev</span>
+        </button>
+        <button
+          onClick={() => sendCommand('/review')}
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
+          title="Review"
+        >
+          <Eye className="h-5 w-5 text-white" />
+          <span className="font-mono text-sm text-muted-foreground">/review</span>
         </button>
       </div>
 
