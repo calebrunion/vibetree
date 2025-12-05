@@ -247,7 +247,7 @@ export default function GitGraph({
   onCommitClick,
   onBranchClick,
   theme = 'dark',
-  isFullscreen = false,
+  isFullscreen: _isFullscreen = false,
   copiedHash,
   copiedBranch,
 }: GitGraphProps) {
