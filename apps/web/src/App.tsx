@@ -78,8 +78,8 @@ function App() {
   const [isRefreshingTerminal, setIsRefreshingTerminal] = useState(false)
   const [isRefreshingChanges, setIsRefreshingChanges] = useState(false)
   const [isRefreshingGraph, setIsRefreshingGraph] = useState(false)
-  const gitDiffRef = useRef<GitDiffViewRef>(null)
-  const gitGraphRef = useRef<GitGraphViewRef>(null)
+  const gitDiffRefs = useRef<Map<string, GitDiffViewRef>>(new Map())
+  const gitGraphRefs = useRef<Map<string, GitGraphViewRef>>(new Map())
   const activeProjectTabRef = useRef<HTMLButtonElement>(null)
 
   // const activeProject = getActiveProject();
@@ -354,7 +354,7 @@ function App() {
           } else if (currentTab === 'changes') {
             handleRefreshChanges(activeProject, true)
           } else if (currentTab === 'graph') {
-            handleRefreshGraph()
+            handleRefreshGraph(activeProject)
           }
         }
 
@@ -431,7 +431,8 @@ function App() {
   const handleRefreshChanges = async (project: (typeof projects)[0], showSpinner = false) => {
     if (showSpinner) setIsRefreshingChanges(true)
     const minSpinTime = showSpinner ? new Promise((resolve) => setTimeout(resolve, 1000)) : Promise.resolve()
-    gitDiffRef.current?.refresh()
+    const diffRef = gitDiffRefs.current.get(project.id)
+    diffRef?.refresh()
     const adapter = getAdapter()
     if (adapter && connected) {
       try {
@@ -445,10 +446,11 @@ function App() {
     if (showSpinner) setIsRefreshingChanges(false)
   }
 
-  const handleRefreshGraph = async () => {
+  const handleRefreshGraph = async (project: (typeof projects)[0]) => {
     setIsRefreshingGraph(true)
     const minSpinTime = new Promise((resolve) => setTimeout(resolve, 1000))
-    await Promise.all([gitGraphRef.current?.refresh(), minSpinTime])
+    const graphRef = gitGraphRefs.current.get(project.id)
+    await Promise.all([graphRef?.refresh(), minSpinTime])
     setIsRefreshingGraph(false)
   }
 
@@ -696,7 +698,7 @@ function App() {
                         onClick={() => {
                           setSelectedTab(project.id, project.selectedWorktree!, 'graph')
                           handleRefreshChanges(project)
-                          gitGraphRef.current?.refresh()
+                          gitGraphRefs.current.get(project.id)?.refresh()
                         }}
                       >
                         <GitCommitHorizontal className="h-3.5 w-3.5 -ml-1" />
@@ -773,7 +775,7 @@ function App() {
                         {getCurrentTab(project) === 'graph' && (
                           <>
                             <button
-                              onClick={handleRefreshGraph}
+                              onClick={() => handleRefreshGraph(project)}
                               className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                               title="Reload Graph"
                             >
@@ -829,7 +831,13 @@ function App() {
                         }
                       >
                         <GitDiffView
-                          ref={gitDiffRef}
+                          ref={(ref) => {
+                            if (ref) {
+                              gitDiffRefs.current.set(project.id, ref)
+                            } else {
+                              gitDiffRefs.current.delete(project.id)
+                            }
+                          }}
                           worktreePath={project.selectedWorktree}
                           theme={theme}
                           isFullscreen={project.isDiffFullscreen}
@@ -848,7 +856,13 @@ function App() {
                         }
                       >
                         <GitGraphView
-                          ref={gitGraphRef}
+                          ref={(ref) => {
+                            if (ref) {
+                              gitGraphRefs.current.set(project.id, ref)
+                            } else {
+                              gitGraphRefs.current.delete(project.id)
+                            }
+                          }}
                           worktreePath={project.selectedWorktree}
                           theme={theme}
                           isFullscreen={project.isGraphFullscreen}
