@@ -723,7 +723,7 @@ function App() {
                     {getCurrentTab(project) === 'terminal' ? (
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={handleRefreshTerminal}
+                          onClick={() => handleRefreshTerminal()}
                           className="group size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                           title="Reload Terminal"
                         >
