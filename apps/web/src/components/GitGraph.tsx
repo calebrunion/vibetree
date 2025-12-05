@@ -251,17 +251,13 @@ export default function GitGraph({
   copiedHash,
   copiedBranch,
 }: GitGraphProps) {
-  const [graphWidth, setGraphWidth] = useState(isFullscreen ? 100 : 60)
+  const [graphWidth, setGraphWidth] = useState<number | null>(null)
   const [isDraggingState, setIsDraggingState] = useState(false)
   const isDragging = useRef(false)
   const startX = useRef(0)
   const startWidth = useRef(0)
   const currentHeadRef = useRef<HTMLButtonElement>(null)
   const maxGraphWidthRef = useRef(200)
-
-  useEffect(() => {
-    setGraphWidth(isFullscreen ? 100 : 60)
-  }, [isFullscreen])
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -280,7 +276,7 @@ export default function GitGraph({
       isDragging.current = true
       setIsDraggingState(true)
       startX.current = e.clientX
-      startWidth.current = graphWidth
+      startWidth.current = graphWidth ?? maxGraphWidthRef.current
       document.body.style.cursor = 'col-resize'
       document.body.style.userSelect = 'none'
 
@@ -312,7 +308,7 @@ export default function GitGraph({
       isDragging.current = true
       setIsDraggingState(true)
       startX.current = e.touches[0].clientX
-      startWidth.current = graphWidth
+      startWidth.current = graphWidth ?? maxGraphWidthRef.current
 
       const handleTouchMove = (e: TouchEvent) => {
         if (!isDragging.current || e.touches.length !== 1) return
@@ -351,12 +347,15 @@ export default function GitGraph({
   const maxGraphWidth = (maxColumn + 1) * COLUMN_WIDTH + DOT_SIZE
   maxGraphWidthRef.current = maxGraphWidth
 
+  // Default to max width if not set
+  const effectiveGraphWidth = graphWidth ?? maxGraphWidth
+
   return (
     <div className="h-full overflow-auto">
       <div className="flex">
         <div
           className="flex-shrink-0 sticky left-0 bg-background z-10 overflow-hidden relative"
-          style={{ width: graphWidth }}
+          style={{ width: effectiveGraphWidth }}
         >
           <GraphSvg nodes={nodes} theme={theme} />
           <div
