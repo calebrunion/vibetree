@@ -17,6 +17,7 @@ import {
   Minimize2,
   Play,
   RefreshCw,
+  Rewind,
   SquarePen,
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -250,6 +251,14 @@ export default function MobileTerminalToolbar() {
         >
           <SquarePen className="h-5 w-5 text-white" />
           <span className="font-mono text-sm text-muted-foreground">/new</span>
+        </button>
+        <button
+          onClick={() => sendCommand('/rewind')}
+          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
+          title="Rewind"
+        >
+          <Rewind className="h-5 w-5 text-white" />
+          <span className="font-mono text-sm text-muted-foreground">rewind</span>
         </button>
         <button
           onClick={() => sendCommand('/compact')}

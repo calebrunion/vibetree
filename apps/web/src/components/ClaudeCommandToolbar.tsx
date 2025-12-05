@@ -1,4 +1,4 @@
-import { BarChart3, Bot, Eye, GitCommit, Minimize2, Play, RefreshCw, SquarePen } from 'lucide-react'
+import { BarChart3, Bot, Eye, GitCommit, Minimize2, Play, RefreshCw, Rewind, SquarePen } from 'lucide-react'
 import { useCallback } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -87,6 +87,14 @@ export default function ClaudeCommandToolbar() {
       >
         <SquarePen className="h-4 w-4 text-white" />
         <span className="font-mono text-sm text-muted-foreground">/new</span>
+      </button>
+      <button
+        onClick={() => sendCommand('/rewind')}
+        className="h-8 px-3 rounded-md bg-muted border border-border hover:bg-accent active:scale-95 transition-all flex items-center gap-2 flex-shrink-0"
+        title="Rewind"
+      >
+        <Rewind className="h-4 w-4 text-white" />
+        <span className="font-mono text-sm text-muted-foreground">rewind</span>
       </button>
       <button
         onClick={() => sendCommand('/compact')}
