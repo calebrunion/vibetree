@@ -357,6 +357,12 @@ function App() {
             handleRefreshGraph()
           }
         }
+
+        // Cmd+W to close current project tab
+        if (e.key === 'w' && activeProject) {
+          e.preventDefault()
+          setProjectToRemove(activeProject.id)
+        }
       }
     }
 
