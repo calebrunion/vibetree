@@ -344,6 +344,19 @@ function App() {
           e.preventDefault()
           setShowMobileSettingsModal(true)
         }
+
+        // Cmd+R to reload current tab
+        if (e.key === 'r' && activeProject?.selectedWorktree) {
+          e.preventDefault()
+          const currentTab = getCurrentTab(activeProject)
+          if (currentTab === 'terminal') {
+            handleRefreshTerminal()
+          } else if (currentTab === 'changes') {
+            handleRefreshChanges(activeProject, true)
+          } else if (currentTab === 'graph') {
+            handleRefreshGraph()
+          }
+        }
       }
     }
 
