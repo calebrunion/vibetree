@@ -456,9 +456,12 @@ function App() {
     setIsRefreshingGraph(false)
   }
 
-  const handleRefreshTerminal = async () => {
+  const handleRefreshTerminal = async (worktreePath?: string) => {
+    const targetWorktree = worktreePath || activeProject?.selectedWorktree
+    if (!targetWorktree) return
+
     setIsRefreshingTerminal(true)
-    window.dispatchEvent(new CustomEvent('reload-terminal'))
+    window.dispatchEvent(new CustomEvent('reload-terminal', { detail: { worktreePath: targetWorktree } }))
     await new Promise((resolve) => setTimeout(resolve, 1000))
     setIsRefreshingTerminal(false)
   }

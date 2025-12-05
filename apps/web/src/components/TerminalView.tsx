@@ -120,13 +120,18 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
   }, [isSplit])
 
   useEffect(() => {
-    const handleReloadTerminal = () => {
-      reloadTerminal()
+    const handleReloadTerminal = (event: Event) => {
+      const customEvent = event as CustomEvent<{ worktreePath?: string }>
+      const targetWorktree = customEvent.detail?.worktreePath
+      // Only reload if this terminal's worktree matches the target
+      if (!targetWorktree || targetWorktree === worktreePath) {
+        reloadTerminal()
+      }
     }
 
     window.addEventListener('reload-terminal', handleReloadTerminal)
     return () => window.removeEventListener('reload-terminal', handleReloadTerminal)
-  }, [sessionId, selectedWorktree])
+  }, [sessionId, selectedWorktree, worktreePath])
 
   // Scroll to top on mobile when terminal gets focus (for virtual keyboard)
   useEffect(() => {
