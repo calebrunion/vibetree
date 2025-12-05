@@ -65,6 +65,8 @@ function App() {
     setShowAddWorktreeDialog,
     sidebarCollapsed,
     toggleSidebarCollapsed,
+    unreadBellWorktrees,
+    clearWorktreeBell,
   } = useAppStore()
   const { connect, getAdapter } = useWebSocket()
   const { request: requestKeepAwake } = useKeepAwake()
@@ -592,8 +594,18 @@ function App() {
                   value={project.id}
                   ref={project.id === activeProjectId ? activeProjectTabRef : null}
                   className="project-tab group/tab relative pl-3 pr-7 h-[34px] min-w-[120px] md:min-w-[140px] max-w-[240px] rounded-t-xl text-[13px] bg-transparent text-muted-foreground transition-colors duration-100 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:z-10 data-[state=active]:hover:!bg-background app-region-no-drag"
+                  onClick={() => {
+                    // Clear unread bells for all worktrees in this project when tab is clicked
+                    project.worktrees?.forEach((wt) => clearWorktreeBell(wt.path))
+                  }}
                 >
-                  <span className="truncate">{project.name}</span>
+                  <span className="truncate flex items-center gap-1.5">
+                    {project.name}
+                    {project.id !== activeProjectId &&
+                      project.worktrees?.some((wt) => unreadBellWorktrees.has(wt.path)) && (
+                        <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+                      )}
+                  </span>
                   <span
                     className="group/close absolute right-2 top-1/2 -translate-y-1/2 h-[18px] w-[18px] opacity-0 group-hover/tab:opacity-100 data-[state=active]:opacity-100 cursor-pointer inline-flex items-center justify-center app-region-no-drag transition-opacity"
                     onClick={(e) => handleCloseProject(e, project.id)}
