@@ -135,7 +135,11 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     if (!isMobile || !containerRef.current) return
 
     const handleFocus = () => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+      // Scroll to the top of the terminal container so nothing gets cut off
+      const rect = containerRef.current?.getBoundingClientRect()
+      if (rect) {
+        window.scrollTo({ top: window.scrollY + rect.top, behavior: 'smooth' })
+      }
     }
 
     const textareas = containerRef.current.querySelectorAll('.xterm-helper-textarea')
