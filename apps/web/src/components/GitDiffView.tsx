@@ -491,7 +491,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                           key={`current-${file.path}`}
                           className={`group flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
                             selectedFile === file.path && selectedSection === 'current'
-                              ? 'bg-muted text-white [&_span]:text-white [&_.text-muted-foreground]:text-white/70'
+                              ? 'bg-muted text-white [&_span]:!text-white [&_span]:!bg-transparent [&_.text-muted-foreground]:text-white/70'
                               : ''
                           }`}
                           onClick={() => handleCurrentFileClick(file)}
@@ -542,7 +542,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                           key={`all-${file.path}`}
                           className={`flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
                             selectedFile === file.path && selectedSection === 'all'
-                              ? 'bg-muted text-white [&_span]:text-white [&_.text-muted-foreground]:text-white/70'
+                              ? 'bg-muted text-white [&_span]:!text-white [&_span]:!bg-transparent [&_.text-muted-foreground]:text-white/70'
                               : ''
                           }`}
                           onClick={() => handleAllChangesFileClick(file)}
@@ -614,7 +614,7 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                                       selectedFile === file.path &&
                                       selectedSection === 'commit' &&
                                       selectedCommit?.hash === commit.hash
-                                        ? 'bg-muted text-white [&_span]:text-white'
+                                        ? 'bg-muted text-white [&_span]:!text-white [&_span]:!bg-transparent'
                                         : ''
                                     }`}
                                     onClick={() => handleCommitFileClick(commit, file)}
