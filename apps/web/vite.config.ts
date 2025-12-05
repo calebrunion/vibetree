@@ -1,8 +1,7 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import fs from 'fs'
-import path from 'path'
 
 // Plugin to capture the actual port Vite uses
 function portCapturePlugin() {
@@ -22,104 +21,114 @@ function portCapturePlugin() {
   }
 }
 
-export default defineConfig({
-  plugins: [
-    react(),
-    portCapturePlugin(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['icon.svg', 'icon-maskable.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
-      devOptions: {
-        enabled: true,
-      },
-      workbox: {
-        clientsClaim: true,
-        skipWaiting: true,
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*$/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 10,
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 300,
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+
+  const pwaName = env.VITE_PWA_NAME || 'Buddy'
+  const pwaShortName = env.VITE_PWA_SHORT_NAME || pwaName
+  const pwaDescription = env.VITE_PWA_DESCRIPTION || 'Code with AI in parallel git worktrees'
+  const pwaThemeColor = env.VITE_PWA_THEME_COLOR || '#1a1a1a'
+  const pwaBgColor = env.VITE_PWA_BG_COLOR || '#000000'
+
+  return {
+    plugins: [
+      react(),
+      portCapturePlugin(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['icon.svg', 'icon-maskable.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
+        devOptions: {
+          enabled: true,
+        },
+        workbox: {
+          clientsClaim: true,
+          skipWaiting: true,
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/.*$/,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'api-cache',
+                networkTimeoutSeconds: 10,
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 300,
+                },
               },
             },
-          },
-        ],
-      },
-      manifest: {
-        name: 'Buddy',
-        short_name: 'Buddy',
-        description: 'Code with AI in parallel git worktrees',
-        theme_color: '#1a1a1a',
-        background_color: '#000000',
-        display: 'standalone',
-        // @ts-expect-error - display_override is valid but not in vite-plugin-pwa types
-        display_override: ['window-controls-overlay'],
-        orientation: 'portrait',
-        start_url: '/',
-        scope: '/',
-        categories: ['developer tools', 'productivity'],
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-          {
-            src: 'icon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any',
-          },
-          {
-            src: 'icon-maskable.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'maskable',
-          },
-        ],
-      },
-    }),
-  ],
-  server: {
-    port: 3000,
-    host: '0.0.0.0', // Bind to all network interfaces for network access
-    strictPort: false, // Allow Vite to find alternative ports
-    // Note: Proxy configuration removed - apps will connect directly using environment variables
-  },
-  preview: {
-    port: 9000,
-    host: '0.0.0.0',
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react-dom') || id.includes('react-router') || id.includes('/react/')) {
-              return 'vendor-react'
+          ],
+        },
+        manifest: {
+          name: pwaName,
+          short_name: pwaShortName,
+          description: pwaDescription,
+          theme_color: pwaThemeColor,
+          background_color: pwaBgColor,
+          display: 'standalone',
+          // @ts-expect-error - display_override is valid but not in vite-plugin-pwa types
+          display_override: ['window-controls-overlay'],
+          orientation: 'portrait',
+          start_url: '/',
+          scope: '/',
+          categories: ['developer tools', 'productivity'],
+          icons: [
+            {
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+            },
+            {
+              src: 'icon.svg',
+              sizes: 'any',
+              type: 'image/svg+xml',
+              purpose: 'any',
+            },
+            {
+              src: 'icon-maskable.svg',
+              sizes: 'any',
+              type: 'image/svg+xml',
+              purpose: 'maskable',
+            },
+          ],
+        },
+      }),
+    ],
+    server: {
+      port: 3000,
+      host: '0.0.0.0', // Bind to all network interfaces for network access
+      strictPort: false, // Allow Vite to find alternative ports
+      // Note: Proxy configuration removed - apps will connect directly using environment variables
+    },
+    preview: {
+      port: 9000,
+      host: '0.0.0.0',
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react-dom') || id.includes('react-router') || id.includes('/react/')) {
+                return 'vendor-react'
+              }
+              if (id.includes('xterm')) {
+                return 'vendor-xterm'
+              }
+              if (id.includes('@git-diff-view')) {
+                return 'vendor-diff'
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons'
+              }
             }
-            if (id.includes('xterm')) {
-              return 'vendor-xterm'
-            }
-            if (id.includes('@git-diff-view')) {
-              return 'vendor-diff'
-            }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons'
-            }
-          }
+          },
         },
       },
     },
-  },
+  }
 })
