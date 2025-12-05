@@ -128,6 +128,28 @@ export function TerminalView({ worktreePath }: TerminalViewProps) {
     return () => window.removeEventListener('reload-terminal', handleReloadTerminal)
   }, [sessionId, selectedWorktree])
 
+  // Scroll to top on mobile when terminal gets focus (for virtual keyboard)
+  useEffect(() => {
+    const isMobile = window.matchMedia('(max-width: 768px)').matches
+
+    if (!isMobile || !containerRef.current) return
+
+    const handleFocus = () => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    }
+
+    const textareas = containerRef.current.querySelectorAll('.xterm-helper-textarea')
+    textareas.forEach((textarea) => {
+      textarea.addEventListener('focus', handleFocus)
+    })
+
+    return () => {
+      textareas.forEach((textarea) => {
+        textarea.removeEventListener('focus', handleFocus)
+      })
+    }
+  }, [sessionId, splitSessionId])
+
   useEffect(() => {
     if (!selectedWorktree) {
       return

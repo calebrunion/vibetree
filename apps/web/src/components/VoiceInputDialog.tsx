@@ -60,15 +60,7 @@ export default function VoiceInputDialog({
 }) {
   const [isListening, setIsListening] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  const adjustTextareaHeight = useCallback(() => {
-    const textarea = textareaRef.current
-    if (textarea) {
-      textarea.style.height = 'auto'
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`
-    }
-  }, [])
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -109,10 +101,9 @@ export default function VoiceInputDialog({
   }, [])
 
   useEffect(() => {
-    if (isOpen && textareaRef.current) {
-      textareaRef.current.focus()
-      adjustTextareaHeight()
-      window.scrollTo(0, document.body.scrollHeight)
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus()
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
     }
     if (!isOpen) {
       if (recognitionRef.current && isListening) {
@@ -120,7 +111,7 @@ export default function VoiceInputDialog({
         setIsListening(false)
       }
     }
-  }, [isOpen, isListening, adjustTextareaHeight])
+  }, [isOpen, isListening])
 
   const handleSend = useCallback(async () => {
     const trimmed = text.trim()
@@ -152,15 +143,12 @@ export default function VoiceInputDialog({
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full bg-background border-t rounded-t-2xl p-4 animate-in slide-in-from-bottom duration-200">
         <form onSubmit={handleSubmit} className="flex items-start gap-2">
-          <textarea
-            ref={textareaRef}
+          <input
+            ref={inputRef}
             value={text}
-            onChange={(e) => {
-              setText(e.target.value)
-              adjustTextareaHeight()
-            }}
+            onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === 'Enter') {
                 e.preventDefault()
                 void handleSend()
               }
@@ -171,8 +159,8 @@ export default function VoiceInputDialog({
               }
             }}
             placeholder="Type or use voice input..."
-            className="flex-1 min-h-10 max-h-[200px] px-3 py-2 text-sm bg-muted border border-border rounded-lg placeholder:text-muted-foreground focus:outline-none focus:bg-background focus:border-white resize-none overflow-y-auto"
-            rows={1}
+            enterKeyHint="send"
+            className="flex-1 h-10 px-3 py-2 text-sm bg-muted border border-border rounded-lg placeholder:text-muted-foreground focus:outline-none focus:bg-background focus:border-white"
           />
         </form>
 

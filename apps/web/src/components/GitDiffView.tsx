@@ -490,7 +490,9 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                         <div
                           key={`current-${file.path}`}
                           className={`group flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
-                            selectedFile === file.path && selectedSection === 'current' ? 'bg-muted' : ''
+                            selectedFile === file.path && selectedSection === 'current'
+                              ? 'bg-accent text-white [&_span]:text-white [&_.text-muted-foreground]:text-white/70'
+                              : ''
                           }`}
                           onClick={() => handleCurrentFileClick(file)}
                           title={file.path}
@@ -539,7 +541,9 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                         <div
                           key={`all-${file.path}`}
                           className={`flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors ${
-                            selectedFile === file.path && selectedSection === 'all' ? 'bg-muted' : ''
+                            selectedFile === file.path && selectedSection === 'all'
+                              ? 'bg-accent text-white [&_span]:text-white [&_.text-muted-foreground]:text-white/70'
+                              : ''
                           }`}
                           onClick={() => handleAllChangesFileClick(file)}
                           title={file.path}
