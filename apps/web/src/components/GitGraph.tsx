@@ -257,6 +257,7 @@ export default function GitGraph({
   const startX = useRef(0)
   const startWidth = useRef(0)
   const currentHeadRef = useRef<HTMLButtonElement>(null)
+  const maxGraphWidthRef = useRef(200)
 
   useEffect(() => {
     setGraphWidth(isFullscreen ? 100 : 60)
@@ -286,7 +287,7 @@ export default function GitGraph({
       const handleMouseMove = (e: MouseEvent) => {
         if (!isDragging.current) return
         const delta = e.clientX - startX.current
-        const newWidth = Math.min(200, Math.max(30, startWidth.current + delta))
+        const newWidth = Math.min(maxGraphWidthRef.current, Math.max(30, startWidth.current + delta))
         setGraphWidth(newWidth)
       }
 
@@ -317,7 +318,7 @@ export default function GitGraph({
         if (!isDragging.current || e.touches.length !== 1) return
         e.preventDefault()
         const delta = e.touches[0].clientX - startX.current
-        const newWidth = Math.min(200, Math.max(30, startWidth.current + delta))
+        const newWidth = Math.min(maxGraphWidthRef.current, Math.max(30, startWidth.current + delta))
         setGraphWidth(newWidth)
       }
 
@@ -344,6 +345,11 @@ export default function GitGraph({
   }
 
   const nodes = buildGraphLayout(commits)
+
+  // Calculate actual max width of the graph and update ref for slider limit
+  const maxColumn = Math.max(...nodes.map((n) => n.column), ...nodes.flatMap((n) => [...n.childColumns.values()]))
+  const maxGraphWidth = (maxColumn + 1) * COLUMN_WIDTH + DOT_SIZE
+  maxGraphWidthRef.current = maxGraphWidth
 
   return (
     <div className="h-full overflow-auto">
