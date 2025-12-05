@@ -676,49 +676,98 @@ function App() {
                   {/* Tab Navigation */}
                   <div className="flex items-center justify-between px-1 py-2 md:px-2 flex-shrink-0">
                     <div className="flex">
-                      <button
-                        className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 border ${
-                          getCurrentTab(project) === 'terminal'
-                            ? 'bg-accent text-accent-foreground border-border shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
-                        }`}
-                        onClick={() => {
-                          setSelectedTab(project.id, project.selectedWorktree!, 'terminal')
-                          handleRefreshChanges(project)
-                        }}
-                      >
-                        <Terminal className="h-3.5 w-3.5 -ml-1" />
-                        Terminal
-                      </button>
-                      <button
-                        className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
-                          getCurrentTab(project) === 'changes'
-                            ? 'bg-accent text-accent-foreground border-border shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
-                        }`}
-                        onClick={() => {
-                          setSelectedTab(project.id, project.selectedWorktree!, 'changes')
-                          handleRefreshChanges(project)
-                        }}
-                      >
-                        <GitBranch className="h-3.5 w-3.5 -ml-1" />
-                        Changes
-                      </button>
-                      <button
-                        className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
-                          getCurrentTab(project) === 'graph'
-                            ? 'bg-accent text-accent-foreground border-border shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
-                        }`}
-                        onClick={() => {
-                          setSelectedTab(project.id, project.selectedWorktree!, 'graph')
-                          handleRefreshChanges(project)
-                          gitGraphRefs.current.get(project.id)?.refresh()
-                        }}
-                      >
-                        <GitCommitHorizontal className="h-3.5 w-3.5 -ml-1" />
-                        Graph
-                      </button>
+                      {/* Mobile: Single segmented button */}
+                      <div className="flex md:hidden border border-border rounded-md overflow-hidden">
+                        <button
+                          className={`py-2 transition-colors flex items-center gap-1.5 ${
+                            getCurrentTab(project) === 'terminal'
+                              ? 'pl-3 pr-3 bg-accent text-accent-foreground'
+                              : 'px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                          onClick={() => {
+                            setSelectedTab(project.id, project.selectedWorktree!, 'terminal')
+                            handleRefreshChanges(project)
+                          }}
+                        >
+                          <Terminal className="h-4 w-4" />
+                          {getCurrentTab(project) === 'terminal' && <span className="text-sm">Terminal</span>}
+                        </button>
+                        <button
+                          className={`py-2 border-l border-border transition-colors flex items-center gap-1.5 ${
+                            getCurrentTab(project) === 'changes'
+                              ? 'pl-3 pr-3 bg-accent text-accent-foreground'
+                              : 'px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                          onClick={() => {
+                            setSelectedTab(project.id, project.selectedWorktree!, 'changes')
+                            handleRefreshChanges(project)
+                          }}
+                        >
+                          <GitBranch className="h-4 w-4" />
+                          {getCurrentTab(project) === 'changes' && <span className="text-sm">Changes</span>}
+                        </button>
+                        <button
+                          className={`py-2 border-l border-border transition-colors flex items-center gap-1.5 ${
+                            getCurrentTab(project) === 'graph'
+                              ? 'pl-3 pr-3 bg-accent text-accent-foreground'
+                              : 'px-4 text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }`}
+                          onClick={() => {
+                            setSelectedTab(project.id, project.selectedWorktree!, 'graph')
+                            handleRefreshChanges(project)
+                            gitGraphRefs.current.get(project.id)?.refresh()
+                          }}
+                        >
+                          <GitCommitHorizontal className="h-4 w-4" />
+                          {getCurrentTab(project) === 'graph' && <span className="text-sm">Graph</span>}
+                        </button>
+                      </div>
+                      {/* Desktop: Separate buttons with labels */}
+                      <div className="hidden md:flex">
+                        <button
+                          className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 border ${
+                            getCurrentTab(project) === 'terminal'
+                              ? 'bg-accent text-accent-foreground border-border shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
+                          }`}
+                          onClick={() => {
+                            setSelectedTab(project.id, project.selectedWorktree!, 'terminal')
+                            handleRefreshChanges(project)
+                          }}
+                        >
+                          <Terminal className="h-3.5 w-3.5 -ml-1" />
+                          Terminal
+                        </button>
+                        <button
+                          className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
+                            getCurrentTab(project) === 'changes'
+                              ? 'bg-accent text-accent-foreground border-border shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
+                          }`}
+                          onClick={() => {
+                            setSelectedTab(project.id, project.selectedWorktree!, 'changes')
+                            handleRefreshChanges(project)
+                          }}
+                        >
+                          <GitBranch className="h-3.5 w-3.5 -ml-1" />
+                          Changes
+                        </button>
+                        <button
+                          className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ml-1 border ${
+                            getCurrentTab(project) === 'graph'
+                              ? 'bg-accent text-accent-foreground border-border shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent'
+                          }`}
+                          onClick={() => {
+                            setSelectedTab(project.id, project.selectedWorktree!, 'graph')
+                            handleRefreshChanges(project)
+                            gitGraphRefs.current.get(project.id)?.refresh()
+                          }}
+                        >
+                          <GitCommitHorizontal className="h-3.5 w-3.5 -ml-1" />
+                          Graph
+                        </button>
+                      </div>
                     </div>
                     {getCurrentTab(project) === 'terminal' ? (
                       <div className="flex items-center gap-1">
