@@ -59,8 +59,16 @@ export default function VoiceInputDialog({
   setText: React.Dispatch<React.SetStateAction<string>>
 }) {
   const [isListening, setIsListening] = useState(false)
+  const [localText, setLocalText] = useState(text)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Sync local text when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setLocalText(text)
+    }
+  }, [isOpen, text])
 
   useEffect(() => {
     const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -75,7 +83,7 @@ export default function VoiceInputDialog({
       const result = event.results[event.resultIndex]
       if (result.isFinal) {
         const transcript = result[0].transcript
-        setText((prev) => {
+        setLocalText((prev) => {
           const trimmed = prev.trim()
           if (trimmed) {
             return trimmed + ' ' + transcript
@@ -114,19 +122,20 @@ export default function VoiceInputDialog({
   }, [isOpen, isListening])
 
   const handleSend = useCallback(async () => {
-    const trimmed = text.trim()
+    const trimmed = localText.trim()
     if (trimmed) {
       try {
         await onSend(trimmed)
         await new Promise((resolve) => setTimeout(resolve, 50))
         await onEnter()
         setText('')
+        setLocalText('')
         onClose()
       } catch (error) {
         console.error('Failed to send text to terminal:', error)
       }
     }
-  }, [text, onSend, onEnter, setText, onClose])
+  }, [localText, onSend, onEnter, setText, onClose])
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -145,8 +154,8 @@ export default function VoiceInputDialog({
         <form onSubmit={handleSubmit} className="flex items-start gap-2">
           <input
             ref={inputRef}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
+            value={localText}
+            onChange={(e) => setLocalText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault()
