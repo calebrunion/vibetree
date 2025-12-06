@@ -24,6 +24,7 @@ import {
   getFileContent,
   getFileViewerType,
   gitFetch,
+  getDefaultBranch,
 } from '@buddy/core'
 
 interface Services {
@@ -481,6 +482,28 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
                 JSON.stringify({
                   type: 'git:fetch:response',
                   payload: result,
+                  id: message.id,
+                })
+              )
+            } catch (error) {
+              ws.send(
+                JSON.stringify({
+                  type: 'error',
+                  payload: { error: (error as Error).message },
+                  id: message.id,
+                })
+              )
+            }
+            break
+          }
+
+          case 'git:defaultBranch': {
+            try {
+              const defaultBranch = await getDefaultBranch(message.payload.worktreePath)
+              ws.send(
+                JSON.stringify({
+                  type: 'git:defaultBranch:response',
+                  payload: { defaultBranch },
                   id: message.id,
                 })
               )

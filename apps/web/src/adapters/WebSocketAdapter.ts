@@ -213,6 +213,11 @@ export class WebSocketAdapter extends BaseAdapter {
     return this.sendMessage('git:fetch', { worktreePath })
   }
 
+  async getDefaultBranch(worktreePath: string): Promise<string> {
+    const result = await this.sendMessage<{ defaultBranch: string }>('git:defaultBranch', { worktreePath })
+    return result.defaultBranch
+  }
+
   async getGitUserName(worktreePath: string): Promise<string> {
     const result = await this.sendMessage<{ userName: string }>('git:userName', { worktreePath })
     return result.userName

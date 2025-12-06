@@ -720,6 +720,26 @@ export async function getCurrentBranch(worktreePath: string): Promise<string> {
 }
 
 /**
+ * Get the default branch name for the remote
+ * @param worktreePath - Path to the git worktree
+ * @returns Default branch name (e.g., "main" or "master")
+ */
+export async function getDefaultBranch(worktreePath: string): Promise<string> {
+  const expandedPath = expandPath(worktreePath)
+  try {
+    const output = await executeGitCommand(['rev-parse', '--abbrev-ref', 'origin/HEAD'], expandedPath)
+    return output.trim().replace('origin/', '')
+  } catch {
+    try {
+      await executeGitCommand(['rev-parse', '--verify', 'origin/main'], expandedPath)
+      return 'main'
+    } catch {
+      return 'master'
+    }
+  }
+}
+
+/**
  * Fetch from remote
  * @param worktreePath - Path to the git worktree
  * @returns Success status

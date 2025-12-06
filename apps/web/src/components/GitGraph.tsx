@@ -10,6 +10,7 @@ interface GitGraphProps {
   isFullscreen?: boolean
   copiedHash?: string | null
   copiedBranch?: string | null
+  defaultBranch?: string | null
 }
 
 const BRANCH_COLORS = {
@@ -274,6 +275,7 @@ export default function GitGraph({
   isFullscreen: _isFullscreen = false,
   copiedHash,
   copiedBranch,
+  defaultBranch,
 }: GitGraphProps) {
   const [graphWidth, setGraphWidth] = useState<number | null>(null)
   const [isDraggingState, setIsDraggingState] = useState(false)
@@ -412,11 +414,16 @@ export default function GitGraph({
                       const isCopied = copiedBranch === label.name
                       let className =
                         'relative px-2 py-0.5 text-xs font-mono rounded whitespace-nowrap md:truncate md:max-w-32 cursor-pointer hover:opacity-80 transition-opacity '
+                      const isDefaultBranch =
+                        defaultBranch &&
+                        (label.name === defaultBranch ||
+                          label.name === `origin/${defaultBranch}` ||
+                          label.name === 'origin/HEAD')
                       if (isCopied) {
                         className += 'bg-green-500/20 text-green-500 ring-1 ring-green-500/50'
                       } else if (isHeadBranch) {
                         className += 'bg-amber-500/20 text-amber-500 ring-1 ring-amber-500/50'
-                      } else if (label.name === 'origin/HEAD') {
+                      } else if (isDefaultBranch) {
                         className += 'bg-red-500/20 text-red-400'
                       } else if (label.name.startsWith('origin/')) {
                         className += 'bg-purple-500/20 text-purple-400'
@@ -435,6 +442,9 @@ export default function GitGraph({
                           <span className={isCopied ? 'invisible' : ''}>
                             {label.name}
                             {label.isInSyncWithOrigin && <span className="ml-1 opacity-60">• origin</span>}
+                            {isDefaultBranch && !label.name.startsWith('origin/') && (
+                              <span className="ml-1 opacity-60">• default</span>
+                            )}
                           </span>
                           {isCopied && (
                             <span className="absolute inset-0 flex items-center justify-center gap-1">

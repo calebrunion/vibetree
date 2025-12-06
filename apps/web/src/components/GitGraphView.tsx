@@ -24,6 +24,7 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
   const [error, setError] = useState<string | null>(null)
   const [copiedHash, setCopiedHash] = useState<string | null>(null)
   const [copiedBranch, setCopiedBranch] = useState<string | null>(null)
+  const [defaultBranch, setDefaultBranch] = useState<string | null>(null)
   const { getAdapter } = useWebSocket()
 
   const handleCommitClick = useCallback(async (commit: GitCommit) => {
@@ -56,8 +57,14 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
       if ('gitFetch' in adapter) {
         await (adapter as any).gitFetch(worktreePath)
       }
-      const gitCommits = await (adapter as any).getGitLogGraph(worktreePath, 100)
+      const [gitCommits, branch] = await Promise.all([
+        (adapter as any).getGitLogGraph(worktreePath, 100),
+        'getDefaultBranch' in adapter
+          ? (adapter as any).getDefaultBranch(worktreePath).catch(() => null)
+          : Promise.resolve(null),
+      ])
       setCommits(gitCommits)
+      setDefaultBranch(branch)
     } catch (err) {
       console.error('Failed to load git log:', err)
       setError(err instanceof Error ? err.message : 'Failed to load git log')
@@ -133,6 +140,7 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
           isFullscreen={isFullscreen}
           copiedHash={copiedHash}
           copiedBranch={copiedBranch}
+          defaultBranch={defaultBranch}
           onCommitClick={handleCommitClick}
           onBranchClick={handleBranchClick}
         />
