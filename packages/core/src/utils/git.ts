@@ -720,6 +720,21 @@ export async function getCurrentBranch(worktreePath: string): Promise<string> {
 }
 
 /**
+ * Fetch from remote
+ * @param worktreePath - Path to the git worktree
+ * @returns Success status
+ */
+export async function gitFetch(worktreePath: string): Promise<{ success: boolean }> {
+  const expandedPath = expandPath(worktreePath)
+  try {
+    await executeGitCommand(['fetch', '--all', '--prune'], expandedPath)
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
+}
+
+/**
  * Validate multiple project paths
  * @param projectPaths - Array of project paths to validate
  * @returns Array of validation results

@@ -209,6 +209,10 @@ export class WebSocketAdapter extends BaseAdapter {
     return result.commits
   }
 
+  async gitFetch(worktreePath: string): Promise<{ success: boolean }> {
+    return this.sendMessage('git:fetch', { worktreePath })
+  }
+
   async getGitUserName(worktreePath: string): Promise<string> {
     const result = await this.sendMessage<{ userName: string }>('git:userName', { worktreePath })
     return result.userName

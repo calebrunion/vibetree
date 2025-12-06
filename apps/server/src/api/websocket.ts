@@ -23,6 +23,7 @@ import {
   writeProjectSettings,
   getFileContent,
   getFileViewerType,
+  gitFetch,
 } from '@buddy/core'
 
 interface Services {
@@ -458,6 +459,28 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
                 JSON.stringify({
                   type: 'git:logGraph:response',
                   payload: { commits },
+                  id: message.id,
+                })
+              )
+            } catch (error) {
+              ws.send(
+                JSON.stringify({
+                  type: 'error',
+                  payload: { error: (error as Error).message },
+                  id: message.id,
+                })
+              )
+            }
+            break
+          }
+
+          case 'git:fetch': {
+            try {
+              const result = await gitFetch(message.payload.worktreePath)
+              ws.send(
+                JSON.stringify({
+                  type: 'git:fetch:response',
+                  payload: result,
                   id: message.id,
                 })
               )

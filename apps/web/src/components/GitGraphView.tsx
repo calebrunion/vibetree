@@ -53,6 +53,9 @@ export const GitGraphView = forwardRef<GitGraphViewRef, GitGraphViewProps>(funct
     try {
       setLoading(true)
       setError(null)
+      if ('gitFetch' in adapter) {
+        await (adapter as any).gitFetch(worktreePath)
+      }
       const gitCommits = await (adapter as any).getGitLogGraph(worktreePath, 100)
       setCommits(gitCommits)
     } catch (err) {
