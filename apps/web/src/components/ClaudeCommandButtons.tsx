@@ -1,4 +1,16 @@
-import { BarChart3, Bot, Eye, GitCommit, LucideIcon, Minimize2, Play, RefreshCw, Rewind, SquarePen } from 'lucide-react'
+import {
+  BarChart3,
+  Bot,
+  Eye,
+  GitCommit,
+  ListTodo,
+  LucideIcon,
+  Minimize2,
+  Play,
+  RefreshCw,
+  Rewind,
+  SquarePen,
+} from 'lucide-react'
 import { useCallback } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
@@ -20,8 +32,15 @@ interface Command {
 
 const COMMANDS: Command[] = [
   { id: 'claude', label: 'claude', title: 'Launch Claude', icon: Bot, isLaunch: true },
-  { id: 'dev', label: 'dev', title: 'Start Dev Server', icon: Play, command: 'start dev server' },
   { id: 'commit', label: 'commit', title: 'Commit', icon: GitCommit, command: 'commit' },
+  { id: 'dev', label: 'dev', title: 'Start Dev Server', icon: Play, command: 'start dev server' },
+  {
+    id: 'tasks',
+    label: 'tasks',
+    title: 'Show Notion Tasks',
+    icon: ListTodo,
+    command: 'show me my unchecked tasks from the Buddy list in Notion',
+  },
   { id: 'new', label: '/new', title: 'New Chat', icon: SquarePen, command: '/new' },
   { id: 'rewind', label: 'rewind', title: 'Rewind', icon: Rewind, command: '/rewind' },
   { id: 'compact', label: '/compact', title: 'Compact', icon: Minimize2, command: '/compact', iconClass: '-rotate-45' },
