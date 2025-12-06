@@ -773,7 +773,7 @@ function App() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleRefreshTerminal()}
-                          className="group size-8 p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                          className="group size-[38px] md:size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                           title="Reload Terminal"
                         >
                           <RotateCcw
@@ -782,7 +782,7 @@ function App() {
                         </button>
                         <button
                           onClick={() => toggleTerminalSplit(project.id)}
-                          className={`group size-8 p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center ${project.isTerminalSplit ? 'bg-muted' : ''}`}
+                          className={`group size-[38px] md:size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center ${project.isTerminalSplit ? 'bg-muted' : ''}`}
                           title={project.isTerminalSplit ? 'Close Split' : 'Split Terminal'}
                         >
                           {project.isTerminalSplit ? (
@@ -800,7 +800,7 @@ function App() {
                         </button>
                         <button
                           onClick={() => toggleTerminalFullscreen(project.id)}
-                          className="group size-8 p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                          className="group size-[38px] md:size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                           title={project.isTerminalFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                         >
                           {project.isTerminalFullscreen ? (
@@ -816,7 +816,7 @@ function App() {
                           <>
                             <button
                               onClick={() => handleRefreshChanges(project, true)}
-                              className="group size-8 p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                              className="group size-[38px] md:size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                               title="Reload Changes"
                             >
                               <RotateCcw
@@ -825,7 +825,7 @@ function App() {
                             </button>
                             <button
                               onClick={() => toggleDiffFullscreen(project.id)}
-                              className="group size-8 p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                              className="group size-[38px] md:size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                               title={project.isDiffFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                             >
                               {project.isDiffFullscreen ? (
@@ -840,7 +840,7 @@ function App() {
                           <>
                             <button
                               onClick={() => handleRefreshGraph(project)}
-                              className="group size-8 p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                              className="group size-[38px] md:size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                               title="Reload Graph"
                             >
                               <RotateCcw
@@ -849,7 +849,7 @@ function App() {
                             </button>
                             <button
                               onClick={() => toggleGraphFullscreen(project.id)}
-                              className="group size-8 p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
+                              className="group size-[38px] md:size-[34px] p-0 hover:bg-muted/50 rounded-md transition-colors border border-border inline-flex items-center justify-center"
                               title={project.isGraphFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                             >
                               {project.isGraphFullscreen ? (
