@@ -196,6 +196,8 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
         const endY = height
         const parentX = parentColumn * COLUMN_WIDTH + DOT_SIZE / 2 + 4
         const parentColor = colors[parentColumn % colors.length]
+        // For left-to-right merges, use the node's color (the branch it stems from)
+        const lineColor = parentColumn > node.column ? color : parentColor
 
         if (parentColumn === node.column) {
           lines.push(
@@ -216,7 +218,7 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
             <path
               key={`line-${node.commit.hash}-${parentHash}`}
               d={`M ${x} ${y} L ${x} ${midY} C ${x} ${midY + curveRadius} ${parentX} ${midY + curveRadius} ${parentX} ${midY + curveRadius * 2} L ${parentX} ${endY}`}
-              stroke={parentColor}
+              stroke={lineColor}
               strokeWidth={LINE_WIDTH}
               fill="none"
             />
@@ -228,6 +230,8 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
       const parentY = parentIndex * ROW_HEIGHT + ROW_HEIGHT / 2
       const parentX = parentColumn * COLUMN_WIDTH + DOT_SIZE / 2 + 4
       const parentColor = colors[parentColumn % colors.length]
+      // For left-to-right merges, use the node's color (the branch it stems from)
+      const lineColor = parentColumn > node.column ? color : parentColor
 
       if (parentColumn === node.column) {
         lines.push(
@@ -248,7 +252,7 @@ function GraphSvg({ nodes, theme }: { nodes: GraphNode[]; theme: 'light' | 'dark
           <path
             key={`line-${node.commit.hash}-${parentHash}`}
             d={`M ${x} ${y} L ${x} ${midY} C ${x} ${midY + curveRadius} ${parentX} ${midY + curveRadius} ${parentX} ${midY + curveRadius * 2} L ${parentX} ${parentY}`}
-            stroke={parentColor}
+            stroke={lineColor}
             strokeWidth={LINE_WIDTH}
             fill="none"
           />
