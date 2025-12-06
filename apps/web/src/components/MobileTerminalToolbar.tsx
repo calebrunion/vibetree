@@ -3,27 +3,19 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  BarChart3,
-  Bot,
   ChevronsDown,
   ChevronsUp,
   Clipboard,
   CornerDownLeft,
   Delete,
   Eraser,
-  Eye,
-  GitCommit,
   Mic,
-  Minimize2,
-  Play,
-  RefreshCw,
-  Rewind,
-  SquarePen,
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useAppStore } from '../store'
 import { useWebSocket } from '../hooks/useWebSocket'
 import VoiceInputDialog from './VoiceInputDialog'
+import ClaudeCommandButtons from './ClaudeCommandButtons'
 
 const KEYS = {
   ESC: '\x1b',
@@ -81,50 +73,6 @@ export default function MobileTerminalToolbar() {
         await adapter.writeToShell(sessionId, text)
       } catch (error) {
         console.error('Failed to send text:', error)
-      }
-    },
-    [getActiveProject, terminalSessions, getAdapter]
-  )
-
-  const launchClaude = useCallback(async () => {
-    const activeProject = getActiveProject()
-    if (!activeProject?.selectedWorktree) return
-
-    const sessionId = terminalSessions.get(activeProject.selectedWorktree)
-    if (!sessionId) return
-
-    const adapter = getAdapter()
-    if (!adapter) return
-
-    try {
-      await adapter.writeToShell(sessionId, KEYS.CTRL_C)
-      await new Promise((resolve) => setTimeout(resolve, 100))
-      await adapter.writeToShell(
-        sessionId,
-        'claude -c --permission-mode bypassPermissions || claude --permission-mode bypassPermissions\n'
-      )
-    } catch (error) {
-      console.error('Failed to launch Claude:', error)
-    }
-  }, [getActiveProject, terminalSessions, getAdapter])
-
-  const sendCommand = useCallback(
-    async (command: string) => {
-      const activeProject = getActiveProject()
-      if (!activeProject?.selectedWorktree) return
-
-      const sessionId = terminalSessions.get(activeProject.selectedWorktree)
-      if (!sessionId) return
-
-      const adapter = getAdapter()
-      if (!adapter) return
-
-      try {
-        await adapter.writeToShell(sessionId, command)
-        await new Promise((resolve) => setTimeout(resolve, 50))
-        await adapter.writeToShell(sessionId, KEYS.ENTER)
-      } catch (error) {
-        console.error('Failed to send command:', error)
       }
     },
     [getActiveProject, terminalSessions, getAdapter]
@@ -228,78 +176,7 @@ export default function MobileTerminalToolbar() {
       </div>
 
       <div className="flex items-center gap-2 px-2 pt-1 pb-2 overflow-x-auto scrollbar-hide">
-        <button
-          onClick={launchClaude}
-          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
-          title="Launch Claude"
-        >
-          <Bot className="h-5 w-5 text-white" />
-          <span className="font-mono text-sm text-muted-foreground">claude</span>
-        </button>
-        <button
-          onClick={() => sendCommand('commit')}
-          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
-          title="Commit"
-        >
-          <GitCommit className="h-5 w-5 text-white" />
-          <span className="font-mono text-sm text-muted-foreground">commit</span>
-        </button>
-        <button
-          onClick={() => sendCommand('/new')}
-          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
-          title="New Chat"
-        >
-          <SquarePen className="h-5 w-5 text-white" />
-          <span className="font-mono text-sm text-muted-foreground">/new</span>
-        </button>
-        <button
-          onClick={() => sendCommand('/rewind')}
-          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
-          title="Rewind"
-        >
-          <Rewind className="h-5 w-5 text-white" />
-          <span className="font-mono text-sm text-muted-foreground">rewind</span>
-        </button>
-        <button
-          onClick={() => sendCommand('/compact')}
-          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
-          title="Compact"
-        >
-          <Minimize2 className="h-5 w-5 text-white -rotate-45" />
-          <span className="font-mono text-sm text-muted-foreground">/compact</span>
-        </button>
-        <button
-          onClick={() => sendCommand('push')}
-          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
-          title="Push"
-        >
-          <RefreshCw className="h-5 w-5 text-white" />
-          <span className="font-mono text-sm text-muted-foreground">push</span>
-        </button>
-        <button
-          onClick={() => sendCommand('/usage')}
-          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
-          title="Usage"
-        >
-          <BarChart3 className="h-5 w-5 text-white" />
-          <span className="font-mono text-sm text-muted-foreground">/usage</span>
-        </button>
-        <button
-          onClick={() => sendCommand('start dev server')}
-          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
-          title="Start Dev Server"
-        >
-          <Play className="h-5 w-5 text-white" />
-          <span className="font-mono text-sm text-muted-foreground">dev</span>
-        </button>
-        <button
-          onClick={() => sendCommand('/review')}
-          className="h-11 px-3 rounded-md bg-muted border border-border active:scale-95 transition-transform flex items-center gap-2 flex-shrink-0"
-          title="Review"
-        >
-          <Eye className="h-5 w-5 text-white" />
-          <span className="font-mono text-sm text-muted-foreground">/review</span>
-        </button>
+        <ClaudeCommandButtons size="mobile" />
       </div>
 
       <div className="flex items-start justify-between gap-2 px-2 pt-1 pb-3">
