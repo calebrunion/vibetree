@@ -22,39 +22,63 @@ const DOT_SIZE = 8
 const LINE_WIDTH = 2
 const COLUMN_WIDTH = 16
 
-function getBranchNames(refs: string[] | undefined): string[] {
+interface BranchLabel {
+  name: string
+  isInSyncWithOrigin?: boolean
+}
+
+function getBranchLabels(refs: string[] | undefined): BranchLabel[] {
   if (!refs || refs.length === 0) return []
 
-  const branchNames: string[] = []
+  const labels: BranchLabel[] = []
+  let headBranch: string | null = null
 
-  // First: current HEAD branch
+  // First: find current HEAD branch
   for (const ref of refs) {
     if (ref.startsWith('HEAD -> ')) {
-      branchNames.push(ref.replace('HEAD -> ', ''))
+      headBranch = ref.replace('HEAD -> ', '')
+      break
     }
+  }
+
+  // Check if origin has the same branch at this commit (in sync)
+  const originBranchName = headBranch ? `origin/${headBranch}` : null
+  const isInSyncWithOrigin = originBranchName ? refs.includes(originBranchName) : false
+
+  // Add current HEAD branch with sync info
+  if (headBranch) {
+    labels.push({ name: headBranch, isInSyncWithOrigin })
   }
 
   // Second: local branches (no /)
   for (const ref of refs) {
-    if (!ref.includes('/') && !ref.startsWith('tag:') && !branchNames.includes(ref)) {
-      branchNames.push(ref)
+    if (!ref.includes('/') && !ref.startsWith('tag:') && ref !== headBranch) {
+      labels.push({ name: ref })
     }
   }
 
-  // Third: remote branches (origin/*)
+  // Third: remote branches (origin/*) - skip the one that's in sync with HEAD
   for (const ref of refs) {
-    if (ref.startsWith('origin/') && ref !== 'origin/HEAD' && !branchNames.includes(ref)) {
-      branchNames.push(ref)
+    if (ref.startsWith('origin/') && ref !== 'origin/HEAD') {
+      // Skip if this is the origin branch that's in sync with HEAD
+      if (isInSyncWithOrigin && ref === originBranchName) continue
+      if (!labels.some((l) => l.name === ref)) {
+        labels.push({ name: ref })
+      }
     }
   }
 
-  // Last: origin/HEAD
-  if (refs.includes('origin/HEAD') && !branchNames.includes('origin/HEAD')) {
-    branchNames.push('origin/HEAD')
+  // Last: origin/HEAD (only if not same as the in-sync origin branch)
+  if (refs.includes('origin/HEAD') && !labels.some((l) => l.name === 'origin/HEAD')) {
+    // Skip if origin/HEAD points to the same branch that's in sync
+    const originHeadBranch = refs.find((r) => r.startsWith('origin/') && r !== 'origin/HEAD')
+    if (!(isInSyncWithOrigin && originHeadBranch === originBranchName)) {
+      labels.push({ name: 'origin/HEAD' })
+    }
   }
 
   // Limit to 3 labels to avoid clutter
-  return branchNames.slice(0, 3)
+  return labels.slice(0, 3)
 }
 
 function isCurrentHead(refs: string[] | undefined): boolean {
@@ -370,7 +394,7 @@ export default function GitGraph({
         </div>
         <div className="flex-1 min-w-0 overflow-x-auto md:overflow-x-visible">
           {nodes.map((node) => {
-            const branchNames = getBranchNames(node.commit.refs)
+            const branchLabels = getBranchLabels(node.commit.refs)
             const isHead = isCurrentHead(node.commit.refs)
             return (
               <button
@@ -381,34 +405,35 @@ export default function GitGraph({
                 className="w-full md:w-full min-w-max md:min-w-0 flex items-center gap-2 px-2 pr-4 text-left cursor-pointer"
                 style={{ height: ROW_HEIGHT }}
               >
-                {branchNames.length > 0 && (
+                {branchLabels.length > 0 && (
                   <div className="flex-shrink-0 flex gap-1">
-                    {branchNames.map((name, nameIndex) => {
-                      const isHeadBranch = isHead && nameIndex === 0
-                      const isCopied = copiedBranch === name
+                    {branchLabels.map((label, labelIndex) => {
+                      const isHeadBranch = isHead && labelIndex === 0
+                      const isCopied = copiedBranch === label.name
                       let className =
                         'relative px-2 py-0.5 text-xs font-mono rounded whitespace-nowrap md:truncate md:max-w-32 cursor-pointer hover:opacity-80 transition-opacity '
                       if (isCopied) {
                         className += 'bg-green-500/20 text-green-500 ring-1 ring-green-500/50'
                       } else if (isHeadBranch) {
                         className += 'bg-amber-500/20 text-amber-500 ring-1 ring-amber-500/50'
-                      } else if (name === 'origin/HEAD') {
-                        className += 'bg-blue-500/20 text-blue-400'
-                      } else if (name.startsWith('origin/')) {
+                      } else if (label.name.startsWith('origin/')) {
                         className += 'bg-purple-500/20 text-purple-400'
                       } else {
                         className += 'bg-purple-500/20 text-purple-400 ring-1 ring-purple-500/50'
                       }
                       return (
                         <span
-                          key={name}
+                          key={label.name}
                           className={className}
                           onClick={(e) => {
                             e.stopPropagation()
-                            onBranchClick?.(name)
+                            onBranchClick?.(label.name)
                           }}
                         >
-                          <span className={isCopied ? 'invisible' : ''}>{name}</span>
+                          <span className={isCopied ? 'invisible' : ''}>
+                            {label.name}
+                            {label.isInSyncWithOrigin && <span className="ml-1 opacity-60">• origin</span>}
+                          </span>
                           {isCopied && (
                             <span className="absolute inset-0 flex items-center justify-center gap-1">
                               <Check className="h-3 w-3" />
