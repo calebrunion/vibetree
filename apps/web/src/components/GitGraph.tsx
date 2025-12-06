@@ -28,7 +28,7 @@ interface BranchLabel {
   isInSyncWithOrigin?: boolean
 }
 
-function getBranchLabels(refs: string[] | undefined): BranchLabel[] {
+function getBranchLabels(refs: string[] | undefined, defaultBranch?: string | null): BranchLabel[] {
   if (!refs || refs.length === 0) return []
 
   const labels: BranchLabel[] = []
@@ -78,8 +78,29 @@ function getBranchLabels(refs: string[] | undefined): BranchLabel[] {
     }
   }
 
-  // Limit to 3 labels to avoid clutter
-  return labels.slice(0, 3)
+  // Limit to 5 labels but ensure default branch is always included
+  if (labels.length <= 5) {
+    return labels
+  }
+
+  const priorityLabels: BranchLabel[] = []
+  const otherLabels: BranchLabel[] = []
+
+  for (const label of labels) {
+    const isDefaultBranch =
+      defaultBranch &&
+      (label.name === defaultBranch || label.name === `origin/${defaultBranch}` || label.name === 'origin/HEAD')
+    const isHead = label.name === headBranch
+
+    if (isHead || isDefaultBranch) {
+      priorityLabels.push(label)
+    } else {
+      otherLabels.push(label)
+    }
+  }
+
+  const remaining = 5 - priorityLabels.length
+  return [...priorityLabels, ...otherLabels.slice(0, Math.max(0, remaining))]
 }
 
 function isCurrentHead(refs: string[] | undefined): boolean {
@@ -396,7 +417,7 @@ export default function GitGraph({
         </div>
         <div className="flex-1 min-w-0 overflow-x-auto md:overflow-x-visible">
           {nodes.map((node) => {
-            const branchLabels = getBranchLabels(node.commit.refs)
+            const branchLabels = getBranchLabels(node.commit.refs, defaultBranch)
             const isHead = isCurrentHead(node.commit.refs)
             return (
               <button
