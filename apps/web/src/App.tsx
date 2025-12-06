@@ -3,8 +3,8 @@ import { ConfirmDialog, Tabs, TabsContent, TabsList, TabsTrigger } from '@buddy/
 import {
   CheckCircle,
   Columns2,
+  FileDiff,
   GitBranch,
-  GitCommitHorizontal,
   Maximize2,
   Minimize2,
   Moon,
@@ -703,7 +703,7 @@ function App() {
                             handleRefreshChanges(project)
                           }}
                         >
-                          <GitBranch className="h-4 w-4" />
+                          <FileDiff className="h-4 w-4" />
                           {getCurrentTab(project) === 'changes' && <span className="text-sm">Changes</span>}
                         </button>
                         <button
@@ -718,7 +718,7 @@ function App() {
                             gitGraphRefs.current.get(project.id)?.refresh()
                           }}
                         >
-                          <GitCommitHorizontal className="h-4 w-4" />
+                          <GitBranch className="h-4 w-4" />
                           {getCurrentTab(project) === 'graph' && <span className="text-sm">Graph</span>}
                         </button>
                       </div>
@@ -749,7 +749,7 @@ function App() {
                             handleRefreshChanges(project)
                           }}
                         >
-                          <GitBranch className="h-3.5 w-3.5 -ml-1" />
+                          <FileDiff className="h-3.5 w-3.5 -ml-1" />
                           Changes
                         </button>
                         <button
@@ -764,7 +764,7 @@ function App() {
                             gitGraphRefs.current.get(project.id)?.refresh()
                           }}
                         >
-                          <GitCommitHorizontal className="h-3.5 w-3.5 -ml-1" />
+                          <GitBranch className="h-3.5 w-3.5 -ml-1" />
                           Graph
                         </button>
                       </div>
