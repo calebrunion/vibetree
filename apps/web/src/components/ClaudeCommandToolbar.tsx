@@ -73,6 +73,14 @@ export default function ClaudeCommandToolbar() {
         <span className="font-mono text-sm text-muted-foreground">claude</span>
       </button>
       <button
+        onClick={() => sendCommand('start dev server')}
+        className="h-8 px-3 rounded-md bg-muted border border-border hover:bg-accent active:scale-95 transition-all flex items-center gap-2 flex-shrink-0"
+        title="Start Dev Server"
+      >
+        <Play className="h-4 w-4 text-white" />
+        <span className="font-mono text-sm text-muted-foreground">dev</span>
+      </button>
+      <button
         onClick={() => sendCommand('commit')}
         className="h-8 px-3 rounded-md bg-muted border border-border hover:bg-accent active:scale-95 transition-all flex items-center gap-2 flex-shrink-0"
         title="Commit"
@@ -119,14 +127,6 @@ export default function ClaudeCommandToolbar() {
       >
         <BarChart3 className="h-4 w-4 text-white" />
         <span className="font-mono text-sm text-muted-foreground">/usage</span>
-      </button>
-      <button
-        onClick={() => sendCommand('start dev server')}
-        className="h-8 px-3 rounded-md bg-muted border border-border hover:bg-accent active:scale-95 transition-all flex items-center gap-2 flex-shrink-0"
-        title="Start Dev Server"
-      >
-        <Play className="h-4 w-4 text-white" />
-        <span className="font-mono text-sm text-muted-foreground">dev</span>
       </button>
       <button
         onClick={() => sendCommand('/review')}
