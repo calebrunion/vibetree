@@ -416,6 +416,8 @@ export default function GitGraph({
                         className += 'bg-green-500/20 text-green-500 ring-1 ring-green-500/50'
                       } else if (isHeadBranch) {
                         className += 'bg-amber-500/20 text-amber-500 ring-1 ring-amber-500/50'
+                      } else if (label.name === 'origin/HEAD') {
+                        className += 'bg-red-500/20 text-red-400'
                       } else if (label.name.startsWith('origin/')) {
                         className += 'bg-purple-500/20 text-purple-400'
                       } else {
