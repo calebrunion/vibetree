@@ -419,9 +419,9 @@ export async function getFilesChangedAgainstBase(
 }
 
 /**
- * Create a new git worktree with a new branch
+ * Create a new git worktree for an existing or new branch
  * @param projectPath - Path to the main git repository
- * @param branchName - Name for the new branch
+ * @param branchName - Name for the branch
  * @returns Result with new worktree path and branch name
  */
 export async function addWorktree(projectPath: string, branchName: string): Promise<WorktreeAddResult> {
@@ -433,16 +433,35 @@ export async function addWorktree(projectPath: string, branchName: string): Prom
     fs.mkdirSync(treesDir, { recursive: true })
   }
 
-  let branchExists = false
-  try {
-    await executeGitCommand(['rev-parse', '--verify', branchName], expandedPath)
-    branchExists = true
-  } catch {
-    branchExists = false
+  const worktrees = await listWorktrees(expandedPath)
+  const branchInUse = worktrees.some((wt) => wt.branch === branchName)
+  if (branchInUse) {
+    throw new Error(`Branch '${branchName}' is already checked out in another worktree`)
   }
 
-  if (branchExists) {
+  let localBranchExists = false
+  try {
+    await executeGitCommand(['rev-parse', '--verify', branchName], expandedPath)
+    localBranchExists = true
+  } catch {
+    localBranchExists = false
+  }
+
+  if (localBranchExists) {
     await executeGitCommand(['worktree', 'add', worktreePath, branchName], expandedPath)
+    return { path: worktreePath, branch: branchName }
+  }
+
+  let remoteBranchExists = false
+  try {
+    await executeGitCommand(['rev-parse', '--verify', `origin/${branchName}`], expandedPath)
+    remoteBranchExists = true
+  } catch {
+    remoteBranchExists = false
+  }
+
+  if (remoteBranchExists) {
+    await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath, `origin/${branchName}`], expandedPath)
   } else {
     await executeGitCommand(['worktree', 'add', '-b', branchName, worktreePath, 'origin/HEAD'], expandedPath)
   }
@@ -542,6 +561,136 @@ export async function discardAllChanges(worktreePath: string): Promise<{ success
   await executeGitCommand(['clean', '-fd'], expandedPath)
 
   return { success: true }
+}
+
+/**
+ * Check if a file is a binary file type that should be shown with a special viewer
+ * @param filePath - Path to the file
+ * @returns Object with file type info
+ */
+export function getFileViewerType(filePath: string): {
+  type: 'image' | 'pdf' | 'svg' | 'text'
+  mimeType?: string
+} {
+  const ext = path.extname(filePath).toLowerCase()
+  const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.ico', '.avif']
+  const svgExtension = '.svg'
+  const pdfExtension = '.pdf'
+
+  if (imageExtensions.includes(ext)) {
+    const mimeTypes: Record<string, string> = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+      '.bmp': 'image/bmp',
+      '.ico': 'image/x-icon',
+      '.avif': 'image/avif',
+    }
+    return { type: 'image', mimeType: mimeTypes[ext] }
+  }
+
+  if (ext === svgExtension) {
+    return { type: 'svg', mimeType: 'image/svg+xml' }
+  }
+
+  if (ext === pdfExtension) {
+    return { type: 'pdf', mimeType: 'application/pdf' }
+  }
+
+  return { type: 'text' }
+}
+
+/**
+ * Get file content from working directory or from a specific commit
+ * Returns base64 encoded content for binary files
+ * @param worktreePath - Path to the git worktree
+ * @param filePath - Path to the file relative to worktree
+ * @param ref - Git ref (commit hash, branch, HEAD, etc.) - if not provided, reads from working directory
+ * @returns File content as base64 string
+ */
+export async function getFileContent(
+  worktreePath: string,
+  filePath: string,
+  ref?: string
+): Promise<{ content: string; encoding: 'base64' | 'utf8' }> {
+  const expandedPath = expandPath(worktreePath)
+
+  if (ref) {
+    // Get file content from git object
+    try {
+      const output = await executeGitCommand(['show', `${ref}:${filePath}`], expandedPath)
+      // Try to detect if it's binary by checking for null bytes
+      if (output.includes('\0')) {
+        // Use git show with binary-safe approach
+        const buffer = await executeGitCommandBuffer(['show', `${ref}:${filePath}`], expandedPath)
+        return { content: buffer.toString('base64'), encoding: 'base64' }
+      }
+      return { content: output, encoding: 'utf8' }
+    } catch {
+      // File doesn't exist in this ref
+      return { content: '', encoding: 'utf8' }
+    }
+  }
+
+  // Read from working directory
+  const fullFilePath = path.join(expandedPath, filePath)
+
+  if (!fs.existsSync(fullFilePath)) {
+    return { content: '', encoding: 'utf8' }
+  }
+
+  const buffer = fs.readFileSync(fullFilePath)
+  const viewerType = getFileViewerType(filePath)
+
+  if (viewerType.type !== 'text') {
+    // Binary file - return base64
+    return { content: buffer.toString('base64'), encoding: 'base64' }
+  }
+
+  // Text file
+  return { content: buffer.toString('utf8'), encoding: 'utf8' }
+}
+
+/**
+ * Execute a git command and return raw buffer output (for binary files)
+ */
+export function executeGitCommandBuffer(args: string[], cwd: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    if (!fs.existsSync(cwd)) {
+      reject(new Error(`Directory does not exist: ${cwd}`))
+      return
+    }
+
+    const defaultPath = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin'
+    const envPath = process.env.PATH || ''
+    const fullPath = envPath ? `${defaultPath}:${envPath}` : defaultPath
+
+    const child = spawn('git', args, {
+      cwd,
+      env: { ...process.env, PATH: fullPath },
+    })
+
+    const chunks: Buffer[] = []
+    let stderr = ''
+
+    child.stdout.on('data', (data) => {
+      chunks.push(Buffer.from(data))
+    })
+
+    child.stderr.on('data', (data) => {
+      stderr += data.toString()
+    })
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve(Buffer.concat(chunks))
+      } else {
+        reject(new Error(stderr || `Git command failed: git ${args.join(' ')}`))
+      }
+    })
+  })
 }
 
 /**

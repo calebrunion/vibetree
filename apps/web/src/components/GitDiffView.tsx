@@ -5,6 +5,16 @@ import { DiffView, DiffModeEnum } from '@git-diff-view/react'
 import '@git-diff-view/react/styles/diff-view.css'
 import { useWebSocket } from '../hooks/useWebSocket'
 import type { GitStatus, GitCommit as GitCommitType, CommitFile } from '@buddy/core'
+import BinaryDiffViewer from './BinaryDiffViewer'
+
+function getFileViewerType(filePath: string): 'image' | 'pdf' | 'svg' | 'text' {
+  const ext = filePath.toLowerCase().split('.').pop() || ''
+  const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'avif']
+  if (imageExtensions.includes(ext)) return 'image'
+  if (ext === 'svg') return 'svg'
+  if (ext === 'pdf') return 'pdf'
+  return 'text'
+}
 
 class DiffErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { hasError: boolean }> {
   constructor(props: { children: ReactNode; fallback: ReactNode }) {
@@ -715,6 +725,21 @@ export const GitDiffView = forwardRef<GitDiffViewRef, GitDiffViewProps>(function
                 <p className="text-sm">Select a file to view changes</p>
               </div>
             </div>
+          ) : getFileViewerType(selectedFile) !== 'text' ? (
+            <BinaryDiffViewer
+              worktreePath={worktreePath}
+              filePath={selectedFile}
+              section={selectedSection}
+              commitHash={selectedCommit?.hash}
+              getFileContent={async (wp, fp, ref) => {
+                const adapter = getAdapter()
+                if (!adapter || !('getFileContent' in adapter)) {
+                  throw new Error('File content API not available')
+                }
+                return (adapter as any).getFileContent(wp, fp, ref)
+              }}
+              theme={theme}
+            />
           ) : !diffText ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <div className="text-center">

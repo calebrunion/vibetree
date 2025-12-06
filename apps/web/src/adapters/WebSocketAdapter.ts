@@ -242,6 +242,18 @@ export class WebSocketAdapter extends BaseAdapter {
     return this.sendMessage('git:discardAll', { worktreePath })
   }
 
+  async getFileContent(
+    worktreePath: string,
+    filePath: string,
+    ref?: string
+  ): Promise<{
+    content: string
+    encoding: 'base64' | 'utf8'
+    viewerType: { type: 'image' | 'pdf' | 'svg' | 'text'; mimeType?: string }
+  }> {
+    return this.sendMessage('git:file:content', { worktreePath, filePath, ref })
+  }
+
   async addWorktree(projectPath: string, branchName: string): Promise<WorktreeAddResult> {
     return this.sendMessage('git:worktree:add', { projectPath, branchName })
   }

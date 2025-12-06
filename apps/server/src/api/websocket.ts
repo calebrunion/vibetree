@@ -21,6 +21,8 @@ import {
   getStartupCommands,
   readProjectSettings,
   writeProjectSettings,
+  getFileContent,
+  getFileViewerType,
 } from '@buddy/core'
 
 interface Services {
@@ -622,6 +624,30 @@ export function setupWebSocketHandlers(wss: WebSocketServer, services: Services)
                 JSON.stringify({
                   type: 'git:discardAll:response',
                   payload: result,
+                  id: message.id,
+                })
+              )
+            } catch (error) {
+              ws.send(
+                JSON.stringify({
+                  type: 'error',
+                  payload: { error: (error as Error).message },
+                  id: message.id,
+                })
+              )
+            }
+            break
+          }
+
+          case 'git:file:content': {
+            try {
+              const { worktreePath, filePath, ref } = message.payload
+              const result = await getFileContent(worktreePath, filePath, ref)
+              const viewerType = getFileViewerType(filePath)
+              ws.send(
+                JSON.stringify({
+                  type: 'git:file:content:response',
+                  payload: { ...result, viewerType },
                   id: message.id,
                 })
               )
